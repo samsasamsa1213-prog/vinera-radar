@@ -210,6 +210,19 @@ window.addEventListener('load', function () {
     const userLabel = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
         ? ('@' + (tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name))
         : 'Пользователь';
+    // ===== СПИСОК АДМИНОВ =====
+const ADMIN_IDS = [8726139706];
+const currentUserId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+    ? tg.initDataUnsafe.user.id
+    : null;
+const isAdmin = currentUserId !== null && ADMIN_IDS.includes(currentUserId);
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('admin-toggle');
+    if (btn && !isAdmin) {
+        btn.style.display = 'none';
+    }
+});
+// ===== КОНЕЦ БЛОКА =====
 
     const map = L.map('map', { zoomControl: true }).setView([55.7558, 37.6173], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
