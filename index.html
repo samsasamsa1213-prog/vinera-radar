@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vinera Radar</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #001414;
+            --panel: rgba(0, 30, 30, 0.94);
+            --accent: #00bfa5;
+            --accent-soft: #4db6ac;
+            --text: #b2dfdb;
+            --danger: #ff1744;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; height: 100%;
+            font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); overflow: hidden; color: var(--text);
+        }
+        #map { position: absolute; inset: 0; z-index: 1; background: var(--bg); }
+        .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(1.1) saturate(0.5); }
+
+        #controls {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; background: var(--panel); border: 1px solid var(--accent);
+            padding: 10px 12px; border-radius: 14px;
+            box-shadow: 0 0 22px rgba(0,191,165,0.35);
+            display: flex; flex-direction: column; gap: 7px;
+            width: 94%; max-width: 420px; backdrop-filter: blur(6px);
+        }
+        #site-title {
+            text-align: center; color: var(--accent); font-weight: 800;
+            font-size: 17px; letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0,191,165,0.7);
+        }
+        .btn-row { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+        .marker-btn {
+            padding: 7px 10px; border: 1px solid transparent; border-radius: 8px;
+            cursor: pointer; font-weight: 700; color: #fff; font-size: 12.5px;
+            transition: transform .1s, box-shadow .2s;
+        }
+        .marker-btn:active { transform: scale(.94); }
+        .marker-btn.selected { box-shadow: 0 0 0 2px #fff, 0 0 12px #fff; }
+        .btn-drone     { background: #ff9800; }
+        .btn-missile   { background: #f44336; }
+        .btn-jet       { background: #2196f3; }
+        .btn-siren     { background: #9c27b0; }
+        .btn-explosion { background: #ffc107; color: #000; }
+        .btn-quiet     { background: #00c853; }
+
+        #search-box { display: flex; gap: 6px; }
+        #city-input {
+            flex: 1; padding: 9px 10px; border-radius: 8px;
+            border: 1px solid var(--accent); background: #002020;
+            color: var(--text); outline: none; font-size: 14px;
+        }
+        #city-input::placeholder { color: #3d8f88; }
+        #search-btn {
+            padding: 9px 14px; background: var(--accent); color: #001414;
+            border: none; border-radius: 8px; cursor: pointer; font-weight: 800;
+        }
+        #status { font-size: 11.5px; color: var(--accent-soft); text-align: center; }
+
+        #city-status {
+            position: absolute; top: 10px; left: 10px; z-index: 1000;
+            padding: 10px 14px; border-radius: 12px;
+            background: var(--panel); border: 2px solid var(--accent);
+            color: var(--text); font-weight: 700; font-size: 14px;
+            max-width: 40%; box-shadow: 0 0 18px rgba(0,191,165,0.5);
+            animation: statusPulse 1.6s infinite ease-in-out;
+            transition: border-color .3s, box-shadow .3s;
+        }
+        #city-status.danger {
+            border-color: var(--danger);
+            box-shadow: 0 0 25px rgba(255,23,68,0.85);
+            animation: dangerPulse 1s infinite ease-in-out;
+        }
+        @keyframes statusPulse {
+            0%,100% { box-shadow: 0 0 10px rgba(0,191,165,0.4); }
+            50%     { box-shadow: 0 0 24px rgba(0,191,165,0.9); }
+        }
+        @keyframes dangerPulse {
+            0%,100% { box-shadow: 0 0 12px rgba(255,23,68,0.6); }
+            50%     { box-shadow: 0 0 30px rgba(255,23,68,1); }
+        }
+        #city-status .city-name { color: var(--accent); font-size: 11px; display: block; letter-spacing: .5px; }
+        #city-status.danger .city-name { color: #ff8a9b; }
+        #city-status .city-state { font-size: 15px; }
+        #city-status.danger .city-state { color: #ff5252; }
+
+        .pulse-marker {
+            border-radius: 50%; border: 2px solid rgba(255,255,255,0.95);
+            box-shadow: 0 0 10px currentColor;
+            animation: pulse 1.2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%   { transform: scale(1); opacity: 1; }
+            50%  { transform: scale(1.5); opacity: .55; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: #002626; color: var(--text);
+            border: 1px solid var(--accent); border-radius: 10px;
+        }
+        .leaflet-popup-content { margin: 10px 12px; font-size: 13px; line-height: 1.45; }
+        .popup-confirm {
+            display: inline-block; margin-top: 6px; padding: 3px 8px;
+            background: #00c853; color: #001414; border-radius: 6px;
+            font-weight: 800; font-size: 11px;
+        }
+        .popup-title { color: var(--accent); font-weight: 800; font-size: 14px; }
+        .popup-muted { color: var(--accent-soft); font-size: 11.5px; }
+
+        #menu-btn {
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; padding: 12px 30px; background: var(--accent); color: #001414;
+            border: none; border-radius: 26px; font-weight: 800; font-size: 15px;
+            cursor: pointer; box-shadow: 0 0 20px rgba(0,191,165,0.7);
+        }
+        #menu-btn:active { transform: translateX(-50%) scale(.96); }
+
+        #menu-panel {
+            position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%);
+            z-index: 1100; background: var(--panel); border: 2px solid var(--accent);
+            border-radius: 16px; padding: 16px; display: none;
+            box-shadow: 0 0 28px rgba(0,191,165,0.6);
+            width: 88%; max-width: 380px; max-height: 70vh; overflow-y: auto;
+        }
+        #menu-panel.open { display: block; }
+        #menu-panel h3 { margin: 0 0 12px; color: var(--accent); font-size: 16px; text-align: center; letter-spacing: 1px; }
+        .owner-link {
+            display: block; padding: 11px; background: #002626;
+            border: 1px solid var(--accent); border-radius: 10px;
+            color: var(--text); text-decoration: none; font-weight: 700; text-align: center;
+        }
+        .owner-link:active { background: #004040; }
+        .menu-close {
+            display: block; width: 100%; margin-top: 12px; padding: 9px;
+            background: #f44336; color: #fff; border: none; border-radius: 10px;
+            cursor: pointer; font-weight: 800;
+        }
+        #admin-toggle {
+            display: block; width: 100%; margin-top: 14px; padding: 10px;
+            background: transparent; border: 1px dashed var(--accent);
+            color: var(--accent); border-radius: 10px; cursor: pointer; font-weight: 700;
+        }
+        #admin-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .admin-item {
+            background: #002020; border: 1px solid #005a52; border-radius: 10px;
+            padding: 9px 10px; font-size: 12.5px;
+        }
+        .admin-item .meta { color: var(--accent-soft); font-size: 11px; margin-top: 2px; }
+        .admin-item .del-btn {
+            margin-top: 6px; padding: 6px 12px; background: var(--danger); color: #fff;
+            border: none; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 12px;
+        }
+        .admin-empty { color: var(--accent-soft); font-size: 12px; text-align: center; padding: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="city-status">
+    <span class="city-name">ГОРОД НЕ ВЫБРАН</span>
+    <span class="city-state">—</span>
+</div>
+
+<div id="controls">
+    <div id="site-title">VINERA RADAR</div>
+    <div class="btn-row">
+        <button class="marker-btn btn-drone"     onclick="setMarkerType('БПЛА', this)">🛸 БПЛА</button>
+        <button class="marker-btn btn-missile"   onclick="setMarkerType('Ракета', this)">🚀 Ракета</button>
+        <button class="marker-btn btn-jet"       onclick="setMarkerType('Истребитель', this)">✈️ Истребитель</button>
+        <button class="marker-btn btn-siren"     onclick="setMarkerType('Сирена', this)">📢 Сирена</button>
+        <button class="marker-btn btn-explosion" onclick="setMarkerType('Взрыв', this)">💥 Взрыв</button>
+        <button class="marker-btn btn-quiet"     onclick="setMarkerType('Тихо', this)">🟢 Тихо</button>
+    </div>
+    <div id="search-box">
+        <input type="text" id="city-input" placeholder="Введите город">
+        <button id="search-btn" onclick="searchCity()">Найти</button>
+    </div>
+    <div id="status">Выберите тип метки и кликните на карту</div>
+</div>
+
+<div id="map"></div>
+
+<button id="menu-btn" onclick="toggleMenu()">☰ Меню</button>
+
+<div id="menu-panel">
+    <h3>МЕНЮ</h3>
+    <a class="owner-link" href="https://t.me/Hollisheetq" target="_blank" rel="noopener">
+        Связь с владельцем<br>Telegram: @Hollisheetq
+    </a>
+
+    <button id="admin-toggle" onclick="toggleAdmin()">🛠 Админ-панель</button>
+    <div id="admin-list"></div>
+
+    <button class="menu-close" onclick="toggleMenu()">Закрыть</button>
+</div>
+
+<script>
+window.addEventListener('load', function () {
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (tg && tg.expand) tg.expand();
+
+    const userLabel = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+        ? ('@' + (tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name))
+        : 'Пользователь';
+
+    const map = L.map('map', { zoomControl: true }).setView([55.7558, 37.6173], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 19, className: 'dark-tiles'
+    }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 200);
+
+    let currentMarkerType = 'БПЛА';
+    let currentCity = null;
+
+    let markersData = [];
+    try {
+        markersData = JSON.parse(localStorage.getItem('vinera_markers') || '[]');
+    } catch (e) { markersData = []; }
+
+    function saveMarkers() {
+        localStorage.setItem('vinera_markers', JSON.stringify(markersData));
+    }
+
+    const typeColors = {
+        'БПЛА': '#ff9800', 'Ракета': '#f44336', 'Истребитель': '#2196f3',
+        'Сирена': '#9c27b0', 'Взрыв': '#ffc107', 'Тихо': '#00c853'
+    };
+    const typeIcons = {
+        'БПЛА': '🛸', 'Ракета': '🚀', 'Истребитель': '✈️',
+        'Сирена': '📢', 'Взрыв': '💥', 'Тихо': '🟢'
+    };
+    const dangerTypes = ['Взрыв', 'Сирена', 'Ракета'];
+
+    const layerGroup = L.layerGroup().addTo(map);
+    const markerRefs = {};
+
+    function makeIcon(type) {
+        const color = typeColors[type] || '#00bfa5';
+        return L.divIcon({
+            className: '',
+            html: '<div class="pulse-marker" style="width:18px;height:18px;background:' + color + ';color:' + color + ';"></div>',
+            iconSize: [18, 18], iconAnchor: [9, 9]
+        });
+    }
+
+    function isConfirmed(m) {
+        return markersData.some(o =>
+            o.id !== m.id && o.type === m.type &&
+            map.distance([o.lat, o.lng], [m.lat, m.lng]) <= 300
+        );
+    }
+
+    function popupHtml(m) {
+        const confirmed = isConfirmed(m);
+        return '<div class="popup-title">' + typeIcons[m.type] + ' ' + m.type + '</div>' +
+               '<div class="popup-muted">Поставил: <b>' + m.author + '</b></div>' +
+               '<div class="popup-muted">Район: ' + (m.address || 'определяется...') + '</div>' +
+               '<div class="popup-muted">' + new Date(m.time).toLocaleString('ru-RU') + '</div>' +
+               (confirmed ? '<div class="popup-confirm">✔ Статус подтверждён</div>' : '');
+    }
+
+    function drawMarkers() {
+        layerGroup.clearLayers();
+        Object.keys(markerRefs).forEach(k => delete markerRefs[k]);
+        markersData.forEach(m => {
+            const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.type) }).addTo(layerGroup);
+            marker.bindPopup(popupHtml(m));
+            markerRefs[m.id] = marker;
+        });
+    }
+
+    async function resolveAddress(m) {
+        try {
+            const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+                        m.lat + '&lon=' + m.lng + '&zoom=14&accept-language=ru';
+            const res = await fetch(url);
+            const data = await res.json();
+            const a = data.address || {};
+            const parts = [a.city || a.town || a.village || a.county, a.suburb || a.neighbourhood || a.road];
+            m.address = parts.filter(Boolean).join(', ') || (data.display_name || 'неизвестно');
+        } catch (e) {
+            m.address = 'не удалось определить';
+        }
+        saveMarkers();
+        if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
+    }
+
+    function pluralizeStatus(types) {
+        const threats = types.filter(t => t !== 'Тихо');
+        if (threats.length === 0) {
+            return { text: types.length === 0 ? '—' : '🟢 Тихо', danger: false };
+        }
+        const counts = {};
+        threats.forEach(t => counts[t] = (counts[t] || 0) + 1);
+        const unique = Object.keys(counts);
+        const hasDanger = unique.some(t => dangerTypes.includes(t));
+        const pluralMap = {
+            'Взрыв': 'Взрывы', 'Сирена': 'Сирены', 'Ракета': 'Ракеты',
+            'БПЛА': 'БПЛА', 'Истребитель': 'Истребители'
+        };
+        const labels = unique.map(t => counts[t] > 1 ? (pluralMap[t] || t) : t);
+        return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
+    }
+
+    function updateCityStatus() {
+        const box = document.getElementById('city-status');
+        const nameEl = box.querySelector('.city-name');
+        const stateEl = box.querySelector('.city-state');
+        nameEl.textContent = (currentCity || 'ГОРОД НЕ ВЫБРАН').toUpperCase();
+        if (!currentCity) {
+            stateEl.textContent = '—';
+            box.classList.remove('danger');
+            return;
+        }
+        const types = markersData.filter(m => m.city === currentCity).map(m => m.type);
+        const res = pluralizeStatus(types);
+        stateEl.textContent = res.text;
+        box.classList.toggle('danger', res.danger);
+    }
+
+    window.setMarkerType = function (type, btn) {
+        currentMarkerType = type;
+        document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
+        if (btn) btn.classList.add('selected');
+        document.getElementById('status').innerText = 'Выбран: ' + type + '. Кликните на карту.';
+    };
+
+    map.on('click', function (e) {
+        if (!currentCity) {
+            document.getElementById('status').innerText = 'Сначала найдите город через поиск!';
+            return;
+        }
+        const m = {
+            id: 'm_' + Date.now() + '_' + Math.floor(Math.random() * 9999),
+            type: currentMarkerType,
+            lat: e.latlng.lat, lng: e.latlng.lng,
+            city: currentCity,
+            author: userLabel,
+            time: Date.now(),
+            address: 'определяется...'
+        };
+        markersData.push(m);
+        saveMarkers();
+        drawMarkers();
+        updateCityStatus();
+        resolveAddress(m);
+    });
+
+    window.searchCity = async function () {
+        const city = document.getElementById('city-input').value.trim();
+        if (!city) return;
+        document.getElementById('status').innerText = 'Поиск...';
+        try {
+            const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(city));
+            const data = await res.json();
+            if (data && data.length > 0) {
+                map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 12);
+                document.getElementById('status').innerText = 'Найден: ' + data[0].display_name;
+                currentCity = data[0].display_name.split(',')[0].trim();
+                updateCityStatus();
+            } else {
+                document.getElementById('status').innerText = 'Город не найден';
+            }
+        } catch (e) {
+            document.getElementById('status').innerText = 'Ошибка поиска';
+        }
+    };
+
+    window.toggleMenu = function () {
+        document.getElementById('menu-panel').classList.toggle('open');
+    };
+
+    // ===== Админ-панель =====
+    let adminOpen = false;
+    window.toggleAdmin = function () {
+        adminOpen = !adminOpen;
+        renderAdmin();
+    };
+
+    function renderAdmin() {
+        const list = document.getElementById('admin-list');
+        list.innerHTML = '';
+        if (!adminOpen) return;
+
+        if (markersData.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'admin-empty';
+            empty.textContent = 'Меток пока нет';
+            list.appendChild(empty);
+            return;
+        }
+
+        markersData.forEach(function (m) {
+            const item = document.createElement('div');
+            item.className = 'admin-item';
+
+            const title = document.createElement('div');
+            title.innerHTML = '<b>' + typeIcons[m.type] + ' ' + m.type + '</b> — ' + (m.city || '—');
+            item.appendChild(title);
+
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.textContent = (m.address || '...') + ' · ' + m.author;
+            item.appendChild(meta);
+
+            const btn = document.createElement('button');
+            btn.className = 'del-btn';
+            btn.textContent = 'Удалить';
+            btn.setAttribute('data-id', m.id); // <-- ID в атрибуте
+            item.appendChild(btn);
+
+            list.appendChild(item);
+        });
+    }
+
+    // Один общий обработчик на контейнер — работает при любой перерисовке
+    document.getElementById('admin-list').addEventListener('click', function (e) {
+        const btn = e.target.closest('.del-btn');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        if (!id) return;
+
+        // Сначала спрашиваем причину, потом подтверждение — без вложенных окон
+        const reason = window.prompt('Укажите причину удаления метки:');
+        if (reason === null) return;
+        if (!reason.trim()) { window.alert('Причина обязательна!'); return; }
+
+        markersData = markersData.filter(function (m) { return m.id !== id; });
+        saveMarkers();
+        drawMarkers();
+        updateCityStatus();
+        renderAdmin();
+        window.alert('Метка удалена.\nПричина: ' + reason);
+    });
+
+    drawMarkers();
+    updateCityStatus();
+    markersData.filter(function (m) { return !m.address || m.address === 'определяется...'; })
+               .forEach(resolveAddress);
+});
+</script>
+</body>
+</html>
