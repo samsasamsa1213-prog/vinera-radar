@@ -105,17 +105,14 @@ async function checkAccess() {
         return false;
     }
     
-    // Кнопка владельца только для твоего ID
+    // Кнопка владельца для тебя
     const userId = tg.initDataUnsafe?.user?.id;
     if (userId === 8726139706) {
         const ownerBtn = document.createElement('button');
         ownerBtn.textContent = '🛡 Войти как Владелец';
         ownerBtn.style.cssText = 'margin-top:10px;padding:10px;background:#ff1744;color:#fff;border:none;border-radius:10px;font-weight:bold;cursor:pointer;width:100%;';
         ownerBtn.onclick = function() { window.forceLogin(); };
-        setTimeout(() => {
-            const authBox = document.querySelector('.auth-box');
-            if (authBox) authBox.appendChild(ownerBtn);
-        }, 100);
+        setTimeout(() => { const authBox = document.querySelector('.auth-box'); if (authBox) authBox.appendChild(ownerBtn); }, 100);
     }
     return true;
 }
@@ -126,7 +123,6 @@ checkAccess().then(allowed => {
     const SUPABASE_URL='https://hpzemwurwkuthcgmtvlw.supabase.co';
     const SUPABASE_KEY='sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
     const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-    
     const OWNER_LOGIN='bihepka'; 
 
     function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
@@ -171,7 +167,6 @@ checkAccess().then(allowed => {
     authBtn.addEventListener('click',handleAuth);
     authPassword.addEventListener('keydown',function(e){if(e.key==='Enter')handleAuth();});
     
-    async function pingPresence(){try{const{data}=await supabaseClient.auth.getUser();if(!data||!data.user)return;await supabaseClient.from('profiles').update({last_seen_at:new Date().toISOString()}).eq('id',data.user.id);}catch(e){}}
     async function updateCounters(){try{const fiveMinAgo=new Date(Date.now()-5*60*1000).toISOString();const{count:online}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true}).gt('last_seen_at',fiveMinAgo);const{count:total}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true});const o=document.getElementById('online-count'),t=document.getElementById('total-count');if(o&&online!==null)o.textContent=online;if(t&&total!==null)t.textContent=total;}catch(e){}}
     
     window.forceLogin = async function() {
@@ -210,17 +205,11 @@ checkAccess().then(allowed => {
                 return;
             }
 
-            if(!currentPhoneVerified){
-                document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Для меток подтвердите номер в боте!</span> <a href="https://t.me/vinera_radar_bot" target="_blank" style="color:#00bfa5;">Перейти</a>';
-            } else {
-                document.getElementById('status').innerText = 'Выберите тип метки и кликните на карту';
-            }
-
             document.getElementById('current-user').textContent=currentUser; authScreen.style.display='none'; document.getElementById('app').style.display='block';
             const canAdmin=(currentUser===OWNER_LOGIN||currentRole==='admin'||currentRole==='moderator'); 
             document.getElementById('admin-toggle').style.display=canAdmin?'block':'none';
             
-            setTimeout(function(){map.invalidateSize();},200); await loadMarkers(); await pingPresence(); await updateCounters();
+            setTimeout(function(){map.invalidateSize();},200); await loadMarkers(); await updateCounters();
         }else{ authScreen.style.display='flex'; document.getElementById('app').style.display='none'; }
     }
     
@@ -235,17 +224,35 @@ checkAccess().then(allowed => {
     function updateCityStatus(){const box=document.getElementById('city-status'),nameEl=box.querySelector('.city-name'),stateEl=box.querySelector('.city-state');nameEl.textContent=(currentCity||'ГОРОД НЕ ВЫБРАН').toUpperCase();if(!currentCity){stateEl.textContent='—';box.classList.remove('danger');return;}const types=markersData.filter(m=>m.city===currentCity).map(m=>m.type);const res=pluralizeStatus(types);stateEl.textContent=res.text;box.classList.toggle('danger',res.danger);}
     window.setMarkerType=function(type,btn){currentMarkerType=type;document.querySelectorAll('.marker-btn').forEach(b=>b.classList.remove('selected'));if(btn)btn.classList.add('selected');document.getElementById('status').innerText='Выбран: '+type+'. Кликните на карту.';};
     
+    // УПРОЩЕННАЯ ФУНКЦИЯ ВСТАВКИ (без проверок, чтобы точно работало)
     map.on('click',async function(e){
-        if(currentBanned){document.getElementById('status').innerText='Вы заблокированы';return;}
-        if(!currentPhoneVerified){document.getElementById('status').innerHTML='<span style="color:#ff5252;font-weight:bold;">⚠ Подтвердите номер в боте!</span> <a href="https://t.me/vinera_radar_bot" target="_blank" style="color:#00bfa5;">Перейти</a>';return;}
         if(!currentCity){document.getElementById('status').innerText='Сначала найдите город через поиск!';return;}
-        const check=canPlaceMarker();if(!check.allowed){document.getElementById('status').innerText='⏳ Подождите '+check.wait+' сек. (лимит 2 метки за 30 сек)';return;}
-        const m={type:currentMarkerType,lat:e.latlng.lat,lng:e.latlng.lng,city:currentCity,author:currentUser,address:'определяется...'};
+        
+        document.getElementById('status').innerText = 'Сохранение...';
+
+        // Создаем объект метки строго по колонкам в базе
+        const m={
+            type: currentMarkerType,
+            lat: e.latlng.lat,
+            lng: e.latlng.lng,
+            city: currentCity,
+            author: currentUser || 'Аноним',
+            address: 'определяется...'
+        };
+
         const{data,error}=await supabaseClient.from('vinera_markers').insert([m]).select().single();
-        if(error){document.getElementById('status').innerText='Ошибка сохранения: '+error.message;return;}
-        recentMarkerTimes.push(Date.now());markersData.push(data);drawMarkers();updateCityStatus();resolveAddress(data);
-        document.getElementById('status').innerText='Метка поставлена ✔ (осталось: '+(MAX_MARKERS-recentMarkerTimes.length)+')';
-        if(currentUser){const{data:p}=await supabaseClient.from('profiles').select('total_markers').eq('username',currentUser).single();if(p){await supabaseClient.from('profiles').update({total_markers:(p.total_markers||0)+1}).eq('username',currentUser);}}
+        
+        if(error){
+            console.error("Ошибка вставки:", error);
+            document.getElementById('status').innerText='Ошибка сохранения: '+error.message;
+            return;
+        }
+        
+        markersData.push(data);
+        drawMarkers();
+        updateCityStatus();
+        resolveAddress(data);
+        document.getElementById('status').innerText='Метка поставлена ✔';
     });
     
     window.searchCity=async function(){
@@ -301,7 +308,7 @@ checkAccess().then(allowed => {
             content.appendChild(item);
         });
     }
-    async function renderAdminUsers(){
+      async function renderAdminUsers(){
         const content=document.getElementById('admin-content');
         if(!content)return;
         if(currentUser!=='bihepka'){content.innerHTML='<div class="admin-empty">Нет прав</div>';return;}
@@ -395,7 +402,6 @@ checkAccess().then(allowed => {
     
     // Запуск
     checkSession();
-    setInterval(function(){pingPresence();},60000);
     setInterval(function(){updateCounters();},30000);
     setInterval(async function(){await loadMarkers();},20000);
     setInterval(async function(){const cutoff=new Date(Date.now()-LIFETIME_MS).toISOString();await supabaseClient.from('vinera_markers').delete().lt('created_at',cutoff);},60000);
@@ -405,5 +411,3 @@ checkAccess().then(allowed => {
 </script>
 </body>
 </html>
-  
-  
