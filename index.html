@@ -71,9 +71,6 @@ html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Ro
 .admin-item .meta{color:var(--accent-soft);font-size:10.5px;margin-top:2px}
 .admin-item .del-btn{margin-top:6px;padding:6px 12px;background:var(--danger);color:#fff;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11.5px}
 .admin-empty{color:var(--accent-soft);font-size:12px;text-align:center;padding:8px}
-.admin-tabs{display:flex;gap:6px;margin-bottom:8px}
-.admin-tab{flex:1;padding:7px;border:1px solid #005a52;border-radius:7px;background:transparent;color:var(--accent-soft);cursor:pointer;font-size:12px;font-weight:700}
-.admin-tab.active{background:#003a36;color:var(--accent);border-color:var(--accent)}
 @media(max-width:360px){.marker-btn{width:48px;height:48px;font-size:8px}.marker-btn svg{width:20px;height:20px}}
 </style>
 </head>
@@ -99,7 +96,7 @@ html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Ro
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-window.addEventListener('load',function(){
+  window.addEventListener('load',function(){
 const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand();
 const SUPABASE_URL='https://jckoziwygfslfsrqnqva.supabase.co';
 const SUPABASE_KEY='sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
@@ -122,7 +119,7 @@ authBtn.addEventListener('click',handleAuth);
 authPassword.addEventListener('keydown',function(e){if(e.key==='Enter')handleAuth();});
 async function pingPresence(){try{const{data}=await supabaseClient.auth.getUser();if(!data||!data.user)return;await supabaseClient.from('profiles').update({last_seen_at:new Date().toISOString()}).eq('id',data.user.id);}catch(e){}}
 async function updateCounters(){try{const fiveMinAgo=new Date(Date.now()-5*60*1000).toISOString();const{count:online}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true}).gt('last_seen_at',fiveMinAgo);const{count:total}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true});const o=document.getElementById('online-count'),t=document.getElementById('total-count');if(o&&online!==null)o.textContent=online;if(t&&total!==null)t.textContent=total;}catch(e){}}
-async function checkSession(){const{data}=await supabaseClient.auth.getSession();if(data.session){const{data:profile}=await supabaseClient.from('profiles').select('username,role').eq('id',data.session.user.id).single();currentUser=profile?profile.username:'user';currentRole=profile&&profile.role?profile.role:'user';document.getElementById('current-user').textContent=currentUser;authScreen.style.display='none';document.getElementById('app').style.display='block';const canAdmin=(currentUser===ADMIN_LOGIN||currentRole==='admin');document.getElementById('admin-toggle').style.display=canAdmin?'block':'none';setTimeout(function(){map.invalidateSize();},200);await loadMarkers();}else{authScreen.style.display='flex';document.getElementById('app').style.display='none';}}
+async function checkSession(){const{data}=await supabaseClient.auth.getSession();if(data.session){const{data:profile}=await supabaseClient.from('profiles').select('username,role').eq('id',data.session.user.id).single();currentUser=profile?profile.username:'user';currentRole=profile&&profile.role?profile.role:'user';document.getElementById('current-user').textContent=currentUser;authScreen.style.display='none';document.getElementById('app').style.display='block';const canAdmin=(currentUser===ADMIN_LOGIN||currentRole==='admin');document.getElementById('admin-toggle').style.display=canAdmin?'block':'none';setTimeout(function(){map.invalidateSize();},200);await loadMarkers();await pingPresence();await updateCounters();}else{authScreen.style.display='flex';document.getElementById('app').style.display='none';}}
 window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
 function makeIcon(type){const meta=METADATA[type]||METADATA['БПЛА'];return L.divIcon({className:'',html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>',iconSize:[22,22],iconAnchor:[11,11]});}
 function isConfirmed(m){return markersData.some(o=>o.id!==m.id&&o.type===m.type&&map.distance([o.lat,o.lng],[m.lat,m.lng])<=300);}
@@ -136,6 +133,14 @@ window.setMarkerType=function(type,btn){currentMarkerType=type;document.querySel
 map.on('click',async function(e){if(!currentCity){document.getElementById('status').innerText='Сначала найдите город через поиск!';return;}const check=canPlaceMarker();if(!check.allowed){document.getElementById('status').innerText='⏳ Подождите '+check.wait+' сек. (лимит 2 метки за 30 сек)';return;}const m={type:currentMarkerType,lat:e.latlng.lat,lng:e.latlng.lng,city:currentCity,author:currentUser,address:'определяется...'};const{data,error}=await supabaseClient.from('vinera_markers').insert([m]).select().single();if(error){document.getElementById('status').innerText='Ошибка сохранения: '+error.message;return;}recentMarkerTimes.push(Date.now());markersData.push(data);drawMarkers();updateCityStatus();resolveAddress(data);document.getElementById('status').innerText='Метка поставлена ✔ (осталось: '+(MAX_MARKERS-recentMarkerTimes.length)+')';if(currentUser){const{data:p}=await supabaseClient.from('profiles').select('total_markers').eq('username',currentUser).single();if(p){await supabaseClient.from('profiles').update({total_markers:(p.total_markers||0)+1}).eq('username',currentUser);}}});
 window.searchCity=async function(){const city=document.getElementById('city-input').value.trim();if(!city)return;document.getElementById('status').innerText='Поиск...';try{const res=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(city));const data=await res.json();if(data&&data.length>0){map.setView([parseFloat(data[0].lat),parseFloat(data[0].lon)],12);document.getElementById('status').innerText='Найден: '+data[0].display_name;currentCity=data[0].display_name.split(',')[0].trim();updateCityStatus();}else{document.getElementById('status').innerText='Город не найден';}}catch(e){document.getElementById('status').innerText='Ошибка поиска';}};
 window.toggleMenu=function(){document.getElementById('menu-panel').classList.toggle('open');};
-let adminOpen=false;let adminTab='markers';
+    let adminOpen=false,adminTab='markers';
 window.toggleAdmin=function(){if(currentUser!==ADMIN_LOGIN&&currentRole!=='admin')return;adminOpen=!adminOpen;renderAdmin();};
-function renderAdmin(){const list=document.getElementById('admin-list');list.innerHTML='';if(!adminOpen)return;list.innerHTML='<div class="admin-tabs"><button class="admin-tab '+(adminTab==='markers'?'active':'')+'" id="tab-m">Метки</button><button class="admin-tab '+(adminTab==
+function renderAdmin(){
+    const list=document.getElementById('admin-list');list.innerHTML='';if(!adminOpen)return;
+    list.innerHTML='<div style="display:flex;gap:6px;margin-bottom:8px;"><button id="tab-markers" style="flex:1;padding:7px;border:1px solid #005a52;border-radius:7px;background:'+(adminTab==='markers'?'#003a36':'transparent')+';color:'+(adminTab==='markers'?'#00bfa5':'#4db6ac')+';font-weight:700;cursor:pointer;">Метки</button><button id="tab-users" style="flex:1;padding:7px;border:1px solid #005a52;border-radius:7px;background:'+(adminTab==='users'?'#003a36':'transparent')+';color:'+(adminTab==='users'?'#00bfa5':'#4db6ac')+';font-weight:700;cursor:pointer;">Пользователи</button></div><div id="admin-content"></div>';
+    document.getElementById('tab-markers').onclick=function(){adminTab='markers';renderAdmin();};
+    document.getElementById('tab-users').onclick=function(){adminTab='users';renderAdmin();};
+    if(adminTab==='markers')renderAdminMarkers();else renderAdminUsers();
+}
+function renderAdminMarkers(){
+    const content=document.getElementById
