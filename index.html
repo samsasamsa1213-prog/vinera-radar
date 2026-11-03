@@ -101,7 +101,7 @@ const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand(
 const SUPABASE_URL='https://jckoziwygfslfsrqnqva.supabase.co';
 const SUPABASE_KEY='sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const ADMIN_LOGIN='bihepka';
+const OWNER_LOGIN='bihepka';
 const map=L.map('map',{zoomControl:false}).setView([55.7558,37.6173],5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'dark-tiles'}).addTo(map);
 let currentMarkerType='БПЛА',currentCity=null,markersData=[],currentUser=null,currentRole='user';
@@ -119,7 +119,25 @@ authBtn.addEventListener('click',handleAuth);
 authPassword.addEventListener('keydown',function(e){if(e.key==='Enter')handleAuth();});
 async function pingPresence(){try{const{data}=await supabaseClient.auth.getUser();if(!data||!data.user)return;await supabaseClient.from('profiles').update({last_seen_at:new Date().toISOString()}).eq('id',data.user.id);}catch(e){}}
 async function updateCounters(){try{const fiveMinAgo=new Date(Date.now()-5*60*1000).toISOString();const{count:online}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true}).gt('last_seen_at',fiveMinAgo);const{count:total}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true});const o=document.getElementById('online-count'),t=document.getElementById('total-count');if(o&&online!==null)o.textContent=online;if(t&&total!==null)t.textContent=total;}catch(e){}}
-async function checkSession(){const{data}=await supabaseClient.auth.getSession();if(data.session){const{data:profile}=await supabaseClient.from('profiles').select('username,role').eq('id',data.session.user.id).single();currentUser=profile?profile.username:'user';currentRole=profile&&profile.role?profile.role:'user';document.getElementById('current-user').textContent=currentUser;authScreen.style.display='none';document.getElementById('app').style.display='block';const canAdmin=(currentUser===ADMIN_LOGIN||currentRole==='admin');document.getElementById('admin-toggle').style.display=canAdmin?'block':'none';setTimeout(function(){map.invalidateSize();},200);await loadMarkers();await pingPresence();await updateCounters();}else{authScreen.style.display='flex';document.getElementById('app').style.display='none';}}
+async function checkSession(){
+    const{data}=await supabaseClient.auth.getSession();
+    if(data.session){
+        const{data:profile}=await supabaseClient.from('profiles').select('username,role').eq('id',data.session.user.id).single();
+        currentUser=profile?profile.username:'user';
+        currentRole=profile&&profile.role?profile.role:'user';
+        document.getElementById('current-user').textContent=currentUser;
+        authScreen.style.display='none';
+        document.getElementById('app').style.display='block';
+        const isOwner=(currentUser===OWNER_LOGIN);
+        const canAdmin=(isOwner||currentRole==='moderator');
+        document.getElementById('admin-toggle').style.display=canAdmin?'block':'none';
+        setTimeout(function(){map.invalidateSize();},200);
+        await loadMarkers();await pingPresence();await updateCounters();
+    }else{
+        authScreen.style.display='flex';
+        document.getElementById('app').style.display='none';
+    }
+}
 window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
 function makeIcon(type){const meta=METADATA[type]||METADATA['БПЛА'];return L.divIcon({className:'',html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>',iconSize:[22,22],iconAnchor:[11,11]});}
 function isConfirmed(m){return markersData.some(o=>o.id!==m.id&&o.type===m.type&&map.distance([o.lat,o.lng],[m.lat,m.lng])<=300);}
@@ -134,13 +152,33 @@ map.on('click',async function(e){if(!currentCity){document.getElementById('statu
 window.searchCity=async function(){const city=document.getElementById('city-input').value.trim();if(!city)return;document.getElementById('status').innerText='Поиск...';try{const res=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(city));const data=await res.json();if(data&&data.length>0){map.setView([parseFloat(data[0].lat),parseFloat(data[0].lon)],12);document.getElementById('status').innerText='Найден: '+data[0].display_name;currentCity=data[0].display_name.split(',')[0].trim();updateCityStatus();}else{document.getElementById('status').innerText='Город не найден';}}catch(e){document.getElementById('status').innerText='Ошибка поиска';}};
 window.toggleMenu=function(){document.getElementById('menu-panel').classList.toggle('open');};
     let adminOpen=false,adminTab='markers';
-window.toggleAdmin=function(){if(currentUser!==ADMIN_LOGIN&&currentRole!=='admin')return;adminOpen=!adminOpen;renderAdmin();};
+window.toggleAdmin=function(){
+    const isOwner=(currentUser===OWNER_LOGIN);
+    const isModerator=(currentRole==='moderator');
+    if(!isOwner&&!isModerator)return;
+    adminOpen=!adminOpen;
+    if(!isOwner)adminTab='markers';
+    renderAdmin();
+};
 function renderAdmin(){
-    const list=document.getElementById('admin-list');list.innerHTML='';if(!adminOpen)return;
-    list.innerHTML='<div style="display:flex;gap:6px;margin-bottom:8px;"><button id="tab-markers" style="flex:1;padding:7px;border:1px solid #005a52;border-radius:7px;background:'+(adminTab==='markers'?'#003a36':'transparent')+';color:'+(adminTab==='markers'?'#00bfa5':'#4db6ac')+';font-weight:700;cursor:pointer;">Метки</button><button id="tab-users" style="flex:1;padding:7px;border:1px solid #005a52;border-radius:7px;background:'+(adminTab==='users'?'#003a36':'transparent')+';color:'+(adminTab==='users'?'#00bfa5':'#4db6ac')+';font-weight:700;cursor:pointer;">Пользователи</button></div><div id="admin-content"></div>';
+    const list=document.getElementById('admin-list');
+    list.innerHTML='';
+    if(!adminOpen)return;
+    const isOwner=(currentUser===OWNER_LOGIN);
+
+    let tabs='<div style="display:flex;gap:6px;margin-bottom:10px;">';
+    tabs+='<button id="tab-markers" style="flex:1;padding:8px;border-radius:8px;border:1px solid '+(adminTab==='markers'?'#00bfa5':'#005a52')+';background:'+(adminTab==='markers'?'#003a36':'transparent')+';color:'+(adminTab==='markers'?'#00bfa5':'#4db6ac')+';font-weight:700;font-size:12px;cursor:pointer;">🗺 Метки</button>';
+    if(isOwner){
+        tabs+='<button id="tab-users" style="flex:1;padding:8px;border-radius:8px;border:1px solid '+(adminTab==='users'?'#00bfa5':'#005a52')+';background:'+(adminTab==='users'?'#003a36':'transparent')+';color:'+(adminTab==='users'?'#00bfa5':'#4db6ac')+';font-weight:700;font-size:12px;cursor:pointer;">👥 Пользователи</button>';
+    }
+    tabs+='</div><div id="admin-content"></div>';
+    list.innerHTML=tabs;
+
     document.getElementById('tab-markers').onclick=function(){adminTab='markers';renderAdmin();};
-    document.getElementById('tab-users').onclick=function(){adminTab='users';renderAdmin();};
-    if(adminTab==='markers')renderAdminMarkers();else renderAdminUsers();
+    if(isOwner)document.getElementById('tab-users').onclick=function(){adminTab='users';renderAdmin();};
+
+    if(adminTab==='markers')renderAdminMarkers();
+    else renderAdminUsers();
 }
 function renderAdminMarkers(){
     const content=document.getElementById('admin-content');
@@ -158,29 +196,57 @@ function renderAdminMarkers(){
 async function renderAdminUsers(){
     const content=document.getElementById('admin-content');
     if(!content)return;
+    if(currentUser!==OWNER_LOGIN){content.innerHTML='<div class="admin-empty">Нет прав</div>';return;}
     content.innerHTML='<div class="admin-empty">Загрузка...</div>';
     const{data:users,error}=await supabaseClient.from('profiles').select('id, username, role, total_markers').order('total_markers',{ascending:false});
     if(error){content.innerHTML='<div class="admin-empty">Ошибка: '+error.message+'</div>';return;}
     content.innerHTML='';
     if(!users||users.length===0){content.innerHTML='<div class="admin-empty">Пользователей нет</div>';return;}
     users.forEach(function(u){
-        const item=document.createElement('div');item.className='admin-item';
-        const title=document.createElement('div');title.innerHTML='<b>'+(u.username||'без имени')+'</b>';item.appendChild(title);
-        const meta=document.createElement('div');meta.className='meta';meta.textContent='Меток: '+(u.total_markers||0)+' · Роль: '+(u.role||'user');item.appendChild(meta);
-        const row=document.createElement('div');row.style.marginTop='6px';row.style.display='flex';row.style.gap='5px';row.style.flexWrap='wrap';
-        if(u.role!=='moderator'&&u.role!=='admin'){const b=document.createElement('button');b.textContent='Модератор';b.style.cssText='padding:5px 9px;background:#00bfa5;color:#001414;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;';b.onclick=function(){setUserRole(u.id,'moderator');};row.appendChild(b);}
-        if(u.role!=='admin'){const b=document.createElement('button');b.textContent='Админ';b.style.cssText='padding:5px 9px;background:#ffc107;color:#000;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;';b.onclick=function(){setUserRole(u.id,'admin');};row.appendChild(b);}
-        if(u.role&&u.role!=='user'){const b=document.createElement('button');b.textContent='Снять права';b.style.cssText='padding:5px 9px;background:#ff5252;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;';b.onclick=function(){setUserRole(u.id,'user');};row.appendChild(b);}
+        const item=document.createElement('div');
+        item.style.cssText='background:#002020;border:1px solid #005a52;border-radius:12px;padding:10px 12px;margin-bottom:8px;';
+        const top=document.createElement('div');
+        top.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;';
+        const name=document.createElement('div');
+        name.style.cssText='font-weight:800;color:#b2dfdb;font-size:13px;';
+        name.textContent=u.username||'без имени';
+        const badge=document.createElement('span');
+        const rc={'moderator':'background:#00bfa5;color:#001414;','user':'background:#005a52;color:#b2dfdb;'};
+        badge.style.cssText='padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;'+(rc[u.role]||rc['user']);
+        badge.textContent=(u.role==='moderator'?'МОДЕРАТОР':'ПОЛЬЗОВАТЕЛЬ');
+        top.appendChild(name);top.appendChild(badge);item.appendChild(top);
+        const meta=document.createElement('div');
+        meta.style.cssText='color:#4db6ac;font-size:11px;margin-bottom:8px;';
+        meta.textContent='📊 Меток поставлено: '+(u.total_markers||0);
+        item.appendChild(meta);
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;gap:6px;flex-wrap:wrap;';
+        if(u.role!=='moderator'){
+            const b=document.createElement('button');
+            b.textContent='🛡 Сделать модератором';
+            b.style.cssText='flex:1;padding:8px;background:#00bfa5;color:#001414;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
+            b.onclick=function(){setUserRole(u.id,'moderator');};
+            row.appendChild(b);
+        }else{
+            const b=document.createElement('button');
+            b.textContent='❌ Снять права';
+            b.style.cssText='flex:1;padding:8px;background:#ff5252;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
+            b.onclick=function(){setUserRole(u.id,'user');};
+            row.appendChild(b);
+        }
         item.appendChild(row);content.appendChild(item);
     });
 }
 async function setUserRole(userId,newRole){
+    if(currentUser!==OWNER_LOGIN){window.alert('Нет прав');return;}
     const{error}=await supabaseClient.from('profiles').update({role:newRole}).eq('id',userId);
     if(error){window.alert('Ошибка: '+error.message);return;}
     renderAdminUsers();
 }
 document.getElementById('admin-list').addEventListener('click',async function(e){
-    if(currentUser!==ADMIN_LOGIN&&currentRole!=='admin')return;
+    const isOwner=(currentUser===OWNER_LOGIN);
+    const isModerator=(currentRole==='moderator');
+    if(!isOwner&&!isModerator)return;
     const btn=e.target.closest('.del-btn');if(!btn)return;
     const id=btn.getAttribute('data-id');if(!id)return;
     const reason=window.prompt('Укажите причину удаления метки:');
