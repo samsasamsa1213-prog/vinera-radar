@@ -25,6 +25,48 @@
         #map { position: absolute; inset: 0; z-index: 1; background: var(--bg); }
         .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(1.1) saturate(0.5); }
 
+        /* ===== ЭКРАН ВХОДА ===== */
+        #auth-screen {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .auth-box {
+            background: rgba(0, 30, 30, 0.95);
+            border: 2px solid var(--accent);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%; max-width: 340px;
+            box-shadow: 0 0 30px rgba(0,191,165,0.5);
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .auth-box h2 { margin: 0 0 8px; color: var(--accent); text-align: center; font-size: 18px; letter-spacing: 1px; }
+        .auth-box input {
+            padding: 12px; border-radius: 10px;
+            border: 1px solid var(--accent); background: #002020;
+            color: var(--text); outline: none; font-size: 14px;
+        }
+        .auth-box input::placeholder { color: #3d8f88; }
+        #auth-btn {
+            padding: 12px; background: var(--accent); color: #001414;
+            border: none; border-radius: 10px; font-weight: 800;
+            cursor: pointer; font-size: 14px;
+        }
+        #auth-btn:disabled { opacity: 0.6; }
+        #auth-toggle {
+            padding: 10px; background: transparent; color: var(--accent-soft);
+            border: 1px dashed var(--accent); border-radius: 10px;
+            cursor: pointer; font-size: 13px;
+        }
+        #auth-error {
+            display: none; color: #ff5252; font-size: 12px;
+            text-align: center; padding: 4px;
+        }
+
+        /* ===== ОСНОВНОЙ ИНТЕРФЕЙС ===== */
+        #app { display: none; }
+
         #controls {
             position: absolute;
             top: calc(8px + env(safe-area-inset-top));
@@ -78,6 +120,10 @@
             font-size: 13px; letter-spacing: 1.5px;
             text-shadow: 0 0 8px rgba(0,191,165,0.6);
             padding-top: 6px; white-space: nowrap;
+        }
+        #user-badge {
+            color: var(--accent-soft); font-size: 10px; text-align: right;
+            padding-top: 2px; white-space: nowrap;
         }
 
         #search-box { display: flex; gap: 5px; }
@@ -180,10 +226,15 @@
             cursor: pointer; font-weight: 800; font-size: 13px;
         }
         #admin-toggle {
-            display: block; width: 100%; margin-top: 12px; padding: 10px;
+            display: none; width: 100%; margin-top: 12px; padding: 10px;
             background: transparent; border: 1px dashed var(--accent);
             color: var(--accent); border-radius: 10px; cursor: pointer;
             font-weight: 700; font-size: 13px;
+        }
+        #logout-btn {
+            display: block; width: 100%; margin-top: 8px; padding: 9px;
+            background: transparent; border: 1px solid #555;
+            color: #999; border-radius: 10px; cursor: pointer; font-size: 12px;
         }
         #admin-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
         .admin-item {
@@ -205,99 +256,127 @@
 </head>
 <body>
 
-<div id="controls">
-    <div id="top-row">
-        <div id="city-status">
-            <span class="city-name">ГОРОД НЕ ВЫБРАН</span>
-            <span class="city-state">—</span>
-        </div>
-        <div id="site-title">VINERA RADAR</div>
+<!-- Экран входа -->
+<div id="auth-screen">
+    <div class="auth-box">
+        <h2 id="auth-title">ВХОД</h2>
+        <input type="text" id="auth-login" placeholder="Логин" autocomplete="username">
+        <input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password">
+        <div id="auth-error"></div>
+        <button id="auth-btn">Войти</button>
+        <button id="auth-toggle">Создать аккаунт</button>
     </div>
-
-    <div id="search-box">
-        <input type="text" id="city-input" placeholder="Введите город">
-        <button id="search-btn" onclick="searchCity()">Найти</button>
-    </div>
-
-    <div id="types-row">
-        <button class="marker-btn" data-type="БПЛА" onclick="setMarkerType('БПЛА', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#00bfa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>
-            БПЛА
-        </button>
-        <button class="marker-btn" data-type="Ракета" onclick="setMarkerType('Ракета', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>
-            Ракета
-        </button>
-        <button class="marker-btn" data-type="Истребитель" onclick="setMarkerType('Истребитель', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#40c4ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>
-            Истребитель
-        </button>
-        <button class="marker-btn" data-type="Сирена" onclick="setMarkerType('Сирена', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#b388ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>
-            Сирена
-        </button>
-        <button class="marker-btn" data-type="Взрыв" onclick="setMarkerType('Взрыв', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>
-            Взрыв
-        </button>
-        <button class="marker-btn" data-type="Тихо" onclick="setMarkerType('Тихо', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>
-            Тихо
-        </button>
-    </div>
-
-    <div id="status">Выберите тип метки и кликните на карту</div>
 </div>
 
-<div id="map"></div>
+<!-- Основной интерфейс -->
+<div id="app">
+    <div id="controls">
+        <div id="top-row">
+            <div id="city-status">
+                <span class="city-name">ГОРОД НЕ ВЫБРАН</span>
+                <span class="city-state">—</span>
+            </div>
+            <div style="text-align: right;">
+                <div id="site-title">VINERA RADAR</div>
+                <div id="user-badge">👤 <span id="current-user">—</span></div>
+            </div>
+        </div>
 
-<button id="menu-btn" onclick="toggleMenu()">☰ Меню</button>
+        <div id="search-box">
+            <input type="text" id="city-input" placeholder="Введите город">
+            <button id="search-btn" onclick="searchCity()">Найти</button>
+        </div>
 
-<div id="menu-panel">
-    <h3>МЕНЮ</h3>
-    <a class="owner-link" href="https://t.me/Hollisheetq" target="_blank" rel="noopener">
-        Связь с владельцем<br>Telegram: @Hollisheetq
-    </a>
+        <div id="types-row">
+            <button class="marker-btn" onclick="setMarkerType('БПЛА', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00bfa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>
+                БПЛА
+            </button>
+            <button class="marker-btn" onclick="setMarkerType('Ракета', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>
+                Ракета
+            </button>
+            <button class="marker-btn" onclick="setMarkerType('Истребитель', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#40c4ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>
+                Истребитель
+            </button>
+            <button class="marker-btn" onclick="setMarkerType('Сирена', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#b388ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>
+                Сирена
+            </button>
+            <button class="marker-btn" onclick="setMarkerType('Взрыв', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>
+                Взрыв
+            </button>
+            <button class="marker-btn" onclick="setMarkerType('Тихо', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>
+                Тихо
+            </button>
+        </div>
 
-    <button id="admin-toggle" onclick="toggleAdmin()">🛠 Админ-панель</button>
-    <div id="admin-list"></div>
+        <div id="status">Выберите тип метки и кликните на карту</div>
+    </div>
 
-    <button class="menu-close" onclick="toggleMenu()">Закрыть</button>
+    <div id="map"></div>
+
+    <button id="menu-btn" onclick="toggleMenu()">☰ Меню</button>
+
+    <div id="menu-panel">
+        <h3>МЕНЮ</h3>
+        <a class="owner-link" href="https://t.me/Hollisheetq" target="_blank" rel="noopener">
+            Связь с владельцем<br>Telegram: @Hollisheetq
+        </a>
+
+        <button id="admin-toggle" onclick="toggleAdmin()">🛠 Админ-панель</button>
+        <div id="admin-list"></div>
+
+        <button id="logout-btn" onclick="logout()">Выйти из аккаунта</button>
+        <button class="menu-close" onclick="toggleMenu()">Закрыть</button>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-window.addEventListener('load', async function () {
+window.addEventListener('load', function () {
     const tg = window.Telegram ? window.Telegram.WebApp : null;
     if (tg && tg.expand) tg.expand();
-
-    const userLabel = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
-        ? ('@' + (tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name))
-        : 'Пользователь';
-
-    const ADMIN_IDS = [8726139706];
-    const currentUserId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
-        ? tg.initDataUnsafe.user.id
-        : null;
-    const isAdmin = currentUserId !== null && ADMIN_IDS.includes(currentUserId);
-
-    const adminToggleBtn = document.getElementById('admin-toggle');
-    if (adminToggleBtn && !isAdmin) adminToggleBtn.style.display = 'none';
 
     const SUPABASE_URL = 'https://jckoziwygfslfsrqnqva.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    const ADMIN_LOGIN = 'bihepka';
+
+    // ===== КАРТА =====
     const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap', maxZoom: 19, className: 'dark-tiles'
     }).addTo(map);
-    setTimeout(() => map.invalidateSize(), 200);
 
     let currentMarkerType = 'БПЛА';
     let currentCity = null;
     let markersData = [];
+    let currentUser = null;
+
+    // ===== ОГРАНИЧЕНИЕ НА МЕТКИ =====
+    // 2 метки подряд, потом ждать 30 секунд
+    let recentMarkerTimes = []; // времена последних меток (мс)
+    const MAX_MARKERS = 2;
+    const COOLDOWN_MS = 30 * 1000;
+
+    function canPlaceMarker() {
+        const now = Date.now();
+        // Оставляем только метки, поставленные за последние 30 секунд
+        recentMarkerTimes = recentMarkerTimes.filter(t => now - t < COOLDOWN_MS);
+        if (recentMarkerTimes.length < MAX_MARKERS) {
+            return { allowed: true, wait: 0 };
+        }
+        // Если уже 2 метки за 30 сек — считаем, сколько ждать до первой из них
+        const oldest = Math.min.apply(null, recentMarkerTimes);
+        const wait = Math.ceil((COOLDOWN_MS - (now - oldest)) / 1000);
+        return { allowed: false, wait: wait };
+    }
 
     const METADATA = {
         'БПЛА':        { color: '#00bfa5', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>' },
@@ -308,11 +387,110 @@ window.addEventListener('load', async function () {
         'Тихо':        { color: '#00e676', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>' }
     };
     const dangerTypes = ['Взрыв', 'Сирена', 'Ракета'];
-    const LIFETIME_MS = 15 * 60 * 1000; // 15 минут
+    const LIFETIME_MS = 15 * 60 * 1000;
 
     const layerGroup = L.layerGroup().addTo(map);
     const markerRefs = {};
 
+    // ===== АУТЕНТИФИКАЦИЯ =====
+    const authScreen = document.getElementById('auth-screen');
+    const authLogin = document.getElementById('auth-login');
+    const authPassword = document.getElementById('auth-password');
+    const authBtn = document.getElementById('auth-btn');
+    const authToggle = document.getElementById('auth-toggle');
+    const authTitle = document.getElementById('auth-title');
+    const authError = document.getElementById('auth-error');
+    let isRegisterMode = false;
+
+    function showAuthError(msg) {
+        authError.textContent = msg;
+        authError.style.display = 'block';
+    }
+
+    authToggle.addEventListener('click', function () {
+        isRegisterMode = !isRegisterMode;
+        authTitle.textContent = isRegisterMode ? 'РЕГИСТРАЦИЯ' : 'ВХОД';
+        authBtn.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
+        authToggle.textContent = isRegisterMode ? 'У меня уже есть аккаунт' : 'Создать аккаунт';
+        authError.style.display = 'none';
+    });
+
+    async function handleAuth() {
+        const login = authLogin.value.trim().toLowerCase();
+        const password = authPassword.value;
+        if (!login || !password) { showAuthError('Введите логин и пароль'); return; }
+        if (login.length < 3) { showAuthError('Логин не короче 3 символов'); return; }
+        if (password.length < 6) { showAuthError('Пароль не короче 6 символов'); return; }
+
+        authBtn.disabled = true;
+        authBtn.textContent = 'Подождите...';
+        authError.style.display = 'none';
+
+        const email = login + '@vinera.local';
+
+        try {
+            if (isRegisterMode) {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) throw error;
+                if (data.user) {
+                    await supabaseClient.from('profiles').insert({
+                        id: data.user.id,
+                        username: login
+                    });
+                }
+            } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+            }
+            await checkSession();
+        } catch (e) {
+            showAuthError(e.message || 'Ошибка входа');
+        } finally {
+            authBtn.disabled = false;
+            authBtn.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
+        }
+    }
+
+    authBtn.addEventListener('click', handleAuth);
+    authPassword.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleAuth(); });
+
+    async function checkSession() {
+        const { data } = await supabaseClient.auth.getSession();
+        if (data.session) {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username')
+                .eq('id', data.session.user.id)
+                .single();
+            currentUser = profile ? profile.username : 'user';
+            document.getElementById('current-user').textContent = currentUser;
+            authScreen.style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+
+            if (currentUser === ADMIN_LOGIN) {
+                document.getElementById('admin-toggle').style.display = 'block';
+            } else {
+                document.getElementById('admin-toggle').style.display = 'none';
+            }
+
+            setTimeout(function () { map.invalidateSize(); }, 200);
+            await loadMarkers();
+        } else {
+            authScreen.style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+        }
+    }
+
+    window.logout = async function () {
+        await supabaseClient.auth.signOut();
+        currentUser = null;
+        markersData = [];
+        recentMarkerTimes = [];
+        drawMarkers();
+        await checkSession();
+    };
+
+    // ===== МЕТКИ =====
     function makeIcon(type) {
         const meta = METADATA[type] || METADATA['БПЛА'];
         return L.divIcon({
@@ -323,10 +501,10 @@ window.addEventListener('load', async function () {
     }
 
     function isConfirmed(m) {
-        return markersData.some(o =>
-            o.id !== m.id && o.type === m.type &&
-            map.distance([o.lat, o.lng], [m.lat, m.lng]) <= 300
-        );
+        return markersData.some(function (o) {
+            return o.id !== m.id && o.type === m.type &&
+                map.distance([o.lat, o.lng], [m.lat, m.lng]) <= 300;
+        });
     }
 
     function popupHtml(m) {
@@ -341,8 +519,8 @@ window.addEventListener('load', async function () {
 
     function drawMarkers() {
         layerGroup.clearLayers();
-        Object.keys(markerRefs).forEach(k => delete markerRefs[k]);
-        markersData.forEach(m => {
+        Object.keys(markerRefs).forEach(function (k) { delete markerRefs[k]; });
+        markersData.forEach(function (m) {
             const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.type) }).addTo(layerGroup);
             marker.bindPopup(popupHtml(m));
             markerRefs[m.id] = marker;
@@ -360,7 +538,7 @@ window.addEventListener('load', async function () {
             return;
         }
         const now = Date.now();
-        markersData = (data || []).filter(m => {
+        markersData = (data || []).filter(function (m) {
             const t = new Date(m.created_at).getTime();
             return (now - t) < LIFETIME_MS;
         });
@@ -377,7 +555,7 @@ window.addEventListener('load', async function () {
             const a = data.address || {};
             const parts = [a.city || a.town || a.village || a.county, a.suburb || a.neighbourhood || a.road];
             const address = parts.filter(Boolean).join(', ') || (data.display_name || 'неизвестно');
-            await supabaseClient.from('vinera_markers').update({ address }).eq('id', m.id);
+            await supabaseClient.from('vinera_markers').update({ address: address }).eq('id', m.id);
             m.address = address;
             if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
         } catch (e) {
@@ -386,179 +564,22 @@ window.addEventListener('load', async function () {
     }
 
     function pluralizeStatus(types) {
-        const threats = types.filter(t => t !== 'Тихо');
+        const threats = types.filter(function (t) { return t !== 'Тихо'; });
         if (threats.length === 0) {
             return { text: types.length === 0 ? '—' : 'Тихо', danger: false };
         }
         const counts = {};
-        threats.forEach(t => counts[t] = (counts[t] || 0) + 1);
+        threats.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
         const unique = Object.keys(counts);
-        const hasDanger = unique.some(t => dangerTypes.includes(t));
+        const hasDanger = unique.some(function (t) { return dangerTypes.includes(t); });
         const pluralMap = {
             'Взрыв': 'Взрывы', 'Сирена': 'Сирены', 'Ракета': 'Ракеты',
             'БПЛА': 'БПЛА', 'Истребитель': 'Истребители'
         };
-        const labels = unique.map(t => counts[t] > 1 ? (pluralMap[t] || t) : t);
+        const labels = unique.map(function (t) {
+            return counts[t] > 1 ? (pluralMap[t] || t) : t;
+        });
         return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
     }
 
-    function updateCityStatus() {
-        const box = document.getElementById('city-status');
-        const nameEl = box.querySelector('.city-name');
-        const stateEl = box.querySelector('.city-state');
-        nameEl.textContent = (currentCity || 'ГОРОД НЕ ВЫБРАН').toUpperCase();
-        if (!currentCity) {
-            stateEl.textContent = '—';
-            box.classList.remove('danger');
-            return;
-        }
-        const types = markersData.filter(m => m.city === currentCity).map(m => m.type);
-        const res = pluralizeStatus(types);
-        stateEl.textContent = res.text;
-        box.classList.toggle('danger', res.danger);
-    }
-
-    window.setMarkerType = function (type, btn) {
-        currentMarkerType = type;
-        document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
-        if (btn) btn.classList.add('selected');
-        document.getElementById('status').innerText = 'Выбран: ' + type + '. Кликните на карту.';
-    };
-
-    map.on('click', async function (e) {
-        if (!currentCity) {
-            document.getElementById('status').innerText = 'Сначала найдите город через поиск!';
-            return;
-        }
-        const m = {
-            type: currentMarkerType,
-            lat: e.latlng.lat,
-            lng: e.latlng.lng,
-            city: currentCity,
-            author: userLabel,
-            address: 'определяется...'
-        };
-        const { data, error } = await supabaseClient
-            .from('vinera_markers')
-            .insert([m])
-            .select()
-            .single();
-        if (error) {
-            console.error('insert error', error);
-            document.getElementById('status').innerText = 'Ошибка сохранения: ' + error.message;
-            return;
-        }
-        markersData.push(data);
-        drawMarkers();
-        updateCityStatus();
-        resolveAddress(data);
-    });
-
-    window.searchCity = async function () {
-        const city = document.getElementById('city-input').value.trim();
-        if (!city) return;
-        document.getElementById('status').innerText = 'Поиск...';
-        try {
-            const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(city));
-            const data = await res.json();
-            if (data && data.length > 0) {
-                map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 12);
-                document.getElementById('status').innerText = 'Найден: ' + data[0].display_name;
-                currentCity = data[0].display_name.split(',')[0].trim();
-                updateCityStatus();
-            } else {
-                document.getElementById('status').innerText = 'Город не найден';
-            }
-        } catch (e) {
-            document.getElementById('status').innerText = 'Ошибка поиска';
-        }
-    };
-
-    window.toggleMenu = function () {
-        document.getElementById('menu-panel').classList.toggle('open');
-    };
-
-    let adminOpen = false;
-    window.toggleAdmin = function () {
-        if (!isAdmin) return;
-        adminOpen = !adminOpen;
-        renderAdmin();
-    };
-
-    function renderAdmin() {
-        const list = document.getElementById('admin-list');
-        list.innerHTML = '';
-        if (!adminOpen) return;
-
-        if (markersData.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'admin-empty';
-            empty.textContent = 'Меток пока нет';
-            list.appendChild(empty);
-            return;
-        }
-
-        markersData.forEach(function (m) {
-            const item = document.createElement('div');
-            item.className = 'admin-item';
-
-            const meta = METADATA[m.type] || METADATA['БПЛА'];
-            const title = document.createElement('div');
-            title.innerHTML = '<b>' + m.type + '</b> — ' + (m.city || '—');
-            item.appendChild(title);
-
-            const metaEl = document.createElement('div');
-            metaEl.className = 'meta';
-            metaEl.textContent = (m.address || '...') + ' · ' + (m.author || '—');
-            item.appendChild(metaEl);
-
-            const btn = document.createElement('button');
-            btn.className = 'del-btn';
-            btn.textContent = 'Удалить';
-            btn.setAttribute('data-id', m.id);
-            item.appendChild(btn);
-
-            list.appendChild(item);
-        });
-    }
-
-    document.getElementById('admin-list').addEventListener('click', async function (e) {
-        if (!isAdmin) return;
-        const btn = e.target.closest('.del-btn');
-        if (!btn) return;
-        const id = btn.getAttribute('data-id');
-        if (!id) return;
-
-        const reason = window.prompt('Укажите причину удаления метки:');
-        if (reason === null) return;
-        if (!reason.trim()) { window.alert('Причина обязательна!'); return; }
-
-        const { error } = await supabaseClient.from('vinera_markers').delete().eq('id', id);
-        if (error) {
-            console.error('delete error', error);
-            window.alert('Не удалось удалить метку: ' + error.message);
-            return;
-        }
-        markersData = markersData.filter(function (m) { return String(m.id) !== String(id); });
-        drawMarkers();
-        updateCityStatus();
-        renderAdmin();
-        window.alert('Метка удалена.\nПричина: ' + reason);
-    });
-
-    await loadMarkers();
-
-    // Обновление карты каждые 20 секунд
-    setInterval(async () => {
-        await loadMarkers();
-    }, 20000);
-
-    // Физическая очистка базы от меток старше 15 минут — раз в минуту
-    setInterval(async () => {
-        const cutoff = new Date(Date.now() - LIFETIME_MS).toISOString();
-        await supabaseClient.from('vinera_markers').delete().lt('created_at', cutoff);
-    }, 60 * 1000);
-});
-</script>
-</body>
-</html>
+   
