@@ -107,7 +107,7 @@ async function checkAccess() {
     }
 
     try {
-        const res = await fetch('https://jckoziwygfslfsrqnqva.supabase.co/functions/v1/dynamic-service', {
+        const res = await fetch('https://hpzemwurwkuthcgmtvlw.supabase.co/functions/v1/dynamic-service', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ initData: tg.initData })
@@ -126,13 +126,12 @@ async function checkAccess() {
     }
 }
 
-// Запускаем проверку
 checkAccess().then(allowed => {
     if (!allowed) return;
 
     // --- ОСНОВНОЙ КОД РАДАРА ---
-    const SUPABASE_URL='https://jckoziwygfslfsrqnqva.supabase.co';
-    const SUPABASE_KEY='sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
+    const SUPABASE_URL='https://hpzemwurwkuthcgmtvlw.supabase.co';
+    const SUPABASE_KEY='sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz'; // ЗАМЕНИ НА КЛЮЧ ОТ НОВОГО ПРОЕКТА
     const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
     const OWNER_LOGIN='bihepka';
 
