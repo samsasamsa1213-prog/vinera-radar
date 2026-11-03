@@ -1,342 +1,124 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Vinera Radar</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg: #001414;
-            --panel: rgba(0, 26, 26, 0.95);
-            --accent: #00bfa5;
-            --accent-soft: #4db6ac;
-            --text: #b2dfdb;
-            --danger: #ff1744;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body {
-            margin: 0; padding: 0; height: 100%;
-            font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg); overflow: hidden; color: var(--text);
-        }
-        #map { position: absolute; inset: 0; z-index: 1; background: var(--bg); }
-        .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(1.1) saturate(0.5); }
-
-        /* ===== ЭКРАН ВХОДА ===== */
-        #auth-screen {
-            position: fixed; inset: 0; z-index: 9999;
-            background: var(--bg);
-            display: flex; align-items: center; justify-content: center;
-            padding: 20px;
-        }
-        .auth-box {
-            background: rgba(0, 30, 30, 0.95);
-            border: 2px solid var(--accent);
-            border-radius: 16px;
-            padding: 24px;
-            width: 100%; max-width: 340px;
-            box-shadow: 0 0 30px rgba(0,191,165,0.5);
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .auth-box h2 { margin: 0 0 8px; color: var(--accent); text-align: center; font-size: 18px; letter-spacing: 1px; }
-        .auth-box input {
-            padding: 12px; border-radius: 10px;
-            border: 1px solid var(--accent); background: #002020;
-            color: var(--text); outline: none; font-size: 14px;
-        }
-        .auth-box input::placeholder { color: #3d8f88; }
-        #auth-btn {
-            padding: 12px; background: var(--accent); color: #001414;
-            border: none; border-radius: 10px; font-weight: 800;
-            cursor: pointer; font-size: 14px;
-        }
-        #auth-btn:disabled { opacity: 0.6; }
-        #auth-toggle {
-            padding: 10px; background: transparent; color: var(--accent-soft);
-            border: 1px dashed var(--accent); border-radius: 10px;
-            cursor: pointer; font-size: 13px;
-        }
-        #auth-error {
-            display: none; color: #ff5252; font-size: 12px;
-            text-align: center; padding: 4px;
-        }
-
-        /* ===== ОСНОВНОЙ ИНТЕРФЕЙС ===== */
-        #app { display: none; }
-
-        #controls {
-            position: absolute;
-            top: calc(8px + env(safe-area-inset-top));
-            left: 8px; right: 8px;
-            z-index: 1000;
-            display: flex; flex-direction: column; gap: 6px;
-            pointer-events: none;
-        }
-        #controls > * { pointer-events: auto; }
-
-        #top-row {
-            display: flex; gap: 6px; align-items: flex-start;
-            justify-content: space-between;
-        }
-        #city-status {
-            flex: 0 1 auto; min-width: 0;
-            padding: 7px 10px; border-radius: 10px;
-            background: var(--panel); border: 2px solid var(--accent);
-            color: var(--text); font-weight: 700; font-size: 12px;
-            box-shadow: 0 0 14px rgba(0,191,165,0.45);
-            animation: statusPulse 1.6s infinite ease-in-out;
-            transition: border-color .3s, box-shadow .3s;
-            max-width: 55%; overflow: hidden;
-        }
-        #city-status.danger {
-            border-color: var(--danger);
-            box-shadow: 0 0 20px rgba(255,23,68,0.8);
-            animation: dangerPulse 1s infinite ease-in-out;
-        }
-        @keyframes statusPulse {
-            0%,100% { box-shadow: 0 0 8px rgba(0,191,165,0.35); }
-            50%     { box-shadow: 0 0 18px rgba(0,191,165,0.85); }
-        }
-        @keyframes dangerPulse {
-            0%,100% { box-shadow: 0 0 10px rgba(255,23,68,0.5); }
-            50%     { box-shadow: 0 0 24px rgba(255,23,68,1); }
-        }
-        #city-status .city-name {
-            color: var(--accent); font-size: 9.5px; display: block;
-            letter-spacing: .4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        #city-status.danger .city-name { color: #ff8a9b; }
-        #city-status .city-state {
-            font-size: 13px; display: block;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        #city-status.danger .city-state { color: #ff5252; }
-
-        #site-title {
-            color: var(--accent); font-weight: 800;
-            font-size: 13px; letter-spacing: 1.5px;
-            text-shadow: 0 0 8px rgba(0,191,165,0.6);
-            padding-top: 6px; white-space: nowrap;
-        }
-        #user-badge {
-            color: var(--accent-soft); font-size: 10px; text-align: right;
-            padding-top: 2px; white-space: nowrap;
-        }
-
-        #search-box { display: flex; gap: 5px; }
-        #city-input {
-            flex: 1; padding: 9px 10px; border-radius: 9px;
-            border: 1px solid var(--accent); background: #002020;
-            color: var(--text); outline: none; font-size: 14px; min-width: 0;
-        }
-        #city-input::placeholder { color: #3d8f88; }
-        #search-btn {
-            padding: 9px 14px; background: var(--accent); color: #001414;
-            border: none; border-radius: 9px; cursor: pointer; font-weight: 800;
-            font-size: 13px; white-space: nowrap;
-        }
-
-        #types-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-        .marker-btn {
-            width: 54px; height: 54px; border-radius: 50%;
-            border: 2px solid rgba(0,191,165,0.35);
-            background: #002626;
-            cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 1px;
-            color: #fff; font-weight: 700; font-size: 9px;
-            transition: transform .12s, box-shadow .2s, border-color .2s;
-            padding: 0; line-height: 1.05; text-align: center;
-        }
-        .marker-btn svg { width: 24px; height: 24px; display: block; }
-        .marker-btn:active { transform: scale(.9); }
-        .marker-btn.selected {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent), 0 0 16px rgba(0,191,165,0.8);
-            background: #003a36;
-        }
-
-        #status {
-            font-size: 10.5px; color: var(--accent-soft);
-            text-align: center; padding: 2px 6px;
-            background: rgba(0,26,26,0.7); border-radius: 8px;
-        }
-
-        .pulse-marker {
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid rgba(255,255,255,0.9);
-            box-shadow: 0 0 12px currentColor;
-            animation: pulse 1.2s infinite ease-in-out;
-        }
-        .pulse-marker svg { width: 60%; height: 60%; display: block; }
-        @keyframes pulse {
-            0%   { transform: scale(1); opacity: 1; }
-            50%  { transform: scale(1.45); opacity: .6; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: #002626; color: var(--text);
-            border: 1px solid var(--accent); border-radius: 10px;
-        }
-        .leaflet-popup-content { margin: 10px 12px; font-size: 13px; line-height: 1.45; }
-        .popup-confirm {
-            display: inline-block; margin-top: 6px; padding: 3px 8px;
-            background: #00c853; color: #001414; border-radius: 6px;
-            font-weight: 800; font-size: 11px;
-        }
-        .popup-title { color: var(--accent); font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-        .popup-title svg { width: 18px; height: 18px; }
-        .popup-muted { color: var(--accent-soft); font-size: 11.5px; }
-
-        #menu-btn {
-            position: absolute; bottom: calc(14px + env(safe-area-inset-bottom));
-            left: 50%; transform: translateX(-50%);
-            z-index: 1000; padding: 11px 28px;
-            background: var(--accent); color: #001414;
-            border: none; border-radius: 24px;
-            font-weight: 800; font-size: 14px;
-            cursor: pointer; box-shadow: 0 0 18px rgba(0,191,165,0.7);
-        }
-        #menu-btn:active { transform: translateX(-50%) scale(.95); }
-
-        #menu-panel {
-            position: absolute; bottom: calc(64px + env(safe-area-inset-bottom));
-            left: 50%; transform: translateX(-50%);
-            z-index: 1100; background: var(--panel);
-            border: 2px solid var(--accent); border-radius: 16px;
-            padding: 14px; display: none;
-            box-shadow: 0 0 26px rgba(0,191,165,0.6);
-            width: 92%; max-width: 400px; max-height: 68vh; overflow-y: auto;
-        }
-        #menu-panel.open { display: block; }
-        #menu-panel h3 { margin: 0 0 10px; color: var(--accent); font-size: 15px; text-align: center; letter-spacing: 1px; }
-        .owner-link {
-            display: block; padding: 11px; background: #002626;
-            border: 1px solid var(--accent); border-radius: 10px;
-            color: var(--text); text-decoration: none; font-weight: 700;
-            text-align: center; font-size: 13px;
-        }
-        .owner-link:active { background: #004040; }
-        .menu-close {
-            display: block; width: 100%; margin-top: 12px; padding: 9px;
-            background: #f44336; color: #fff; border: none; border-radius: 10px;
-            cursor: pointer; font-weight: 800; font-size: 13px;
-        }
-        #admin-toggle {
-            display: none; width: 100%; margin-top: 12px; padding: 10px;
-            background: transparent; border: 1px dashed var(--accent);
-            color: var(--accent); border-radius: 10px; cursor: pointer;
-            font-weight: 700; font-size: 13px;
-        }
-        #logout-btn {
-            display: block; width: 100%; margin-top: 8px; padding: 9px;
-            background: transparent; border: 1px solid #555;
-            color: #999; border-radius: 10px; cursor: pointer; font-size: 12px;
-        }
-        #admin-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .admin-item {
-            background: #002020; border: 1px solid #005a52; border-radius: 10px;
-            padding: 9px 10px; font-size: 12px;
-        }
-        .admin-item .meta { color: var(--accent-soft); font-size: 10.5px; margin-top: 2px; }
-        .admin-item .del-btn {
-            margin-top: 6px; padding: 6px 12px; background: var(--danger); color: #fff;
-            border: none; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 11.5px;
-        }
-        .admin-empty { color: var(--accent-soft); font-size: 12px; text-align: center; padding: 8px; }
-
-        @media (max-width: 360px) {
-            .marker-btn { width: 48px; height: 48px; font-size: 8px; }
-            .marker-btn svg { width: 20px; height: 20px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Vinera Radar</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#001414;--panel:rgba(0,26,26,.95);--accent:#00bfa5;--accent-soft:#4db6ac;--text:#b2dfdb;--danger:#ff1744}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);overflow:hidden;color:var(--text)}
+#map{position:absolute;inset:0;z-index:1;background:var(--bg)}
+.dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.8) contrast(1.1) saturate(.5)}
+#auth-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{background:rgba(0,30,30,.95);border:2px solid var(--accent);border-radius:16px;padding:24px;width:100%;max-width:340px;box-shadow:0 0 30px rgba(0,191,165,.5);display:flex;flex-direction:column;gap:10px}
+.auth-box h2{margin:0 0 8px;color:var(--accent);text-align:center;font-size:18px;letter-spacing:1px}
+.auth-box input{padding:12px;border-radius:10px;border:1px solid var(--accent);background:#002020;color:var(--text);outline:none;font-size:14px}
+.auth-box input::placeholder{color:#3d8f88}
+#auth-btn{padding:12px;background:var(--accent);color:#001414;border:none;border-radius:10px;font-weight:800;cursor:pointer;font-size:14px}
+#auth-btn:disabled{opacity:.6}
+#auth-toggle{padding:10px;background:transparent;color:var(--accent-soft);border:1px dashed var(--accent);border-radius:10px;cursor:pointer;font-size:13px}
+#auth-error{display:none;color:#ff5252;font-size:12px;text-align:center;padding:4px}
+#app{display:none}
+#controls{position:absolute;top:calc(8px + env(safe-area-inset-top));left:8px;right:8px;z-index:1000;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+#controls>*{pointer-events:auto}
+#top-row{display:flex;gap:6px;align-items:flex-start;justify-content:space-between}
+#city-status{flex:0 1 auto;min-width:0;padding:7px 10px;border-radius:10px;background:var(--panel);border:2px solid var(--accent);color:var(--text);font-weight:700;font-size:12px;box-shadow:0 0 14px rgba(0,191,165,.45);animation:statusPulse 1.6s infinite ease-in-out;max-width:55%;overflow:hidden}
+#city-status.danger{border-color:var(--danger);box-shadow:0 0 20px rgba(255,23,68,.8);animation:dangerPulse 1s infinite ease-in-out}
+@keyframes statusPulse{0%,100%{box-shadow:0 0 8px rgba(0,191,165,.35)}50%{box-shadow:0 0 18px rgba(0,191,165,.85)}}
+@keyframes dangerPulse{0%,100%{box-shadow:0 0 10px rgba(255,23,68,.5)}50%{box-shadow:0 0 24px rgba(255,23,68,1)}}
+#city-status .city-name{color:var(--accent);font-size:9.5px;display:block;letter-spacing:.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#city-status.danger .city-name{color:#ff8a9b}
+#city-status .city-state{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#city-status.danger .city-state{color:#ff5252}
+#site-title{color:var(--accent);font-weight:800;font-size:13px;letter-spacing:1.5px;text-shadow:0 0 8px rgba(0,191,165,.6);padding-top:6px;white-space:nowrap}
+#user-badge{color:var(--accent-soft);font-size:10px;text-align:right;padding-top:2px;white-space:nowrap}
+#search-box{display:flex;gap:5px}
+#city-input{flex:1;padding:9px 10px;border-radius:9px;border:1px solid var(--accent);background:#002020;color:var(--text);outline:none;font-size:14px;min-width:0}
+#city-input::placeholder{color:#3d8f88}
+#search-btn{padding:9px 14px;background:var(--accent);color:#001414;border:none;border-radius:9px;cursor:pointer;font-weight:800;font-size:13px;white-space:nowrap}
+#types-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.marker-btn{width:54px;height:54px;border-radius:50%;border:2px solid rgba(0,191,165,.35);background:#002626;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#fff;font-weight:700;font-size:9px;transition:transform .12s,box-shadow .2s,border-color .2s;padding:0;line-height:1.05;text-align:center}
+.marker-btn svg{width:24px;height:24px;display:block}
+.marker-btn:active{transform:scale(.9)}
+.marker-btn.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent),0 0 16px rgba(0,191,165,.8);background:#003a36}
+#status{font-size:10.5px;color:var(--accent-soft);text-align:center;padding:2px 6px;background:rgba(0,26,26,.7);border-radius:8px}
+.pulse-marker{border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 12px currentColor;animation:pulse 1.2s infinite ease-in-out}
+.pulse-marker svg{width:60%;height:60%;display:block}
+@keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.45);opacity:.6}100%{transform:scale(1);opacity:1}}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#002626;color:var(--text);border:1px solid var(--accent);border-radius:10px}
+.leaflet-popup-content{margin:10px 12px;font-size:13px;line-height:1.45}
+.popup-confirm{display:inline-block;margin-top:6px;padding:3px 8px;background:#00c853;color:#001414;border-radius:6px;font-weight:800;font-size:11px}
+.popup-title{color:var(--accent);font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px}
+.popup-title svg{width:18px;height:18px}
+.popup-muted{color:var(--accent-soft);font-size:11.5px}
+#menu-btn{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:1000;padding:11px 28px;background:var(--accent);color:#001414;border:none;border-radius:24px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 0 18px rgba(0,191,165,.7)}
+#menu-btn:active{transform:translateX(-50%) scale(.95)}
+#menu-panel{position:absolute;bottom:calc(64px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:1100;background:var(--panel);border:2px solid var(--accent);border-radius:16px;padding:14px;display:none;box-shadow:0 0 26px rgba(0,191,165,.6);width:92%;max-width:400px;max-height:68vh;overflow-y:auto}
+#menu-panel.open{display:block}
+#menu-panel h3{margin:0 0 10px;color:var(--accent);font-size:15px;text-align:center;letter-spacing:1px}
+.owner-link{display:block;padding:11px;background:#002626;border:1px solid var(--accent);border-radius:10px;color:var(--text);text-decoration:none;font-weight:700;text-align:center;font-size:13px}
+.owner-link:active{background:#004040}
+.menu-close{display:block;width:100%;margin-top:12px;padding:9px;background:#f44336;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:800;font-size:13px}
+#admin-toggle{display:none;width:100%;margin-top:12px;padding:10px;background:transparent;border:1px dashed var(--accent);color:var(--accent);border-radius:10px;cursor:pointer;font-weight:700;font-size:13px}
+#logout-btn{display:block;width:100%;margin-top:8px;padding:9px;background:transparent;border:1px solid #555;color:#999;border-radius:10px;cursor:pointer;font-size:12px}
+#admin-list{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.admin-item{background:#002020;border:1px solid #005a52;border-radius:10px;padding:9px 10px;font-size:12px}
+.admin-item .meta{color:var(--accent-soft);font-size:10.5px;margin-top:2px}
+.admin-item .del-btn{margin-top:6px;padding:6px 12px;background:var(--danger);color:#fff;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11.5px}
+.admin-empty{color:var(--accent-soft);font-size:12px;text-align:center;padding:8px}
+@media (max-width:360px){.marker-btn{width:48px;height:48px;font-size:8px}.marker-btn svg{width:20px;height:20px}}
+</style>
 </head>
 <body>
 
-<!-- Экран входа -->
 <div id="auth-screen">
-    <div class="auth-box">
-        <h2 id="auth-title">ВХОД</h2>
-        <input type="text" id="auth-login" placeholder="Логин" autocomplete="username">
-        <input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password">
-        <div id="auth-error"></div>
-        <button id="auth-btn">Войти</button>
-        <button id="auth-toggle">Создать аккаунт</button>
-    </div>
+  <div class="auth-box">
+    <h2 id="auth-title">ВХОД</h2>
+    <input type="text" id="auth-login" placeholder="Логин" autocomplete="username">
+    <input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password">
+    <div id="auth-error"></div>
+    <button id="auth-btn">Войти</button>
+    <button id="auth-toggle">Создать аккаунт</button>
+  </div>
 </div>
 
-<!-- Основной интерфейс -->
 <div id="app">
-    <div id="controls">
-        <div id="top-row">
-            <div id="city-status">
-                <span class="city-name">ГОРОД НЕ ВЫБРАН</span>
-                <span class="city-state">—</span>
-            </div>
-            <div style="text-align: right;">
-                <div id="site-title">VINERA RADAR</div>
-                <div id="user-badge">👤 <span id="current-user">—</span></div>
-            </div>
-        </div>
-
-        <div id="search-box">
-            <input type="text" id="city-input" placeholder="Введите город">
-            <button id="search-btn" onclick="searchCity()">Найти</button>
-        </div>
-
-        <div id="types-row">
-            <button class="marker-btn" onclick="setMarkerType('БПЛА', this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#00bfa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>
-                БПЛА
-            </button>
-            <button class="marker-btn" onclick="setMarkerType('Ракета', this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>
-                Ракета
-            </button>
-            <button class="marker-btn" onclick="setMarkerType('Истребитель', this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#40c4ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>
-                Истребитель
-            </button>
-            <button class="marker-btn" onclick="setMarkerType('Сирена', this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#b388ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>
-                Сирена
-            </button>
-            <button class="marker-btn" onclick="setMarkerType('Взрыв', this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>
-                Взрыв
-            </button>
-            <button class="marker-btn" onclick="setMarkerType('Тихо', this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>
-                Тихо
-            </button>
-        </div>
-
-        <div id="status">Выберите тип метки и кликните на карту</div>
+  <div id="controls">
+    <div id="top-row">
+      <div id="city-status"><span class="city-name">ГОРОД НЕ ВЫБРАН</span><span class="city-state">—</span></div>
+      <div style="text-align:right"><div id="site-title">VINERA RADAR</div><div id="user-badge">👤 <span id="current-user">—</span></div></div>
     </div>
-
-    <div id="map"></div>
-
-    <button id="menu-btn" onclick="toggleMenu()">☰ Меню</button>
-
-    <div id="menu-panel">
-        <h3>МЕНЮ</h3>
-        <a class="owner-link" href="https://t.me/Hollisheetq" target="_blank" rel="noopener">
-            Связь с владельцем<br>Telegram: @Hollisheetq
-        </a>
-
-        <button id="admin-toggle" onclick="toggleAdmin()">🛠 Админ-панель</button>
-        <div id="admin-list"></div>
-
-        <button id="logout-btn" onclick="logout()">Выйти из аккаунта</button>
-        <button class="menu-close" onclick="toggleMenu()">Закрыть</button>
+    <div id="search-box">
+      <input type="text" id="city-input" placeholder="Введите город">
+      <button id="search-btn" onclick="searchCity()">Найти</button>
     </div>
+    <div id="types-row">
+      <button class="marker-btn" onclick="setMarkerType('БПЛА',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#00bfa5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>БПЛА</button>
+      <button class="marker-btn" onclick="setMarkerType('Ракета',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>Ракета</button>
+      <button class="marker-btn" onclick="setMarkerType('Истребитель',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#40c4ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>Истребитель</button>
+      <button class="marker-btn" onclick="setMarkerType('Сирена',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#b388ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>Сирена</button>
+      <button class="marker-btn" onclick="setMarkerType('Взрыв',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>Взрыв</button>
+      <button class="marker-btn" onclick="setMarkerType('Тихо',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>Тихо</button>
+    </div>
+    <div id="status">Выберите тип метки и кликните на карту</div>
+  </div>
+  <div id="map"></div>
+  <button id="menu-btn" onclick="toggleMenu()">☰ Меню</button>
+  <div id="menu-panel">
+    <h3>МЕНЮ</h3>
+    <a class="owner-link" href="https://t.me/Hollisheetq" target="_blank" rel="noopener">Связь с владельцем<br>Telegram: @Hollisheetq</a>
+    <button id="admin-toggle" onclick="toggleAdmin()">🛠 Админ-панель</button>
+    <div id="admin-list"></div>
+    <button id="logout-btn" onclick="logout()">Выйти из аккаунта</button>
+    <button class="menu-close" onclick="toggleMenu()">Закрыть</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 window.addEventListener('load', function () {
     const tg = window.Telegram ? window.Telegram.WebApp : null;
@@ -345,54 +127,41 @@ window.addEventListener('load', function () {
     const SUPABASE_URL = 'https://jckoziwygfslfsrqnqva.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     const ADMIN_LOGIN = 'bihepka';
 
-    // ===== КАРТА =====
     const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap', maxZoom: 19, className: 'dark-tiles'
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19, className: 'dark-tiles' }).addTo(map);
 
     let currentMarkerType = 'БПЛА';
     let currentCity = null;
     let markersData = [];
     let currentUser = null;
-
-    // ===== ОГРАНИЧЕНИЕ НА МЕТКИ =====
-    // 2 метки подряд, потом ждать 30 секунд
-    let recentMarkerTimes = []; // времена последних меток (мс)
+    let recentMarkerTimes = [];
     const MAX_MARKERS = 2;
     const COOLDOWN_MS = 30 * 1000;
 
     function canPlaceMarker() {
         const now = Date.now();
-        // Оставляем только метки, поставленные за последние 30 секунд
-        recentMarkerTimes = recentMarkerTimes.filter(t => now - t < COOLDOWN_MS);
-        if (recentMarkerTimes.length < MAX_MARKERS) {
-            return { allowed: true, wait: 0 };
-        }
-        // Если уже 2 метки за 30 сек — считаем, сколько ждать до первой из них
+        recentMarkerTimes = recentMarkerTimes.filter(function (t) { return now - t < COOLDOWN_MS; });
+        if (recentMarkerTimes.length < MAX_MARKERS) return { allowed: true, wait: 0 };
         const oldest = Math.min.apply(null, recentMarkerTimes);
-        const wait = Math.ceil((COOLDOWN_MS - (now - oldest)) / 1000);
-        return { allowed: false, wait: wait };
+        return { allowed: false, wait: Math.ceil((COOLDOWN_MS - (now - oldest)) / 1000) };
     }
 
     const METADATA = {
-        'БПЛА':        { color: '#00bfa5', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>' },
-        'Ракета':      { color: '#ff5252', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>' },
-        'Истребитель': { color: '#40c4ff', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>' },
-        'Сирена':      { color: '#b388ff', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>' },
-        'Взрыв':       { color: '#ffc107', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>' },
-        'Тихо':        { color: '#00e676', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>' }
+        'БПЛА':{color:'#00bfa5',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},
+        'Ракета':{color:'#ff5252',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>'},
+        'Истребитель':{color:'#40c4ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>'},
+        'Сирена':{color:'#b388ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>'},
+        'Взрыв':{color:'#ffc107',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>'},
+        'Тихо':{color:'#00e676',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}
     };
-    const dangerTypes = ['Взрыв', 'Сирена', 'Ракета'];
+    const dangerTypes = ['Взрыв','Сирена','Ракета'];
     const LIFETIME_MS = 15 * 60 * 1000;
 
     const layerGroup = L.layerGroup().addTo(map);
     const markerRefs = {};
 
-    // ===== АУТЕНТИФИКАЦИЯ =====
     const authScreen = document.getElementById('auth-screen');
     const authLogin = document.getElementById('auth-login');
     const authPassword = document.getElementById('auth-password');
@@ -402,10 +171,7 @@ window.addEventListener('load', function () {
     const authError = document.getElementById('auth-error');
     let isRegisterMode = false;
 
-    function showAuthError(msg) {
-        authError.textContent = msg;
-        authError.style.display = 'block';
-    }
+    function showAuthError(msg) { authError.textContent = msg; authError.style.display = 'block'; }
 
     authToggle.addEventListener('click', function () {
         isRegisterMode = !isRegisterMode;
@@ -421,25 +187,17 @@ window.addEventListener('load', function () {
         if (!login || !password) { showAuthError('Введите логин и пароль'); return; }
         if (login.length < 3) { showAuthError('Логин не короче 3 символов'); return; }
         if (password.length < 6) { showAuthError('Пароль не короче 6 символов'); return; }
-
-        authBtn.disabled = true;
-        authBtn.textContent = 'Подождите...';
-        authError.style.display = 'none';
-
+        authBtn.disabled = true; authBtn.textContent = 'Подождите...'; authError.style.display = 'none';
         const email = login + '@vinera.local';
-
         try {
             if (isRegisterMode) {
-                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                const { data, error } = await supabaseClient.auth.signUp({ email: email, password: password });
                 if (error) throw error;
                 if (data.user) {
-                    await supabaseClient.from('profiles').insert({
-                        id: data.user.id,
-                        username: login
-                    });
+                    await supabaseClient.from('profiles').insert({ id: data.user.id, username: login });
                 }
             } else {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
                 if (error) throw error;
             }
             await checkSession();
@@ -457,22 +215,12 @@ window.addEventListener('load', function () {
     async function checkSession() {
         const { data } = await supabaseClient.auth.getSession();
         if (data.session) {
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('username')
-                .eq('id', data.session.user.id)
-                .single();
+            const { data: profile } = await supabaseClient.from('profiles').select('username').eq('id', data.session.user.id).single();
             currentUser = profile ? profile.username : 'user';
             document.getElementById('current-user').textContent = currentUser;
             authScreen.style.display = 'none';
             document.getElementById('app').style.display = 'block';
-
-            if (currentUser === ADMIN_LOGIN) {
-                document.getElementById('admin-toggle').style.display = 'block';
-            } else {
-                document.getElementById('admin-toggle').style.display = 'none';
-            }
-
+            document.getElementById('admin-toggle').style.display = (currentUser === ADMIN_LOGIN) ? 'block' : 'none';
             setTimeout(function () { map.invalidateSize(); }, 200);
             await loadMarkers();
         } else {
@@ -483,28 +231,17 @@ window.addEventListener('load', function () {
 
     window.logout = async function () {
         await supabaseClient.auth.signOut();
-        currentUser = null;
-        markersData = [];
-        recentMarkerTimes = [];
-        drawMarkers();
-        await checkSession();
+        currentUser = null; markersData = []; recentMarkerTimes = [];
+        drawMarkers(); await checkSession();
     };
 
-    // ===== МЕТКИ =====
     function makeIcon(type) {
         const meta = METADATA[type] || METADATA['БПЛА'];
-        return L.divIcon({
-            className: '',
-            html: '<div class="pulse-marker" style="width:22px;height:22px;background:' + meta.color + ';color:' + meta.color + ';">' + meta.svg + '</div>',
-            iconSize: [22, 22], iconAnchor: [11, 11]
-        });
+        return L.divIcon({ className: '', html: '<div class="pulse-marker" style="width:22px;height:22px;background:' + meta.color + ';color:' + meta.color + ';">' + meta.svg + '</div>', iconSize: [22, 22], iconAnchor: [11, 11] });
     }
 
     function isConfirmed(m) {
-        return markersData.some(function (o) {
-            return o.id !== m.id && o.type === m.type &&
-                map.distance([o.lat, o.lng], [m.lat, m.lng]) <= 300;
-        });
+        return markersData.some(function (o) { return o.id !== m.id && o.type === m.type && map.distance([o.lat, o.lng], [m.lat, m.lng]) <= 300; });
     }
 
     function popupHtml(m) {
@@ -528,58 +265,95 @@ window.addEventListener('load', function () {
     }
 
     async function loadMarkers() {
-        const { data, error } = await supabaseClient
-            .from('vinera_markers')
-            .select('*')
-            .order('created_at', { ascending: true });
-        if (error) {
-            console.error('Supabase load error:', error);
-            document.getElementById('status').innerText = 'Ошибка загрузки: ' + error.message;
-            return;
-        }
+        const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: true });
+        if (error) { console.error(error); document.getElementById('status').innerText = 'Ошибка загрузки: ' + error.message; return; }
         const now = Date.now();
-        markersData = (data || []).filter(function (m) {
-            const t = new Date(m.created_at).getTime();
-            return (now - t) < LIFETIME_MS;
-        });
-        drawMarkers();
-        updateCityStatus();
+        markersData = (data || []).filter(function (m) { return (now - new Date(m.created_at).getTime()) < LIFETIME_MS; });
+        drawMarkers(); updateCityStatus();
     }
 
     async function resolveAddress(m) {
         try {
-            const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
-                        m.lat + '&lon=' + m.lng + '&zoom=14&accept-language=ru';
-            const res = await fetch(url);
-            const data = await res.json();
+            const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + m.lat + '&lon=' + m.lng + '&zoom=14&accept-language=ru';
+            const res = await fetch(url); const data = await res.json();
             const a = data.address || {};
             const parts = [a.city || a.town || a.village || a.county, a.suburb || a.neighbourhood || a.road];
             const address = parts.filter(Boolean).join(', ') || (data.display_name || 'неизвестно');
             await supabaseClient.from('vinera_markers').update({ address: address }).eq('id', m.id);
             m.address = address;
             if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
-        } catch (e) {
-            console.warn('address error', e);
-        }
+        } catch (e) { console.warn(e); }
     }
 
     function pluralizeStatus(types) {
         const threats = types.filter(function (t) { return t !== 'Тихо'; });
-        if (threats.length === 0) {
-            return { text: types.length === 0 ? '—' : 'Тихо', danger: false };
-        }
-        const counts = {};
-        threats.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
+        if (threats.length === 0) return { text: types.length === 0 ? '—' : 'Тихо', danger: false };
+        const counts = {}; threats.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
         const unique = Object.keys(counts);
         const hasDanger = unique.some(function (t) { return dangerTypes.includes(t); });
-        const pluralMap = {
-            'Взрыв': 'Взрывы', 'Сирена': 'Сирены', 'Ракета': 'Ракеты',
-            'БПЛА': 'БПЛА', 'Истребитель': 'Истребители'
-        };
-        const labels = unique.map(function (t) {
-            return counts[t] > 1 ? (pluralMap[t] || t) : t;
-        });
+        const pluralMap = { 'Взрыв':'Взрывы','Сирена':'Сирены','Ракета':'Ракеты','БПЛА':'БПЛА','Истребитель':'Истребители' };
+        const labels = unique.map(function (t) { return counts[t] > 1 ? (pluralMap[t] || t) : t; });
         return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
     }
 
-   
+    function updateCityStatus() {
+        const box = document.getElementById('city-status');
+        const nameEl = box.querySelector('.city-name');
+        const stateEl = box.querySelector('.city-state');
+        nameEl.textContent = (currentCity || 'ГОРОД НЕ ВЫБРАН').toUpperCase();
+        if (!currentCity) { stateEl.textContent = '—'; box.classList.remove('danger'); return; }
+        const types = markersData.filter(function (m) { return m.city === currentCity; }).map(function (m) { return m.type; });
+        const res = pluralizeStatus(types);
+        stateEl.textContent = res.text;
+        box.classList.toggle('danger', res.danger);
+    }
+
+    window.setMarkerType = function (type, btn) {
+        currentMarkerType = type;
+        document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
+        if (btn) btn.classList.add('selected');
+        document.getElementById('status').innerText = 'Выбран: ' + type + '. Кликните на карту.';
+    };
+
+    map.on('click', async function (e) {
+        if (!currentCity) { document.getElementById('status').innerText = 'Сначала найдите город через поиск!'; return; }
+        const check = canPlaceMarker();
+        if (!check.allowed) { document.getElementById('status').innerText = '⏳ Подождите ' + check.wait + ' сек. (лимит 2 метки за 30 сек)'; return; }
+        const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: currentCity, author: currentUser, address: 'определяется...' };
+        const { data, error } = await supabaseClient.from('vinera_markers').insert([m]).select().single();
+        if (error) { console.error(error); document.getElementById('status').innerText = 'Ошибка сохранения: ' + error.message; return; }
+        recentMarkerTimes.push(Date.now());
+        markersData.push(data); drawMarkers(); updateCityStatus(); resolveAddress(data);
+        document.getElementById('status').innerText = 'Метка поставлена ✔ (осталось: ' + (MAX_MARKERS - recentMarkerTimes.length) + ')';
+    });
+
+    window.searchCity = async function () {
+        const city = document.getElementById('city-input').value.trim();
+        if (!city) return;
+        document.getElementById('status').innerText = 'Поиск...';
+        try {
+            const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(city));
+            const data = await res.json();
+            if (data && data.length > 0) {
+                map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 12);
+                document.getElementById('status').innerText = 'Найден: ' + data[0].display_name;
+                currentCity = data[0].display_name.split(',')[0].trim();
+                updateCityStatus();
+            } else { document.getElementById('status').innerText = 'Город не найден'; }
+        } catch (e) { document.getElementById('status').innerText = 'Ошибка поиска'; }
+    };
+
+    window.toggleMenu = function () { document.getElementById('menu-panel').classList.toggle('open'); };
+
+    let adminOpen = false;
+    window.toggleAdmin = function () { if (currentUser !== ADMIN_LOGIN) return; adminOpen = !adminOpen; renderAdmin(); };
+
+    function renderAdmin() {
+        const list = document.getElementById('admin-list');
+        list.innerHTML = '';
+        if (!adminOpen) return;
+        if (markersData.length === 0) { const e = document.createElement('div'); e.className = 'admin-empty'; e.textContent = 'Меток пока нет'; list.appendChild(e); return; }
+        markersData.forEach(function (m) {
+            const item = document.createElement('div'); item.className = 'admin-item';
+            const t = document.createElement('div'); t.innerHTML = '<b>' + m.type + '</b> — ' + (m.city || '—'); item.appendChild(t);
+            const meta =
