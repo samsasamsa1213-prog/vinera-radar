@@ -105,25 +105,23 @@ async function checkAccess() {
         document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#00bfa5;margin-top:50px;">Доступ запрещен</h2><p style="margin-top:20px;font-size:16px;">Для использования радара<br>авторизуйтесь через Telegram-бота.</p><a href="https://t.me/vinera_radar_bot" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#00bfa5;color:#000;text-decoration:none;border-radius:10px;font-weight:bold;">Открыть бота</a></div>';
         return false;
     }
-
     try {
         const res = await fetch('https://hpzemwurwkuthcgmtvlw.supabase.co/functions/v1/dynamic-service', {
             method: 'POST',
             headers: { 
-    'Content-Type': 'application/json',
-    'apikey': 'sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3' 
-},
+                'Content-Type': 'application/json',
+                'apikey': 'sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3',
+                'Authorization': 'Bearer ТВОЙ_ПУБЛИЧНЫЙ_КЛЮЧ_ИЗ_ПРОЕКТА_HPZEM'
+            },
             body: JSON.stringify({ initData: tg.initData })
         });
         const data = await res.json();
-        
         if (!data.allowed) {
             document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#ff5252;margin-top:50px;">Нет доступа</h2><p style="margin-top:20px;font-size:16px;">' + (data.error || 'Подтвердите номер телефона в боте.') + '</p><a href="https://t.me/vinera_radar_bot" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#00bfa5;color:#000;text-decoration:none;border-radius:10px;font-weight:bold;">Перейти в бота</a></div>';
             return false;
         }
         return true;
     } catch (e) {
-        console.error("Ошибка проверки доступа:", e);
         document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#ff5252;background:#001414;height:100vh;padding-top:50px;">Ошибка сервера. Попробуйте позже.</div>';
         return false;
     }
@@ -134,14 +132,11 @@ checkAccess().then(allowed => {
 
     // --- ОСНОВНОЙ КОД РАДАРА ---
     const SUPABASE_URL='https://hpzemwurwkuthcgmtvlw.supabase.co';
-    const SUPABASE_KEY='sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz'; // ЗАМЕНИ НА КЛЮЧ ОТ НОВОГО ПРОЕКТА
+    const SUPABASE_KEY='sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
     const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
     const OWNER_LOGIN='bihepka';
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
+    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
     const map=L.map('map',{zoomControl:false}).setView([55.7558,37.6173],5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'dark-tiles'}).addTo(map);
@@ -168,46 +163,20 @@ checkAccess().then(allowed => {
             currentRole=profile&&profile.role?profile.role:'user';
             currentBanned=profile&&profile.is_banned?true:false;
             if(currentBanned){
-                await supabaseClient.auth.signOut();
-                authScreen.style.display='none';
-                document.getElementById('app').style.display='none';
+                await supabaseClient.auth.signOut(); authScreen.style.display='none'; document.getElementById('app').style.display='none';
                 let banScreen=document.getElementById('ban-screen');
-                if(!banScreen){
-                    banScreen=document.createElement('div');
-                    banScreen.id='ban-screen';
-                    banScreen.style.cssText='position:fixed;inset:0;z-index:99999;background:#1a0000;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;';
-                    banScreen.innerHTML='<div style="max-width:400px;"><div style="font-size:60px;margin-bottom:20px;">🚫</div><h1 style="color:#ff1744;font-size:28px;margin:0 0 16px;letter-spacing:2px;">ВЫ ЗАБЛОКИРОВАНЫ</h1><p style="color:#ff8a9b;font-size:16px;line-height:1.6;margin:0 0 20px;">Ваш аккаунт заблокирован навсегда.<br>Ваш IP-адрес и данные устройства занесены в чёрный список.<br>Попытка обхода приведёт к блокировке по всем связанным аккаунтам.<br><br>По вопросам: <b>@Hollisheetq</b></p><div style="color:#333;font-size:10px;margin-top:20px;">Security ID: <span id="fake-sid"></span></div></div>';
-                    document.body.appendChild(banScreen);
-                    var el=document.getElementById('fake-sid');if(el)el.textContent='VR-'+Math.random().toString(36).substring(2,10).toUpperCase()+'-'+Date.now().toString(36).toUpperCase();
-                }
-                banScreen.style.display='flex';
-                return;
+                if(!banScreen){ banScreen=document.createElement('div'); banScreen.id='ban-screen'; banScreen.style.cssText='position:fixed;inset:0;z-index:99999;background:#1a0000;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;'; banScreen.innerHTML='<div style="max-width:400px;"><div style="font-size:60px;margin-bottom:20px;">🚫</div><h1 style="color:#ff1744;font-size:28px;margin:0 0 16px;letter-spacing:2px;">ВЫ ЗАБЛОКИРОВАНЫ</h1><p style="color:#ff8a9b;font-size:16px;line-height:1.6;margin:0 0 20px;">Ваш аккаунт заблокирован навсегда.<br>По вопросам: <b>@Hollisheetq</b></p><div style="color:#333;font-size:10px;margin-top:20px;">Security ID: <span id="fake-sid"></span></div></div>'; document.body.appendChild(banScreen); var el=document.getElementById('fake-sid');if(el)el.textContent='VR-'+Math.random().toString(36).substring(2,10).toUpperCase(); }
+                banScreen.style.display='flex'; return;
             }
-            document.getElementById('current-user').textContent=currentUser;
-            authScreen.style.display='none';
-            document.getElementById('app').style.display='block';
-            const isOwner=(currentUser===OWNER_LOGIN);
-            const canAdmin=(isOwner||currentRole==='moderator');
-            document.getElementById('admin-toggle').style.display=canAdmin?'block':'none';
-            setTimeout(function(){map.invalidateSize();},200);
-            await loadMarkers();await pingPresence();await updateCounters();
-        }else{
-            authScreen.style.display='flex';
-            document.getElementById('app').style.display='none';
-        }
+            document.getElementById('current-user').textContent=currentUser; authScreen.style.display='none'; document.getElementById('app').style.display='block';
+            const isOwner=(currentUser===OWNER_LOGIN); const canAdmin=(isOwner||currentRole==='moderator'); document.getElementById('admin-toggle').style.display=canAdmin?'block':'none';
+            setTimeout(function(){map.invalidateSize();},200); await loadMarkers(); await pingPresence(); await updateCounters();
+        }else{ authScreen.style.display='flex'; document.getElementById('app').style.display='none'; }
     }
     window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';currentBanned=false;markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
     function makeIcon(type){const meta=METADATA[type]||METADATA['БПЛА'];return L.divIcon({className:'',html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>',iconSize:[22,22],iconAnchor:[11,11]});}
     function isConfirmed(m){return markersData.some(o=>o.id!==m.id&&o.type===m.type&&map.distance([o.lat,o.lng],[m.lat,m.lng])<=300);}
-    function popupHtml(m){
-        const meta=METADATA[m.type]||METADATA['БПЛА'];
-        const confirmed=isConfirmed(m);
-        return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div>'+
-               '<div class="popup-muted">Поставил: <b>'+escapeHtml(m.author)+'</b></div>'+
-               '<div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div>'+
-               '<div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+
-               (confirmed?'<div class="popup-confirm">✔ Статус подтверждён</div>':'');
-    }
+    function popupHtml(m){const meta=METADATA[m.type]||METADATA['БПЛА'];const confirmed=isConfirmed(m);return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div><div class="popup-muted">Поставил: <b>'+escapeHtml(m.author)+'</b></div><div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div><div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+(confirmed?'<div class="popup-confirm">✔ Статус подтверждён</div>':'');}
     function drawMarkers(){layerGroup.clearLayers();Object.keys(markerRefs).forEach(k=>delete markerRefs[k]);markersData.forEach(m=>{const marker=L.marker([m.lat,m.lng],{icon:makeIcon(m.type)}).addTo(layerGroup);marker.bindPopup(popupHtml(m));markerRefs[m.id]=marker;});}
     async function loadMarkers(){const{data,error}=await supabaseClient.from('vinera_markers').select('*').order('created_at',{ascending:true});if(error){document.getElementById('status').innerText='Ошибка загрузки: '+error.message;return;}const now=Date.now();markersData=(data||[]).filter(m=>(now-new Date(m.created_at).getTime())<LIFETIME_MS);drawMarkers();updateCityStatus();}
     async function resolveAddress(m){try{const url='https://nominatim.openstreetmap.org/reverse?format=json&lat='+m.lat+'&lon='+m.lng+'&zoom=14&accept-language=ru';const res=await fetch(url);const data=await res.json();const a=data.address||{};const parts=[a.city||a.town||a.village||a.county,a.suburb||a.neighbourhood||a.road];const address=parts.filter(Boolean).join(', ')||(data.display_name||'неизвестно');await supabaseClient.from('vinera_markers').update({address:address}).eq('id',m.id);m.address=address;if(markerRefs[m.id])markerRefs[m.id].setPopupContent(popupHtml(m));}catch(e){}}
