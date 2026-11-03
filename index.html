@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.1"></script>
 <style>
 :root{--bg:#001414;--panel:rgba(0,26,26,.95);--accent:#00bfa5;--accent-soft:#4db6ac;--text:#b2dfdb;--danger:#ff1744}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -94,9 +95,8 @@ html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Ro
 <button id="menu-btn" onclick="toggleMenu()">☰ Меню</button>
 <div id="menu-panel"><h3>МЕНЮ</h3><a class="owner-link" href="https://t.me/Hollisheetq" target="_blank" rel="noopener">Связь с владельцем<br>Telegram: @Hollisheetq</a><button id="admin-toggle" onclick="toggleAdmin()">🛠 Админ-панель</button><div id="admin-list"></div><button id="logout-btn" onclick="logout()">Выйти из аккаунта</button><button class="menu-close" onclick="toggleMenu()">Закрыть</button></div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  window.addEventListener('load',function(){
+window.addEventListener('load',function(){
 const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand();
 const SUPABASE_URL='https://jckoziwygfslfsrqnqva.supabase.co';
 const SUPABASE_KEY='sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
@@ -107,6 +107,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'�
 let currentMarkerType='БПЛА',currentCity=null,markersData=[],currentUser=null,currentRole='user',currentBanned=false;
 let recentMarkerTimes=[];const MAX_MARKERS=2,COOLDOWN_MS=30000;
 function canPlaceMarker(){const now=Date.now();recentMarkerTimes=recentMarkerTimes.filter(t=>now-t<COOLDOWN_MS);if(recentMarkerTimes.length<MAX_MARKERS)return{allowed:true,wait:0};const oldest=Math.min.apply(null,recentMarkerTimes);return{allowed:false,wait:Math.ceil((COOLDOWN_MS-(now-oldest))/1000)};}
+
+// Защита от XSS (чтобы не кидали ссылки в метки)
+function escapeHtml(str){if(!str)return '';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
 const METADATA={'БПЛА':{color:'#00bfa5',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},'Ракета':{color:'#ff5252',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>'},'Истребитель':{color:'#40c4ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>'},'Сирена':{color:'#b388ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>'},'Взрыв':{color:'#ffc107',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>'},'Тихо':{color:'#00e676',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}};
 const dangerTypes=['Взрыв','Сирена','Ракета'];const LIFETIME_MS=900000;
 const layerGroup=L.layerGroup().addTo(map);const markerRefs={};
@@ -114,12 +118,31 @@ const authScreen=document.getElementById('auth-screen'),authLogin=document.getEl
 let isRegisterMode=false;
 function showAuthError(msg){authError.textContent=msg;authError.style.display='block';}
 authToggle.addEventListener('click',function(){isRegisterMode=!isRegisterMode;authTitle.textContent=isRegisterMode?'РЕГИСТРАЦИЯ':'ВХОД';authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';authToggle.textContent=isRegisterMode?'У меня уже есть аккаунт':'Создать аккаунт';authError.style.display='none';});
-async function handleAuth(){const login=authLogin.value.trim().toLowerCase(),password=authPassword.value;if(!login||!password){showAuthError('Введите логин и пароль');return;}if(login.length<3){showAuthError('Логин не короче 3 символов');return;}if(password.length<6){showAuthError('Пароль не короче 6 символов');return;}authBtn.disabled=true;authBtn.textContent='Подождите...';authError.style.display='none';const email=login+'@vinera.app';try{if(isRegisterMode){const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});if(error)throw error;if(data.user){await supabaseClient.from('profiles').insert({id:data.user.id,username:login,role:'user',total_markers:0,is_banned:false});}}else{const{error}=await supabaseClient.auth.signInWithPassword({email:email,password:password});if(error)throw error;}await checkSession();}catch(e){showAuthError(e.message||'Ошибка входа');}finally{authBtn.disabled=false;authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';}}
+async function handleAuth(){
+    const login=authLogin.value.trim().toLowerCase(),password=authPassword.value;
+    if(!login||!password){showAuthError('Введите логин и пароль');return;}
+    if(login.length<3){showAuthError('Логин не короче 3 символов');return;}
+    if(password.length<6){showAuthError('Пароль не короче 6 символов');return;}
+    authBtn.disabled=true;authBtn.textContent='Подождите...';authError.style.display='none';
+    const email=login+'@vinera.app';
+    try{
+        if(isRegisterMode){
+            const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});
+            if(error)throw error;
+            if(data.user){await supabaseClient.from('profiles').insert({id:data.user.id,username:login,role:'user',total_markers:0,is_banned:false});}
+        }else{
+            const{error}=await supabaseClient.auth.signInWithPassword({email:email,password:password});
+            if(error)throw error;
+        }
+        await checkSession();
+    }catch(e){showAuthError(e.message||'Ошибка входа');}
+    finally{authBtn.disabled=false;authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';}
+}
 authBtn.addEventListener('click',handleAuth);
 authPassword.addEventListener('keydown',function(e){if(e.key==='Enter')handleAuth();});
 async function pingPresence(){try{const{data}=await supabaseClient.auth.getUser();if(!data||!data.user)return;await supabaseClient.from('profiles').update({last_seen_at:new Date().toISOString()}).eq('id',data.user.id);}catch(e){}}
 async function updateCounters(){try{const fiveMinAgo=new Date(Date.now()-5*60*1000).toISOString();const{count:online}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true}).gt('last_seen_at',fiveMinAgo);const{count:total}=await supabaseClient.from('profiles').select('*',{count:'exact',head:true});const o=document.getElementById('online-count'),t=document.getElementById('total-count');if(o&&online!==null)o.textContent=online;if(t&&total!==null)t.textContent=total;}catch(e){}}
-async function checkSession(){
+  async function checkSession(){
     const{data}=await supabaseClient.auth.getSession();
     if(data.session){
         const{data:profile}=await supabaseClient.from('profiles').select('username,role,is_banned').eq('id',data.session.user.id).single();
@@ -128,9 +151,16 @@ async function checkSession(){
         currentBanned=profile&&profile.is_banned?true:false;
         if(currentBanned){
             await supabaseClient.auth.signOut();
-            authScreen.style.display='flex';
+            authScreen.style.display='none';
             document.getElementById('app').style.display='none';
-            showAuthError('Ваш аккаунт заблокирован. Обратитесь к владельцу: @Hollisheetq');
+            let banScreen = document.getElementById('ban-screen');
+            if(!banScreen){
+                banScreen = document.createElement('div');banScreen.id = 'ban-screen';
+                banScreen.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#1a0000;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;';
+                banScreen.innerHTML = '<div style="max-width:400px;"><div style="font-size:60px;margin-bottom:20px;">🚫</div><h1 style="color:#ff1744;font-size:28px;margin:0 0 16px;letter-spacing:2px;">ВЫ ЗАБЛОКИРОВАНЫ</h1><p style="color:#ff8a9b;font-size:16px;line-height:1.6;margin:0 0 20px;">Ваш аккаунт заблокирован навсегда.<br>Ваш IP-адрес и данные устройства занесены в чёрный список.<br>По вопросам: <b>@Hollisheetq</b></p></div>';
+                document.body.appendChild(banScreen);
+            }
+            banScreen.style.display='flex';
             return;
         }
         document.getElementById('current-user').textContent=currentUser;
@@ -149,17 +179,28 @@ async function checkSession(){
 window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';currentBanned=false;markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
 function makeIcon(type){const meta=METADATA[type]||METADATA['БПЛА'];return L.divIcon({className:'',html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>',iconSize:[22,22],iconAnchor:[11,11]});}
 function isConfirmed(m){return markersData.some(o=>o.id!==m.id&&o.type===m.type&&map.distance([o.lat,o.lng],[m.lat,m.lng])<=300);}
-function popupHtml(m){const meta=METADATA[m.type]||METADATA['БПЛА'];const confirmed=isConfirmed(m);return '<div class="popup-title">'+meta.svg+' '+m.type+'</div><div class="popup-muted">Поставил: <b>'+(m.author||'—')+'</b></div><div class="popup-muted">Район: '+(m.address||'определяется...')+'</div><div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+(confirmed?'<div class="popup-confirm">✔ Статус подтверждён</div>':'');}
+function popupHtml(m){const meta=METADATA[m.type]||METADATA['БПЛА'];const confirmed=isConfirmed(m);return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div><div class="popup-muted">Поставил: <b>'+escapeHtml(m.author||'—')+'</b></div><div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div><div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+(confirmed?'<div class="popup-confirm">✔ Статус подтверждён</div>':'');}
 function drawMarkers(){layerGroup.clearLayers();Object.keys(markerRefs).forEach(k=>delete markerRefs[k]);markersData.forEach(m=>{const marker=L.marker([m.lat,m.lng],{icon:makeIcon(m.type)}).addTo(layerGroup);marker.bindPopup(popupHtml(m));markerRefs[m.id]=marker;});}
 async function loadMarkers(){const{data,error}=await supabaseClient.from('vinera_markers').select('*').order('created_at',{ascending:true});if(error){document.getElementById('status').innerText='Ошибка загрузки: '+error.message;return;}const now=Date.now();markersData=(data||[]).filter(m=>(now-new Date(m.created_at).getTime())<LIFETIME_MS);drawMarkers();updateCityStatus();}
 async function resolveAddress(m){try{const url='https://nominatim.openstreetmap.org/reverse?format=json&lat='+m.lat+'&lon='+m.lng+'&zoom=14&accept-language=ru';const res=await fetch(url);const data=await res.json();const a=data.address||{};const parts=[a.city||a.town||a.village||a.county,a.suburb||a.neighbourhood||a.road];const address=parts.filter(Boolean).join(', ')||(data.display_name||'неизвестно');await supabaseClient.from('vinera_markers').update({address:address}).eq('id',m.id);m.address=address;if(markerRefs[m.id])markerRefs[m.id].setPopupContent(popupHtml(m));}catch(e){}}
 function pluralizeStatus(types){const threats=types.filter(t=>t!=='Тихо');if(threats.length===0)return{text:types.length===0?'—':'Тихо',danger:false};const counts={};threats.forEach(t=>counts[t]=(counts[t]||0)+1);const unique=Object.keys(counts);const hasDanger=unique.some(t=>dangerTypes.includes(t));const pm={'Взрыв':'Взрывы','Сирена':'Сирены','Ракета':'Ракеты','БПЛА':'БПЛА','Истребитель':'Истребители'};const labels=unique.map(t=>counts[t]>1?(pm[t]||t):t);return{text:'⚠ '+labels.join(' · '),danger:hasDanger};}
 function updateCityStatus(){const box=document.getElementById('city-status'),nameEl=box.querySelector('.city-name'),stateEl=box.querySelector('.city-state');nameEl.textContent=(currentCity||'ГОРОД НЕ ВЫБРАН').toUpperCase();if(!currentCity){stateEl.textContent='—';box.classList.remove('danger');return;}const types=markersData.filter(m=>m.city===currentCity).map(m=>m.type);const res=pluralizeStatus(types);stateEl.textContent=res.text;box.classList.toggle('danger',res.danger);}
 window.setMarkerType=function(type,btn){currentMarkerType=type;document.querySelectorAll('.marker-btn').forEach(b=>b.classList.remove('selected'));if(btn)btn.classList.add('selected');document.getElementById('status').innerText='Выбран: '+type+'. Кликните на карту.';};
-map.on('click',async function(e){if(currentBanned){document.getElementById('status').innerText='Вы заблокированы';return;}if(!currentCity){document.getElementById('status').innerText='Сначала найдите город через поиск!';return;}const check=canPlaceMarker();if(!check.allowed){document.getElementById('status').innerText='⏳ Подождите '+check.wait+' сек. (лимит 2 метки за 30 сек)';return;}const m={type:currentMarkerType,lat:e.latlng.lat,lng:e.latlng.lng,city:currentCity,author:currentUser,address:'определяется...'};const{data,error}=await supabaseClient.from('vinera_markers').insert([m]).select().single();if(error){document.getElementById('status').innerText='Ошибка сохранения: '+error.message;return;}recentMarkerTimes.push(Date.now());markersData.push(data);drawMarkers();updateCityStatus();resolveAddress(data);document.getElementById('status').innerText='Метка поставлена ✔ (осталось: '+(MAX_MARKERS-recentMarkerTimes.length)+')';if(currentUser){const{data:p}=await supabaseClient.from('profiles').select('total_markers').eq('username',currentUser).single();if(p){await supabaseClient.from('profiles').update({total_markers:(p.total_markers||0)+1}).eq('username',currentUser);}}});
+map.on('click',async function(e){
+    if(currentBanned){document.getElementById('status').innerText='Вы заблокированы';return;}
+    if(!currentCity){document.getElementById('status').innerText='Сначала найдите город через поиск!';return;}
+    const check=canPlaceMarker();
+    if(!check.allowed){document.getElementById('status').innerText='⏳ Подождите '+check.wait+' сек. (лимит 2 метки за 30 сек)';return;}
+    const m={type:currentMarkerType,lat:e.latlng.lat,lng:e.latlng.lng,city:currentCity,author:currentUser,address:'определяется...'};
+    const{data,error}=await supabaseClient.from('vinera_markers').insert([m]).select().single();
+    if(error){document.getElementById('status').innerText='Ошибка сохранения: '+error.message;return;}
+    recentMarkerTimes.push(Date.now());markersData.push(data);drawMarkers();updateCityStatus();resolveAddress(data);
+    document.getElementById('status').innerText='Метка поставлена ✔ (осталось: '+(MAX_MARKERS-recentMarkerTimes.length)+')';
+    if(currentUser){const{data:p}=await supabaseClient.from('profiles').select('total_markers').eq('username',currentUser).single();if(p){await supabaseClient.from('profiles').update({total_markers:(p.total_markers||0)+1}).eq('username',currentUser);}}
+});
 window.searchCity=async function(){const city=document.getElementById('city-input').value.trim();if(!city)return;document.getElementById('status').innerText='Поиск...';try{const res=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(city));const data=await res.json();if(data&&data.length>0){map.setView([parseFloat(data[0].lat),parseFloat(data[0].lon)],12);document.getElementById('status').innerText='Найден: '+data[0].display_name;currentCity=data[0].display_name.split(',')[0].trim();updateCityStatus();}else{document.getElementById('status').innerText='Город не найден';}}catch(e){document.getElementById('status').innerText='Ошибка поиска';}};
 window.toggleMenu=function(){document.getElementById('menu-panel').classList.toggle('open');};
-    let adminOpen=false,adminTab='markers';
+  let adminOpen=false,adminTab='markers';
 window.toggleAdmin=function(){
     const isOwner=(currentUser===OWNER_LOGIN);
     const isModerator=(currentRole==='moderator');
@@ -192,7 +233,7 @@ function renderAdminMarkers(){
     if(markersData.length===0){content.innerHTML='<div class="admin-empty">Меток пока нет</div>';return;}
     markersData.forEach(function(m){
         const item=document.createElement('div');item.className='admin-item';
-        const t=document.createElement('div');t.innerHTML='<b>'+m.type+'</b> — '+(m.city||'—');item.appendChild(t);
+        const t=document.createElement('div');t.innerHTML='<b>'+escapeHtml(m.type)+'</b> — '+escapeHtml(m.city||'—');item.appendChild(t);
         const meta=document.createElement('div');meta.className='meta';meta.textContent=(m.address||'...')+' · '+(m.author||'—');item.appendChild(meta);
         const btn=document.createElement('button');btn.className='del-btn';btn.textContent='Удалить';btn.setAttribute('data-id',m.id);item.appendChild(btn);
         content.appendChild(item);
