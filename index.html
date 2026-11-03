@@ -109,7 +109,10 @@ async function checkAccess() {
     try {
         const res = await fetch('https://hpzemwurwkuthcgmtvlw.supabase.co/functions/v1/dynamic-service', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+    'Content-Type': 'application/json',
+    'apikey': 'sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3' 
+},
             body: JSON.stringify({ initData: tg.initData })
         });
         const data = await res.json();
