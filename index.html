@@ -143,4 +143,61 @@ function renderAdmin(){
     if(adminTab==='markers')renderAdminMarkers();else renderAdminUsers();
 }
 function renderAdminMarkers(){
-    const content=document.getElementById
+    const content=document.getElementById('admin-content');
+    if(!content)return;
+    content.innerHTML='';
+    if(markersData.length===0){content.innerHTML='<div class="admin-empty">Меток пока нет</div>';return;}
+    markersData.forEach(function(m){
+        const item=document.createElement('div');item.className='admin-item';
+        const t=document.createElement('div');t.innerHTML='<b>'+m.type+'</b> — '+(m.city||'—');item.appendChild(t);
+        const meta=document.createElement('div');meta.className='meta';meta.textContent=(m.address||'...')+' · '+(m.author||'—');item.appendChild(meta);
+        const btn=document.createElement('button');btn.className='del-btn';btn.textContent='Удалить';btn.setAttribute('data-id',m.id);item.appendChild(btn);
+        content.appendChild(item);
+    });
+}
+async function renderAdminUsers(){
+    const content=document.getElementById('admin-content');
+    if(!content)return;
+    content.innerHTML='<div class="admin-empty">Загрузка...</div>';
+    const{data:users,error}=await supabaseClient.from('profiles').select('id, username, role, total_markers').order('total_markers',{ascending:false});
+    if(error){content.innerHTML='<div class="admin-empty">Ошибка: '+error.message+'</div>';return;}
+    content.innerHTML='';
+    if(!users||users.length===0){content.innerHTML='<div class="admin-empty">Пользователей нет</div>';return;}
+    users.forEach(function(u){
+        const item=document.createElement('div');item.className='admin-item';
+        const title=document.createElement('div');title.innerHTML='<b>'+(u.username||'без имени')+'</b>';item.appendChild(title);
+        const meta=document.createElement('div');meta.className='meta';meta.textContent='Меток: '+(u.total_markers||0)+' · Роль: '+(u.role||'user');item.appendChild(meta);
+        const row=document.createElement('div');row.style.marginTop='6px';row.style.display='flex';row.style.gap='5px';row.style.flexWrap='wrap';
+        if(u.role!=='moderator'&&u.role!=='admin'){const b=document.createElement('button');b.textContent='Модератор';b.style.cssText='padding:5px 9px;background:#00bfa5;color:#001414;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;';b.onclick=function(){setUserRole(u.id,'moderator');};row.appendChild(b);}
+        if(u.role!=='admin'){const b=document.createElement('button');b.textContent='Админ';b.style.cssText='padding:5px 9px;background:#ffc107;color:#000;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;';b.onclick=function(){setUserRole(u.id,'admin');};row.appendChild(b);}
+        if(u.role&&u.role!=='user'){const b=document.createElement('button');b.textContent='Снять права';b.style.cssText='padding:5px 9px;background:#ff5252;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;';b.onclick=function(){setUserRole(u.id,'user');};row.appendChild(b);}
+        item.appendChild(row);content.appendChild(item);
+    });
+}
+async function setUserRole(userId,newRole){
+    const{error}=await supabaseClient.from('profiles').update({role:newRole}).eq('id',userId);
+    if(error){window.alert('Ошибка: '+error.message);return;}
+    renderAdminUsers();
+}
+document.getElementById('admin-list').addEventListener('click',async function(e){
+    if(currentUser!==ADMIN_LOGIN&&currentRole!=='admin')return;
+    const btn=e.target.closest('.del-btn');if(!btn)return;
+    const id=btn.getAttribute('data-id');if(!id)return;
+    const reason=window.prompt('Укажите причину удаления метки:');
+    if(reason===null)return;
+    if(!reason.trim()){window.alert('Причина обязательна!');return;}
+    const{error}=await supabaseClient.from('vinera_markers').delete().eq('id',id);
+    if(error){window.alert('Не удалось удалить: '+error.message);return;}
+    markersData=markersData.filter(m=>String(m.id)!==String(id));
+    drawMarkers();updateCityStatus();renderAdmin();
+    window.alert('Метка удалена.\nПричина: '+reason);
+});
+checkSession();
+setInterval(function(){pingPresence();},60000);
+setInterval(function(){updateCounters();},30000);
+setInterval(async function(){await loadMarkers();},20000);
+setInterval(async function(){const cutoff=new Date(Date.now()-LIFETIME_MS).toISOString();await supabaseClient.from('vinera_markers').delete().lt('created_at',cutoff);},60000);
+});
+</script>
+</body>
+</html>
