@@ -99,30 +99,33 @@ html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Ro
     window.addEventListener('load',function(){
 const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand();
 
-// --- ПРОВЕРКА ДОСТУПА ЧЕРЕЗ TELEGRAM ---
+// --- ПРОВЕРКА ДОСТУПА ЧЕРЕЗ БАЗУ ---
 async function checkAccess() {
     if (!tg || !tg.initData) {
-        document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#00bfa5;margin-top:50px;">Доступ запрещен</h2><p style="margin-top:20px;font-size:16px;">Для использования радара<br>авторизуйтесь через Telegram-бота.</p><a href="https://t.me/vinera_radar_bot" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#00bfa5;color:#000;text-decoration:none;border-radius:10px;font-weight:bold;">Открыть бота</a></div>';
+        document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#00bfa5;margin-top:50px;">Доступ запрещен</h2><p style="margin-top:20px;font-size:16px;">Откройте радар через Telegram-бота <b>@vinera_radar_bot</b></p></div>';
         return false;
     }
+    
     try {
-        const res = await fetch('https://hpzemwurwkuthcgmtvlw.supabase.co/functions/v1/dynamic-service', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'apikey': 'sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3',
-                'Authorization': 'Bearer ТВОЙ_ПУБЛИЧНЫЙ_КЛЮЧ_ИЗ_ПРОЕКТА_HPZEM'
-            },
-            body: JSON.stringify({ initData: tg.initData })
-        });
-        const data = await res.json();
-        if (!data.allowed) {
-            document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#ff5252;margin-top:50px;">Нет доступа</h2><p style="margin-top:20px;font-size:16px;">' + (data.error || 'Подтвердите номер телефона в боте.') + '</p><a href="https://t.me/vinera_radar_bot" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#00bfa5;color:#000;text-decoration:none;border-radius:10px;font-weight:bold;">Перейти в бота</a></div>';
+        const user = tg.initDataUnsafe.user;
+        if (!user) return false;
+
+        const supabase = window.supabase.createClient(
+            'https://hpzemwurwkuthcgmtvlw.supabase.co', 
+            'ТВОЙ_ПУБЛИЧНЫЙ_КЛЮЧ_ИЗ_ПРОЕКТА_HPZEM'
+        );
+        
+        // Ищем твой Telegram ID в базе
+        const { data: profile, error } = await supabase.from('profiles').select('phone').eq('telegram_id', user.id).maybeSingle();
+
+        if (profile && profile.phone) {
+            return true; // Телефон найден — пускаем
+        } else {
+            document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#ff5252;margin-top:50px;">Нет доступа</h2><p style="margin-top:20px;font-size:16px;">Ваш номер телефона не подтвержден.<br>Зайдите в бота <b>@vinera_radar_bot</b> и нажмите /start.</p></div>';
             return false;
         }
-        return true;
     } catch (e) {
-        document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#ff5252;background:#001414;height:100vh;padding-top:50px;">Ошибка сервера. Попробуйте позже.</div>';
+        document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#ff5252;background:#001414;height:100vh;padding-top:50px;">Ошибка при подключении к базе.</div>';
         return false;
     }
 }
