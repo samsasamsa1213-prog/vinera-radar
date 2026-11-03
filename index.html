@@ -99,35 +99,13 @@ html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Ro
     window.addEventListener('load',function(){
 const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand();
 
-// --- ПРОВЕРКА ДОСТУПА ЧЕРЕЗ БАЗУ ---
+// --- ПРОВЕРКА ДОСТУПА (ТОЛЬКО TELEGRAM) ---
 async function checkAccess() {
     if (!tg || !tg.initData) {
         document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#00bfa5;margin-top:50px;">Доступ запрещен</h2><p style="margin-top:20px;font-size:16px;">Откройте радар через Telegram-бота <b>@vinera_radar_bot</b></p></div>';
         return false;
     }
-    
-    try {
-        const user = tg.initDataUnsafe.user;
-        if (!user) return false;
-
-        const supabase = window.supabase.createClient(
-            'https://hpzemwurwkuthcgmtvlw.supabase.co', 
-            'ТВОЙ_ПУБЛИЧНЫЙ_КЛЮЧ_ИЗ_ПРОЕКТА_HPZEM'
-        );
-        
-        // Ищем твой Telegram ID в базе
-        const { data: profile, error } = await supabase.from('profiles').select('phone').eq('telegram_id', user.id).maybeSingle();
-
-        if (profile && profile.phone) {
-            return true; // Телефон найден — пускаем
-        } else {
-            document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#ff5252;margin-top:50px;">Нет доступа</h2><p style="margin-top:20px;font-size:16px;">Ваш номер телефона не подтвержден.<br>Зайдите в бота <b>@vinera_radar_bot</b> и нажмите /start.</p></div>';
-            return false;
-        }
-    } catch (e) {
-        document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#ff5252;background:#001414;height:100vh;padding-top:50px;">Ошибка при подключении к базе.</div>';
-        return false;
-    }
+    return true; // Пускаем к экрану входа
 }
 
 checkAccess().then(allowed => {
@@ -135,9 +113,9 @@ checkAccess().then(allowed => {
 
     // --- ОСНОВНОЙ КОД РАДАРА ---
     const SUPABASE_URL='https://hpzemwurwkuthcgmtvlw.supabase.co';
-    const SUPABASE_KEY='sb_publishable_Gg3LEIO-hequGbxdxzu4IQ_02MRg3t3';
+    const SUPABASE_KEY='sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
     const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-    const OWNER_LOGIN='bihepka';
+    const OWNER_LOGIN='bihepka'; // Твой логин
 
     function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
@@ -161,10 +139,20 @@ checkAccess().then(allowed => {
     async function checkSession(){
         const{data}=await supabaseClient.auth.getSession();
         if(data.session){
-            const{data:profile}=await supabaseClient.from('profiles').select('username,role,is_banned').eq('id',data.session.user.id).single();
+            const{data:profile}=await supabaseClient.from('profiles').select('username,role,is_banned,phone').eq('id',data.session.user.id).single();
             currentUser=profile?profile.username:'user';
             currentRole=profile&&profile.role?profile.role:'user';
             currentBanned=profile&&profile.is_banned?true:false;
+            
+            // Проверка телефона ПОСЛЕ ввода пароля
+            if(!profile || !profile.phone){
+                await supabaseClient.auth.signOut();
+                authScreen.style.display='none';
+                document.getElementById('app').style.display='none';
+                document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#001414;height:100vh;font-family:sans-serif;"><h2 style="color:#ff5252;margin-top:50px;">Нет доступа</h2><p style="margin-top:20px;font-size:16px;">Ваш номер не подтвержден.<br>Зайдите в бота <b>@vinera_radar_bot</b> и отправьте номер.</p></div>';
+                return;
+            }
+
             if(currentBanned){
                 await supabaseClient.auth.signOut(); authScreen.style.display='none'; document.getElementById('app').style.display='none';
                 let banScreen=document.getElementById('ban-screen');
