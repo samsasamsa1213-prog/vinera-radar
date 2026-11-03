@@ -104,7 +104,7 @@ const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const OWNER_LOGIN='bihepka';
 const map=L.map('map',{zoomControl:false}).setView([55.7558,37.6173],5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'dark-tiles'}).addTo(map);
-let currentMarkerType='БПЛА',currentCity=null,markersData=[],currentUser=null,currentRole='user';
+let currentMarkerType='БПЛА',currentCity=null,markersData=[],currentUser=null,currentRole='user',currentBanned=false;
 let recentMarkerTimes=[];const MAX_MARKERS=2,COOLDOWN_MS=30000;
 function canPlaceMarker(){const now=Date.now();recentMarkerTimes=recentMarkerTimes.filter(t=>now-t<COOLDOWN_MS);if(recentMarkerTimes.length<MAX_MARKERS)return{allowed:true,wait:0};const oldest=Math.min.apply(null,recentMarkerTimes);return{allowed:false,wait:Math.ceil((COOLDOWN_MS-(now-oldest))/1000)};}
 const METADATA={'БПЛА':{color:'#00bfa5',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},'Ракета':{color:'#ff5252',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>'},'Истребитель':{color:'#40c4ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>'},'Сирена':{color:'#b388ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>'},'Взрыв':{color:'#ffc107',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>'},'Тихо':{color:'#00e676',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}};
@@ -114,7 +114,7 @@ const authScreen=document.getElementById('auth-screen'),authLogin=document.getEl
 let isRegisterMode=false;
 function showAuthError(msg){authError.textContent=msg;authError.style.display='block';}
 authToggle.addEventListener('click',function(){isRegisterMode=!isRegisterMode;authTitle.textContent=isRegisterMode?'РЕГИСТРАЦИЯ':'ВХОД';authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';authToggle.textContent=isRegisterMode?'У меня уже есть аккаунт':'Создать аккаунт';authError.style.display='none';});
-async function handleAuth(){const login=authLogin.value.trim().toLowerCase(),password=authPassword.value;if(!login||!password){showAuthError('Введите логин и пароль');return;}if(login.length<3){showAuthError('Логин не короче 3 символов');return;}if(password.length<6){showAuthError('Пароль не короче 6 символов');return;}authBtn.disabled=true;authBtn.textContent='Подождите...';authError.style.display='none';const email=login+'@vinera.app';try{if(isRegisterMode){const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});if(error)throw error;if(data.user){await supabaseClient.from('profiles').insert({id:data.user.id,username:login,role:'user',total_markers:0});}}else{const{error}=await supabaseClient.auth.signInWithPassword({email:email,password:password});if(error)throw error;}await checkSession();}catch(e){showAuthError(e.message||'Ошибка входа');}finally{authBtn.disabled=false;authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';}}
+async function handleAuth(){const login=authLogin.value.trim().toLowerCase(),password=authPassword.value;if(!login||!password){showAuthError('Введите логин и пароль');return;}if(login.length<3){showAuthError('Логин не короче 3 символов');return;}if(password.length<6){showAuthError('Пароль не короче 6 символов');return;}authBtn.disabled=true;authBtn.textContent='Подождите...';authError.style.display='none';const email=login+'@vinera.app';try{if(isRegisterMode){const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});if(error)throw error;if(data.user){await supabaseClient.from('profiles').insert({id:data.user.id,username:login,role:'user',total_markers:0,is_banned:false});}}else{const{error}=await supabaseClient.auth.signInWithPassword({email:email,password:password});if(error)throw error;}await checkSession();}catch(e){showAuthError(e.message||'Ошибка входа');}finally{authBtn.disabled=false;authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';}}
 authBtn.addEventListener('click',handleAuth);
 authPassword.addEventListener('keydown',function(e){if(e.key==='Enter')handleAuth();});
 async function pingPresence(){try{const{data}=await supabaseClient.auth.getUser();if(!data||!data.user)return;await supabaseClient.from('profiles').update({last_seen_at:new Date().toISOString()}).eq('id',data.user.id);}catch(e){}}
@@ -122,9 +122,17 @@ async function updateCounters(){try{const fiveMinAgo=new Date(Date.now()-5*60*10
 async function checkSession(){
     const{data}=await supabaseClient.auth.getSession();
     if(data.session){
-        const{data:profile}=await supabaseClient.from('profiles').select('username,role').eq('id',data.session.user.id).single();
+        const{data:profile}=await supabaseClient.from('profiles').select('username,role,is_banned').eq('id',data.session.user.id).single();
         currentUser=profile?profile.username:'user';
         currentRole=profile&&profile.role?profile.role:'user';
+        currentBanned=profile&&profile.is_banned?true:false;
+        if(currentBanned){
+            await supabaseClient.auth.signOut();
+            authScreen.style.display='flex';
+            document.getElementById('app').style.display='none';
+            showAuthError('Ваш аккаунт заблокирован. Обратитесь к владельцу: @Hollisheetq');
+            return;
+        }
         document.getElementById('current-user').textContent=currentUser;
         authScreen.style.display='none';
         document.getElementById('app').style.display='block';
@@ -138,7 +146,7 @@ async function checkSession(){
         document.getElementById('app').style.display='none';
     }
 }
-window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
+window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';currentBanned=false;markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
 function makeIcon(type){const meta=METADATA[type]||METADATA['БПЛА'];return L.divIcon({className:'',html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>',iconSize:[22,22],iconAnchor:[11,11]});}
 function isConfirmed(m){return markersData.some(o=>o.id!==m.id&&o.type===m.type&&map.distance([o.lat,o.lng],[m.lat,m.lng])<=300);}
 function popupHtml(m){const meta=METADATA[m.type]||METADATA['БПЛА'];const confirmed=isConfirmed(m);return '<div class="popup-title">'+meta.svg+' '+m.type+'</div><div class="popup-muted">Поставил: <b>'+(m.author||'—')+'</b></div><div class="popup-muted">Район: '+(m.address||'определяется...')+'</div><div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+(confirmed?'<div class="popup-confirm">✔ Статус подтверждён</div>':'');}
@@ -148,7 +156,7 @@ async function resolveAddress(m){try{const url='https://nominatim.openstreetmap.
 function pluralizeStatus(types){const threats=types.filter(t=>t!=='Тихо');if(threats.length===0)return{text:types.length===0?'—':'Тихо',danger:false};const counts={};threats.forEach(t=>counts[t]=(counts[t]||0)+1);const unique=Object.keys(counts);const hasDanger=unique.some(t=>dangerTypes.includes(t));const pm={'Взрыв':'Взрывы','Сирена':'Сирены','Ракета':'Ракеты','БПЛА':'БПЛА','Истребитель':'Истребители'};const labels=unique.map(t=>counts[t]>1?(pm[t]||t):t);return{text:'⚠ '+labels.join(' · '),danger:hasDanger};}
 function updateCityStatus(){const box=document.getElementById('city-status'),nameEl=box.querySelector('.city-name'),stateEl=box.querySelector('.city-state');nameEl.textContent=(currentCity||'ГОРОД НЕ ВЫБРАН').toUpperCase();if(!currentCity){stateEl.textContent='—';box.classList.remove('danger');return;}const types=markersData.filter(m=>m.city===currentCity).map(m=>m.type);const res=pluralizeStatus(types);stateEl.textContent=res.text;box.classList.toggle('danger',res.danger);}
 window.setMarkerType=function(type,btn){currentMarkerType=type;document.querySelectorAll('.marker-btn').forEach(b=>b.classList.remove('selected'));if(btn)btn.classList.add('selected');document.getElementById('status').innerText='Выбран: '+type+'. Кликните на карту.';};
-map.on('click',async function(e){if(!currentCity){document.getElementById('status').innerText='Сначала найдите город через поиск!';return;}const check=canPlaceMarker();if(!check.allowed){document.getElementById('status').innerText='⏳ Подождите '+check.wait+' сек. (лимит 2 метки за 30 сек)';return;}const m={type:currentMarkerType,lat:e.latlng.lat,lng:e.latlng.lng,city:currentCity,author:currentUser,address:'определяется...'};const{data,error}=await supabaseClient.from('vinera_markers').insert([m]).select().single();if(error){document.getElementById('status').innerText='Ошибка сохранения: '+error.message;return;}recentMarkerTimes.push(Date.now());markersData.push(data);drawMarkers();updateCityStatus();resolveAddress(data);document.getElementById('status').innerText='Метка поставлена ✔ (осталось: '+(MAX_MARKERS-recentMarkerTimes.length)+')';if(currentUser){const{data:p}=await supabaseClient.from('profiles').select('total_markers').eq('username',currentUser).single();if(p){await supabaseClient.from('profiles').update({total_markers:(p.total_markers||0)+1}).eq('username',currentUser);}}});
+map.on('click',async function(e){if(currentBanned){document.getElementById('status').innerText='Вы заблокированы';return;}if(!currentCity){document.getElementById('status').innerText='Сначала найдите город через поиск!';return;}const check=canPlaceMarker();if(!check.allowed){document.getElementById('status').innerText='⏳ Подождите '+check.wait+' сек. (лимит 2 метки за 30 сек)';return;}const m={type:currentMarkerType,lat:e.latlng.lat,lng:e.latlng.lng,city:currentCity,author:currentUser,address:'определяется...'};const{data,error}=await supabaseClient.from('vinera_markers').insert([m]).select().single();if(error){document.getElementById('status').innerText='Ошибка сохранения: '+error.message;return;}recentMarkerTimes.push(Date.now());markersData.push(data);drawMarkers();updateCityStatus();resolveAddress(data);document.getElementById('status').innerText='Метка поставлена ✔ (осталось: '+(MAX_MARKERS-recentMarkerTimes.length)+')';if(currentUser){const{data:p}=await supabaseClient.from('profiles').select('total_markers').eq('username',currentUser).single();if(p){await supabaseClient.from('profiles').update({total_markers:(p.total_markers||0)+1}).eq('username',currentUser);}}});
 window.searchCity=async function(){const city=document.getElementById('city-input').value.trim();if(!city)return;document.getElementById('status').innerText='Поиск...';try{const res=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(city));const data=await res.json();if(data&&data.length>0){map.setView([parseFloat(data[0].lat),parseFloat(data[0].lon)],12);document.getElementById('status').innerText='Найден: '+data[0].display_name;currentCity=data[0].display_name.split(',')[0].trim();updateCityStatus();}else{document.getElementById('status').innerText='Город не найден';}}catch(e){document.getElementById('status').innerText='Ошибка поиска';}};
 window.toggleMenu=function(){document.getElementById('menu-panel').classList.toggle('open');};
     let adminOpen=false,adminTab='markers';
@@ -165,7 +173,6 @@ function renderAdmin(){
     list.innerHTML='';
     if(!adminOpen)return;
     const isOwner=(currentUser===OWNER_LOGIN);
-
     let tabs='<div style="display:flex;gap:6px;margin-bottom:10px;">';
     tabs+='<button id="tab-markers" style="flex:1;padding:8px;border-radius:8px;border:1px solid '+(adminTab==='markers'?'#00bfa5':'#005a52')+';background:'+(adminTab==='markers'?'#003a36':'transparent')+';color:'+(adminTab==='markers'?'#00bfa5':'#4db6ac')+';font-weight:700;font-size:12px;cursor:pointer;">🗺 Метки</button>';
     if(isOwner){
@@ -173,10 +180,8 @@ function renderAdmin(){
     }
     tabs+='</div><div id="admin-content"></div>';
     list.innerHTML=tabs;
-
     document.getElementById('tab-markers').onclick=function(){adminTab='markers';renderAdmin();};
     if(isOwner)document.getElementById('tab-users').onclick=function(){adminTab='users';renderAdmin();};
-
     if(adminTab==='markers')renderAdminMarkers();
     else renderAdminUsers();
 }
@@ -198,48 +203,74 @@ async function renderAdminUsers(){
     if(!content)return;
     if(currentUser!==OWNER_LOGIN){content.innerHTML='<div class="admin-empty">Нет прав</div>';return;}
     content.innerHTML='<div class="admin-empty">Загрузка...</div>';
-    const{data:users,error}=await supabaseClient.from('profiles').select('id, username, role, total_markers').order('total_markers',{ascending:false});
+    const{data:users,error}=await supabaseClient.from('profiles').select('id, username, role, total_markers, is_banned').order('total_markers',{ascending:false});
     if(error){content.innerHTML='<div class="admin-empty">Ошибка: '+error.message+'</div>';return;}
     content.innerHTML='';
     if(!users||users.length===0){content.innerHTML='<div class="admin-empty">Пользователей нет</div>';return;}
     users.forEach(function(u){
         const item=document.createElement('div');
-        item.style.cssText='background:#002020;border:1px solid #005a52;border-radius:12px;padding:10px 12px;margin-bottom:8px;';
+        item.style.cssText='background:#002020;border:1px solid #005a52;border-radius:12px;padding:10px 12px;margin-bottom:8px;'+(u.is_banned?'opacity:.6;border-color:#ff1744;':'');
         const top=document.createElement('div');
         top.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;';
         const name=document.createElement('div');
         name.style.cssText='font-weight:800;color:#b2dfdb;font-size:13px;';
         name.textContent=u.username||'без имени';
         const badge=document.createElement('span');
-        const rc={'moderator':'background:#00bfa5;color:#001414;','user':'background:#005a52;color:#b2dfdb;'};
-        badge.style.cssText='padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;'+(rc[u.role]||rc['user']);
-        badge.textContent=(u.role==='moderator'?'МОДЕРАТОР':'ПОЛЬЗОВАТЕЛЬ');
+        let bc='background:#005a52;color:#b2dfdb;';
+        let bt='ПОЛЬЗОВАТЕЛЬ';
+        if(u.is_banned){bc='background:#ff1744;color:#fff;';bt='ЗАБАНЕН';}
+        else if(u.role==='moderator'){bc='background:#00bfa5;color:#001414;';bt='МОДЕРАТОР';}
+        else if(u.username===OWNER_LOGIN){bc='background:#ffc107;color:#000;';bt='ВЛАДЕЛЕЦ';}
+        badge.style.cssText='padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;'+bc;
+        badge.textContent=bt;
         top.appendChild(name);top.appendChild(badge);item.appendChild(top);
         const meta=document.createElement('div');
         meta.style.cssText='color:#4db6ac;font-size:11px;margin-bottom:8px;';
-        meta.textContent='📊 Меток поставлено: '+(u.total_markers||0);
+        meta.textContent='📊 Меток: '+(u.total_markers||0);
         item.appendChild(meta);
-        const row=document.createElement('div');
-        row.style.cssText='display:flex;gap:6px;flex-wrap:wrap;';
-        if(u.role!=='moderator'){
-            const b=document.createElement('button');
-            b.textContent='🛡 Сделать модератором';
-            b.style.cssText='flex:1;padding:8px;background:#00bfa5;color:#001414;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
-            b.onclick=function(){setUserRole(u.id,'moderator');};
-            row.appendChild(b);
-        }else{
-            const b=document.createElement('button');
-            b.textContent='❌ Снять права';
-            b.style.cssText='flex:1;padding:8px;background:#ff5252;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
-            b.onclick=function(){setUserRole(u.id,'user');};
-            row.appendChild(b);
+        if(u.username!==OWNER_LOGIN){
+            const row=document.createElement('div');
+            row.style.cssText='display:flex;gap:6px;flex-wrap:wrap;';
+            if(!u.is_banned){
+                if(u.role!=='moderator'){
+                    const b=document.createElement('button');
+                    b.textContent='🛡 Модератор';
+                    b.style.cssText='flex:1;padding:8px;background:#00bfa5;color:#001414;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
+                    b.onclick=function(){setUserRole(u.id,'moderator');};
+                    row.appendChild(b);
+                }else{
+                    const b=document.createElement('button');
+                    b.textContent='❌ Снять права';
+                    b.style.cssText='flex:1;padding:8px;background:#ff9800;color:#000;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
+                    b.onclick=function(){setUserRole(u.id,'user');};
+                    row.appendChild(b);
+                }
+            }
+            const banBtn=document.createElement('button');
+            if(u.is_banned){
+                banBtn.textContent='✅ Разбанить';
+                banBtn.style.cssText='flex:1;padding:8px;background:#00c853;color:#001414;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
+                banBtn.onclick=function(){setBan(u.id,false);};
+            }else{
+                banBtn.textContent='🚫 Забанить';
+                banBtn.style.cssText='flex:1;padding:8px;background:#ff1744;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px;font-weight:800;';
+                banBtn.onclick=function(){setBan(u.id,true);};
+            }
+            row.appendChild(banBtn);
+            item.appendChild(row);
         }
-        item.appendChild(row);content.appendChild(item);
+        content.appendChild(item);
     });
 }
 async function setUserRole(userId,newRole){
     if(currentUser!==OWNER_LOGIN){window.alert('Нет прав');return;}
     const{error}=await supabaseClient.from('profiles').update({role:newRole}).eq('id',userId);
+    if(error){window.alert('Ошибка: '+error.message);return;}
+    renderAdminUsers();
+}
+async function setBan(userId,ban){
+    if(currentUser!==OWNER_LOGIN){window.alert('Нет прав');return;}
+    const{error}=await supabaseClient.from('profiles').update({is_banned:ban}).eq('id',userId);
     if(error){window.alert('Ошибка: '+error.message);return;}
     renderAdminUsers();
 }
