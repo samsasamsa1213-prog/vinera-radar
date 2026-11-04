@@ -31,6 +31,15 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #auth-toggle { padding: 12px; background: transparent; color: var(--accent-soft); border: 1px dashed var(--glass-border); border-radius: 12px; cursor: pointer; font-size: 14px; }
 #auth-error { display: none; color: var(--danger); font-size: 13px; text-align: center; padding: 8px; background: rgba(255, 23, 68, 0.1); border-radius: 8px; }
 
+/* Экран онбординга (выбор города/гео) */
+#onboarding-screen { position: fixed; inset: 0; z-index: 9998; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+#onboarding-screen.active { display: flex; animation: fadeIn 0.5s; }
+#onboarding-screen h2 { color: var(--accent); font-size: 24px; margin-bottom: 10px; font-weight: 800; letter-spacing: 1px; }
+#onboarding-screen p { color: var(--accent-soft); font-size: 14px; margin-bottom: 30px; line-height: 1.5; max-width: 300px; }
+.onboarding-btn { width: 100%; max-width: 300px; padding: 16px; background: var(--accent); color: #001414; border: none; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.4); }
+.onboarding-btn:active { transform: scale(0.97); }
+.onboarding-btn.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none; }
+
 /* Основное приложение */
 #app { display: none; height: 100%; position: relative; }
 #map-overlay { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
@@ -44,40 +53,17 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #city-status .city-state { font-size: 14px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #city-status.danger .city-state { color: #ff5252; }
 
-/* Новый стиль заголовка VINERA RADAR */
-#site-title {
-    background: linear-gradient(90deg, #00ffcc, #007a66);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 900;
-    font-size: 18px;
-    letter-spacing: 3px;
-    padding-top: 5px;
-    white-space: nowrap;
-    filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.4));
-    text-transform: uppercase;
-}
+#site-title { background: linear-gradient(90deg, #00ffcc, #007a66); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 18px; letter-spacing: 3px; padding-top: 5px; white-space: nowrap; filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.4)); text-transform: uppercase; }
 
 #search-box { display: flex; gap: 8px; }
 #city-input { flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--panel); backdrop-filter: blur(10px); color: var(--text); outline: none; font-size: 14px; }
 #search-btn { padding: 12px 18px; background: var(--accent); color: #001414; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 14px; }
 #status { font-size: 11px; color: var(--accent-soft); text-align: center; padding: 6px 10px; background: var(--panel); backdrop-filter: blur(10px); border-radius: 10px; border: 1px solid var(--glass-border); margin-bottom: 5px; }
 
-/* Кнопка "Сообщить" по центру */
-#show-markers-btn {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    bottom: calc(var(--nav-height) + 15px);
-    z-index: 1000; padding: 12px 24px; border-radius: 24px;
-    background: var(--accent); color: #001414; border: none;
-    box-shadow: 0 5px 20px rgba(0, 255, 204, 0.5);
-    font-weight: 800; font-size: 15px;
-    display: flex; align-items: center; gap: 8px;
-    cursor: pointer; transition: transform 0.2s;
-}
+#show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 15px); z-index: 1000; padding: 12px 24px; border-radius: 24px; background: var(--accent); color: #001414; border: none; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.5); font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.2s; }
 #show-markers-btn:active { transform: translateX(-50%) scale(0.95); }
 #show-markers-btn svg { width: 20px; height: 20px; }
 
-/* Шторка */
 #markers-sheet-overlay { position: absolute; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); display: none; opacity: 0; transition: opacity 0.3s; }
 #markers-sheet-overlay.active { display: block; opacity: 1; }
 #markers-sheet { position: absolute; bottom: var(--nav-height); left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--accent); border-radius: 24px 24px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1); z-index: 2001; }
@@ -89,7 +75,6 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .marker-btn:active { transform: scale(0.9); }
 .marker-btn.selected { border-color: var(--accent); background: rgba(0, 255, 204, 0.15); box-shadow: 0 0 20px rgba(0, 255, 204, 0.4); }
 
-/* Метки на карте */
 .pulse-marker { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 15px currentColor; animation: pulse 1.5s infinite ease-in-out; }
 .pulse-marker svg { width: 60%; height: 60%; display: block; }
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
@@ -100,14 +85,12 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .popup-title svg { width: 20px; height: 20px; }
 .popup-muted { color: var(--accent-soft); font-size: 12px; margin-top: 3px; }
 
-/* Нижняя навигация */
 #bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: var(--panel); backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); z-index: 2500; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
 .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: none; color: var(--accent-soft); font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.3s; flex: 1; height: 100%; }
 .nav-btn svg { width: 24px; height: 24px; transition: 0.3s; }
 .nav-btn.active { color: var(--accent); }
 .nav-btn.active svg { transform: translateY(-3px); filter: drop-shadow(0 0 8px var(--accent)); }
 
-/* События */
 #feed-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; animation: slideIn 0.3s ease-out; }
 #feed-screen.active { display: flex; }
 @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -122,7 +105,6 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .feed-meta { font-size: 11px; color: var(--accent-soft); }
 .feed-empty { text-align: center; color: var(--accent-soft); margin-top: 50px; font-size: 14px; }
 
-/* Профиль */
 #profile-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; animation: slideIn 0.3s ease-out; }
 #profile-screen.active { display: flex; }
 .profile-card { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 20px; }
@@ -156,9 +138,26 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 </head>
 <body>
 
+<!-- Экран входа -->
 <div id="auth-screen"><div class="auth-box"><h2 id="auth-title">ВХОД</h2><input type="text" id="auth-login" placeholder="Логин" autocomplete="username"><input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password"><div id="auth-error"></div><div class="cf-turnstile" data-sitekey="0x4AAAAAAFzf1X8HqQLWzdve" data-callback="onTurnstileSuccess" style="margin-bottom: 10px;"></div><button id="auth-btn">Войти</button><button id="auth-toggle">Создать аккаунт</button></div></div>
 
+<!-- Экран онбординга (Геолокация) -->
+<div id="onboarding-screen">
+    <h2>Привет! 👋</h2>
+    <p>Чтобы видеть события только в твоем городе и ставить метки, нам нужно знать, где ты находишься.</p>
+    <button class="onboarding-btn" onclick="requestGeoLocation()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Поделиться геолокацией
+    </button>
+    <button class="onboarding-btn secondary" onclick="showManualCitySearch()">
+        Выбрать город вручную
+    </button>
+</div>
+
+<!-- Основное приложение -->
 <div id="app">
+    
+    <!-- Слой карты -->
     <div id="map-container">
         <div id="map"></div>
         <div id="map-overlay">
@@ -189,11 +188,13 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
         </div>
     </div>
 
+    <!-- Экран Лента (События) -->
     <div id="feed-screen">
         <div class="feed-header"><h2>События</h2><div class="time-filter">За 24 часа</div></div>
         <div id="feed-list" class="feed-list"></div>
     </div>
 
+    <!-- Экран Профиль -->
     <div id="profile-screen">
         <div class="profile-card">
             <div class="profile-avatar" id="profile-avatar-letter">U</div>
@@ -211,21 +212,8 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
         </div>
         <div id="admin-panel-content">
             <div class="admin-tabs"><button class="admin-tab active" id="tab-markers" onclick="switchAdminTab('markers')">Метки</button><button class="admin-tab" id="tab-users" onclick="switchAdminTab('users')">Юзеры</button></div>
-            <button id="clear-all-btn" class="clear-all-btn">🗑 Очистить все метки</button>
-            <div id="admin-content" class="admin-list"></div>
-        </div>
-    </div>
-
-    <div id="bottom-nav">
-        <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
-        <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
-        <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    window.addEventListener('load',function(){
+            <button id="clear
+                window.addEventListener('load',function(){
 const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand();
 
 window.onTurnstileSuccess = function(token) { window.turnstileToken = token; };
@@ -248,8 +236,9 @@ checkAccess().then(allowed => {
     function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
     const map=L.map('map',{zoomControl:false}).setView([55.7558,37.6173],5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'dark-tiles'}).addTo(map);
-    let currentMarkerType='БПЛА',currentCity=null,markersData=[],feedData=[],currentUser=null,currentRole='user',currentBanned=false,currentPhone=null,currentTotalMarkers=0;
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'dark-tiles', tileSize: 512, zoomOffset: -1}).addTo(map);
+    
+    let currentMarkerType='БПЛА',currentCity=null,userCity=null,markersData=[],feedData=[],currentUser=null,currentRole='user',currentBanned=false,currentPhone=null,currentTotalMarkers=0;
     let recentMarkerTimes=[];const MAX_MARKERS=2,COOLDOWN_MS=30000;
     
     function canPlaceMarker(){const now=Date.now();recentMarkerTimes=recentMarkerTimes.filter(t=>now-t<COOLDOWN_MS);if(recentMarkerTimes.length<MAX_MARKERS)return{allowed:true,wait:0};const oldest=Math.min.apply(null,recentMarkerTimes);return{allowed:false,wait:Math.ceil((COOLDOWN_MS-(now-oldest))/1000)};}
@@ -349,13 +338,26 @@ checkAccess().then(allowed => {
             authScreen.style.display='none'; 
             document.getElementById('app').style.display='block';
             
-            setTimeout(function(){map.invalidateSize();},200); 
-            await loadMarkers(); 
-            await updateCounters();
+            // Проверка, выбран ли город (сохраняем в localStorage)
+            const savedCity = localStorage.getItem('vinera_city');
+            if(!savedCity && currentUser !== 'bihepka') {
+                // Если города нет, показываем онбординг
+                document.getElementById('onboarding-screen').classList.add('active');
+                document.getElementById('app').style.display='none';
+            } else {
+                userCity = savedCity;
+                if(userCity) {
+                    document.getElementById('city-input').value = userCity;
+                    document.getElementById('status').innerText = `Ваш город: ${userCity}`;
+                }
+                setTimeout(function(){map.invalidateSize();},200); 
+                await loadMarkers(); 
+                await updateCounters();
+            }
         }else{ authScreen.style.display='flex'; document.getElementById('app').style.display='none'; }
     }
     
-    window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';currentBanned=false;currentPhone=null;markersData=[];feedData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
+    window.logout=async function(){await supabaseClient.auth.signOut();localStorage.removeItem('vinera_city');currentUser=null;currentRole='user';currentBanned=false;currentPhone=null;userCity=null;markersData=[];feedData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
     
     function makeIcon(type){const meta=METADATA[type]||METADATA['БПЛА'];return L.divIcon({className:'',html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>',iconSize:[22,22],iconAnchor:[11,11]});}
     function isConfirmed(m){return markersData.some(o=>o.id!==m.id&&o.type===m.type&&map.distance([o.lat,o.lng],[m.lat,m.lng])<=300);}
@@ -376,7 +378,13 @@ checkAccess().then(allowed => {
         if(error){document.getElementById('status').innerText='Ошибка: '+error.message;return;}
         
         const now = Date.now();
-        markersData=(data||[]).filter(m=>(now-new Date(m.created_at).getTime())<LIFETIME_MS);
+        
+        // ФИЛЬТР ПО ВРЕМЕНИ И ПО ГОРОДУ
+        markersData=(data||[]).filter(m => {
+            const isFresh = (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
+            const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
+            return isFresh && isMyCity;
+        });
         
         const oneDayAgo = now - (24 * 60 * 60 * 1000);
         feedData = (data||[]).filter(m => new Date(m.created_at).getTime() > oneDayAgo);
@@ -445,9 +453,76 @@ checkAccess().then(allowed => {
             if(data&&data.length>0){
                 map.setView([parseFloat(data[0].lat),parseFloat(data[0].lon)],12);
                 document.getElementById('status').innerText='Найден: '+data[0].display_name;
-                currentCity=data[0].display_name.split(',')[0].trim();updateCityStatus();
+                currentCity=data[0].display_name.split(',')[0].trim();
+                updateCityStatus();
             }else{document.getElementById('status').innerText='Город не найден';}
         }catch(e){document.getElementById('status').innerText='Ошибка поиска';}
+    };
+
+    // ===== ОНБОРДИНГ И ГЕОЛОКАЦИЯ =====
+    window.requestGeoLocation = function() {
+        if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
+        
+        document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=ru`);
+                    const data = await res.json();
+                    const addr = data.address || {};
+                    let city = addr.city || addr.town || addr.village || addr.county || 'Ваш город';
+
+                    // Сохраняем город
+                    userCity = city;
+                    localStorage.setItem('vinera_city', city);
+
+                    document.getElementById('city-input').value = city;
+                    document.getElementById('status').innerText = `Ваш город: ${city}. Метки других городов скрыты.`;
+                    
+                    map.setView([lat, lon], 11);
+
+                    document.getElementById('onboarding-screen').classList.remove('active');
+                    document.getElementById('app').style.display = 'block';
+                    
+                    setTimeout(function(){map.invalidateSize();},200); 
+                    await loadMarkers();
+                } catch (e) {
+                    alert('Не удалось определить город. Выберите его вручную.');
+                    showManualCitySearch();
+                }
+            },
+            (error) => {
+                alert('Вы отклонили геолокацию. Придется выбрать город вручную.');
+                showManualCitySearch();
+            },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+        );
+    };
+
+    window.showManualCitySearch = function() {
+        // Скрываем онбординг и показываем карту с поиском
+        document.getElementById('onboarding-screen').classList.remove('active');
+        document.getElementById('app').style.display = 'block';
+        setTimeout(() => map.invalidateSize(), 200);
+        
+        // Фокусируемся на поле ввода
+        document.getElementById('city-input').focus();
+        document.getElementById('status').innerText = 'Введите ваш город и нажмите Найти';
+    };
+
+    // Когда человек ищет город вручную, тоже сохраняем его
+    const originalSearchCity = window.searchCity;
+    window.searchCity = async function() {
+        await originalSearchCity();
+        if (currentCity) {
+            userCity = currentCity;
+            localStorage.setItem('vinera_city', userCity);
+            await loadMarkers(); // перезагружаем метки с учетом фильтра
+        }
     };
 
     window.switchTab = function(tab) {
@@ -485,7 +560,7 @@ checkAccess().then(allowed => {
             overlay.classList.add('active');
         }
     };
-        // ===== АДМИН-ПАНЕЛЬ =====
+                    // ===== АДМИН-ПАНЕЛЬ =====
     let adminOpen = false;
     let adminTab = 'markers';
 
