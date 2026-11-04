@@ -417,7 +417,7 @@ window.addEventListener('load', function() {
 
                 document.getElementById('profile-name').textContent = currentUser;
                 document.getElementById('profile-avatar-letter').textContent = currentUser.charAt(0).toUpperCase();
-                document.getElementById('profile-stat-markers').textContent = currentTotalMarkers;
+                document.getElementById('profile-stat-markers').textContent = currentTotalMarkers; // Вывод счетчика
 
                 let roleText = 'ПОЛЬЗОВАТЕЛЬ';
                 if (currentRole === 'admin') roleText = 'АДМИНИСТРАТОР';
@@ -443,9 +443,9 @@ window.addEventListener('load', function() {
                 } else {
                     userCity = savedCity;
                     currentCity = savedCity; 
-                    if (userCity) {
-                        document.getElementById('status').innerText = `Ваш город: ${userCity}`;
-                    }
+                    
+                    // Убрали навязчивую надпись "Ваш город: ..."
+                    document.getElementById('status').innerText = `Метки загружены`;
 
                     if (savedGeo) {
                         try {
@@ -529,7 +529,7 @@ window.addEventListener('load', function() {
 
         map.on('zoomend', function() { drawMarkers(); });
 
-        // ===== ИСПРАВЛЕННАЯ ЗАГРУЗКА МЕТОК =====
+        // ===== ЗАГРУЗКА МЕТОК (ИСПРАВЛЕНО) =====
         async function loadMarkers() {
             if (isLoggedOut) return;
             const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
@@ -540,7 +540,7 @@ window.addEventListener('load', function() {
                 const isFresh = (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
                 const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
                 
-                // ФИКС: Показываем метку, если она свежая И (она в моем городе ИЛИ ей меньше 10 секунд)
+                // Показываем метку, если она свежая И (она в моем городе ИЛИ ей меньше 10 секунд)
                 const justPlaced = (now - new Date(m.created_at).getTime()) < 10000;
                 
                 return isFresh && (isMyCity || justPlaced);
@@ -632,7 +632,6 @@ window.addEventListener('load', function() {
             if (!myGeo) return;
             const center = map.getCenter();
             const dist = map.distance([myGeo.lat, myGeo.lon], [center.lat, center.lng]);
-            // Если отодвинулись дальше 5 км от гео — показываем кнопку
             if (dist > 5000) {
                 document.getElementById('back-to-geo-btn').classList.add('active');
             } else {
@@ -674,7 +673,7 @@ window.addEventListener('load', function() {
             }
         };
 
-        // ===== ГЕОЛОКАЦИЯ (ИСПРАВЛЕНО) =====
+        // ===== ГЕОЛОКАЦИЯ (ФИКС МОСКВЫ) =====
         window.requestGeoLocation = function() {
             if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
             document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
@@ -685,18 +684,20 @@ window.addEventListener('load', function() {
                     myGeo = { lat: lat, lon: lon };
                     localStorage.setItem('vinera_geo', JSON.stringify({ lat: lat, lon: lon }));
                     try {
-                        // Запрашиваем zoom=10 (город/район), чтобы не привязывалось к области
                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=ru`);
                         const data = await res.json();
                         const addr = data.address || {};
                         
-                        // ФИКС: Сначала берем город/поселок/деревню, потом район, и только в конце область (state)
-                        let city = addr.city || addr.town || addr.village || addr.municipality || addr.county || addr.state || 'Ваш город';
+                        // ФИКС: Убрали "state", чтобы не кидало в Москву. Берем только город/поселок.
+                        let city = addr.city || addr.town || addr.village || addr.municipality || addr.county || 'Ваш город';
                         
                         userCity = city;
                         currentCity = city;
                         localStorage.setItem('vinera_city', city);
-                        document.getElementById('status').innerText = `Ваш город: ${city}. Метки других городов скрыты.`;
+                        
+                        // Убрали надпись "Ваш город: [Город]" сверху, чтобы не путала
+                        document.getElementById('status').innerText = 'Местоположение определено. Метки загружены.';
+                        
                         map.setView([lat, lon], 13);
                         showUserLocation(lat, lon);
                         document.getElementById('onboarding-screen').classList.remove('active');
@@ -724,7 +725,8 @@ window.addEventListener('load', function() {
             openSearchModal();
             document.getElementById('status').innerText = 'Выберите город в поиске';
         };
-                // ===== РЕЖИМ УСТАНОВКИ МЕТКИ (ШТОРКА) =====
+
+        // ===== РЕЖИМ УСТАНОВКИ МЕТКИ =====
         window.toggleMarkersSheet = function() {
             const sheet = document.getElementById('markers-sheet');
             const overlay = document.getElementById('markers-sheet-overlay');
@@ -739,28 +741,24 @@ window.addEventListener('load', function() {
 
         window.setMarkerType = function(type, btn) {
             if (isPlacingMarker && currentMarkerType === type) {
-                // Если уже выбран этот тип — отменяем режим
                 isPlacingMarker = false;
                 currentMarkerType = null;
                 document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
                 document.getElementById('status').innerText = 'Режим установки метки отменен';
             } else {
-                // Включаем режим
                 isPlacingMarker = true;
                 currentMarkerType = type;
                 document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
                 if (btn) btn.classList.add('selected');
                 document.getElementById('status').innerHTML = '<b>Режим прицела:</b> Тапните по карте, чтобы поставить метку ' + type;
             }
-            toggleMarkersSheet(); // Закрываем шторку
+            toggleMarkersSheet(); 
         };
 
-        // ===== КЛИК ПО КАРТЕ (ИСПРАВЛЕНО) =====
+        // ===== КЛИК ПО КАРТЕ + СЧЕТЧИК =====
         map.on('click', async function(e) {
-            // Если режим прицела выключен — ничего не делаем (карта просто листается/открывает попапы)
             if (!isPlacingMarker || !currentMarkerType) return;
 
-            // Проверка телефона
             if (currentUser !== 'bihepka' && currentUser !== 'Hollisheetq') {
                 if (!currentPhone) {
                     document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Чтобы ставить метки, подтвердите номер в боте!</span>';
@@ -781,9 +779,15 @@ window.addEventListener('load', function() {
 
             document.getElementById('status').innerText = 'Сохранение...';
             
-            // ФИКС: Берем город, который выбран у пользователя, чтобы метка не терялась
+            // Определяем точный город по клику (без областей)
             let clickedCity = currentCity;
-            
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&zoom=12&accept-language=ru`);
+                const data = await res.json();
+                const addr = data.address || {};
+                clickedCity = addr.city || addr.town || addr.village || addr.hamlet || currentCity;
+            } catch(err) {}
+
             const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: clickedCity, author: currentUser || 'Аноним', address: 'определяется...' };
             const { data, error } = await supabaseClient.from('vinera_markers').insert([m]).select().single();
             
@@ -792,13 +796,19 @@ window.addEventListener('load', function() {
                 return; 
             }
 
+            // === ОБНОВЛЯЕМ СЧЕТЧИК В ПРОФИЛЕ ===
+            currentTotalMarkers += 1;
+            document.getElementById('profile-stat-markers').textContent = currentTotalMarkers;
+            // Обновляем в базе Supabase
+            await supabaseClient.from('profiles').update({ total_markers: currentTotalMarkers }).eq('username', currentUser);
+            // =====================================
+
             recentMarkerTimes.push(Date.now());
             markersData.unshift(data);
             drawMarkers();
             updateCityStatus();
             resolveAddress(data);
             
-            // Выключаем режим после установки
             isPlacingMarker = false;
             currentMarkerType = null;
             document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
