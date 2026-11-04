@@ -209,16 +209,17 @@ window.addEventListener('load', function() {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        // --- КАРТА ---
+        // ===== КАРТА (рабочий бесплатный тёмный слой CARTO без ключа) =====
         const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap © CARTO',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 19,
             className: 'dark-tiles'
         }).addTo(map);
+        setTimeout(function() { map.invalidateSize(); }, 300);
 
-        // --- СОСТОЯНИЕ ---
+        // ===== СОСТОЯНИЕ =====
         let currentMarkerType = 'БПЛА';
         let currentCity = null;
         let userCity = null;
@@ -231,6 +232,7 @@ window.addEventListener('load', function() {
         let isLoggedOut = false;
         let pollInterval = null;
         let cleanupInterval = null;
+        let countersInterval = null;
 
         let recentMarkerTimes = [];
         const MAX_MARKERS = 2;
@@ -258,7 +260,7 @@ window.addEventListener('load', function() {
         const layerGroup = L.layerGroup().addTo(map);
         const markerRefs = {};
 
-        // --- AUTH UI ---
+        // ===== AUTH UI =====
         const authScreen = document.getElementById('auth-screen');
         const authLogin = document.getElementById('auth-login');
         const authPassword = document.getElementById('auth-password');
@@ -336,7 +338,7 @@ window.addEventListener('load', function() {
             } catch (e) {}
         }
 
-        // --- СЕССИЯ ---
+        // ===== СЕССИЯ =====
         async function checkSession() {
             const { data } = await supabaseClient.auth.getSession();
             if (data.session) {
@@ -374,6 +376,7 @@ window.addEventListener('load', function() {
 
                 authScreen.style.display = 'none';
                 document.getElementById('app').style.display = 'block';
+                setTimeout(function() { map.invalidateSize(); }, 200);
 
                 const savedCity = localStorage.getItem('vinera_city');
                 if (!savedCity && currentUser !== 'bihepka') {
@@ -385,7 +388,6 @@ window.addEventListener('load', function() {
                         document.getElementById('city-input').value = userCity;
                         document.getElementById('status').innerText = `Ваш город: ${userCity}`;
                     }
-                    setTimeout(function() { map.invalidateSize(); }, 200);
 
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition((pos) => {
@@ -406,6 +408,7 @@ window.addEventListener('load', function() {
             isLoggedOut = true;
             if (pollInterval) clearInterval(pollInterval);
             if (cleanupInterval) clearInterval(cleanupInterval);
+            if (countersInterval) clearInterval(countersInterval);
             await supabaseClient.auth.signOut();
             localStorage.removeItem('vinera_city');
             currentUser = null; currentRole = 'user'; currentBanned = false;
@@ -414,7 +417,7 @@ window.addEventListener('load', function() {
             await checkSession();
         };
 
-        // --- ИКОНКИ И ПОПАПЫ ---
+        // ===== ИКОНКИ И ПОПАПЫ =====
         function makeIcon(type) {
             const meta = METADATA[type] || METADATA['БПЛА'];
             return L.divIcon({
@@ -536,7 +539,6 @@ window.addEventListener('load', function() {
             document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
             if (btn) btn.classList.add('selected');
             document.getElementById('status').innerText = 'Выбран: ' + type + '. Кликните на карту.';
-            // ← ФИКС: закрываем лист после выбора
             toggleMarkersSheet();
         };
 
@@ -791,7 +793,7 @@ window.addEventListener('load', function() {
             await loadMarkers();
         }, 120000);
 
-        setInterval(function() { updateCounters(); }, 60000);
+        countersInterval = setInterval(function() { updateCounters(); }, 60000);
     });
 });
 </script>
