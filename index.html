@@ -273,8 +273,8 @@ window.addEventListener('load', function() {
         setTimeout(function() { map.invalidateSize(); }, 1000);
 
         // ===== СОСТОЯНИЕ =====
-        let currentMarkerType = null; // Тип выбирается только через "Сообщить"
-        let isPlacingMarker = false;  // Режим установки метки
+        let currentMarkerType = null; 
+        let isPlacingMarker = false;  
         let currentCity = null;
         let userCity = null;
         let markersData = [];
@@ -529,6 +529,7 @@ window.addEventListener('load', function() {
 
         map.on('zoomend', function() { drawMarkers(); });
 
+        // ===== ИСПРАВЛЕННАЯ ЗАГРУЗКА МЕТОК =====
         async function loadMarkers() {
             if (isLoggedOut) return;
             const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
@@ -538,7 +539,11 @@ window.addEventListener('load', function() {
             markersData = (data || []).filter(m => {
                 const isFresh = (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
                 const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
-                return isFresh && isMyCity;
+                
+                // ФИКС: Показываем метку, если она свежая И (она в моем городе ИЛИ ей меньше 10 секунд)
+                const justPlaced = (now - new Date(m.created_at).getTime()) < 10000;
+                
+                return isFresh && (isMyCity || justPlaced);
             });
 
             const oneDayAgo = now - (24 * 60 * 60 * 1000);
@@ -592,7 +597,7 @@ window.addEventListener('load', function() {
             threats.forEach(t => counts[t] = (counts[t] || 0) + 1);
             const unique = Object.keys(counts);
             const hasDanger = unique.some(t => dangerTypes.includes(t));
-            const pm = { 'Взрыв': 'Взрывы', 'Сирена': 'Сире höna', 'Ракета': 'Ракеты', 'БПЛА': 'БПЛА', 'Истребитель': 'Истребители' };
+            const pm = { 'Взрыв': 'Взрывы', 'Сирена': 'Сирены', 'Ракета': 'Ракеты', 'БПЛА': 'БПЛА', 'Истребитель': 'Истребители' };
             const labels = unique.map(t => counts[t] > 1 ? (pm[t] || t) : t);
             return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
         }
@@ -608,8 +613,7 @@ window.addEventListener('load', function() {
             stateEl.textContent = res.text;
             box.classList.toggle('danger', res.danger);
         }
-
-        function showUserLocation(lat, lon) {
+                function showUserLocation(lat, lon) {
             if (userLocationLayer) map.removeLayer(userLocationLayer);
             userLocationLayer = L.layerGroup().addTo(map);
             L.circle([lat, lon], { color: '#00ffcc', fillColor: '#00ffcc', fillOpacity: 0.2, radius: 200, weight: 1 }).addTo(userLocationLayer);
@@ -624,12 +628,12 @@ window.addEventListener('load', function() {
             document.getElementById('status').innerText = 'Вы вернулись на своё гео';
         };
 
-        // Следим за картой: если отъехали от гео — показываем кнопку
         map.on('moveend', function() {
             if (!myGeo) return;
             const center = map.getCenter();
             const dist = map.distance([myGeo.lat, myGeo.lon], [center.lat, center.lng]);
-            if (dist > 5000) { // Если сдвинулись дальше 5 км
+            // Если отодвинулись дальше 5 км от гео — показываем кнопку
+            if (dist > 5000) {
                 document.getElementById('back-to-geo-btn').classList.add('active');
             } else {
                 document.getElementById('back-to-geo-btn').classList.remove('active');
@@ -670,7 +674,7 @@ window.addEventListener('load', function() {
             }
         };
 
-        // ===== ГЕОЛОКАЦИЯ =====
+        // ===== ГЕОЛОКАЦИЯ (ИСПРАВЛЕНО) =====
         window.requestGeoLocation = function() {
             if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
             document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
@@ -681,10 +685,14 @@ window.addEventListener('load', function() {
                     myGeo = { lat: lat, lon: lon };
                     localStorage.setItem('vinera_geo', JSON.stringify({ lat: lat, lon: lon }));
                     try {
+                        // Запрашиваем zoom=10 (город/район), чтобы не привязывалось к области
                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=ru`);
                         const data = await res.json();
                         const addr = data.address || {};
-                        let city = addr.city || addr.town || addr.village || addr.county || 'Ваш город';
+                        
+                        // ФИКС: Сначала берем город/поселок/деревню, потом район, и только в конце область (state)
+                        let city = addr.city || addr.town || addr.village || addr.municipality || addr.county || addr.state || 'Ваш город';
+                        
                         userCity = city;
                         currentCity = city;
                         localStorage.setItem('vinera_city', city);
@@ -747,7 +755,7 @@ window.addEventListener('load', function() {
             toggleMarkersSheet(); // Закрываем шторку
         };
 
-        // ===== КЛИК ПО КАРТЕ =====
+        // ===== КЛИК ПО КАРТЕ (ИСПРАВЛЕНО) =====
         map.on('click', async function(e) {
             // Если режим прицела выключен — ничего не делаем (карта просто листается/открывает попапы)
             if (!isPlacingMarker || !currentMarkerType) return;
@@ -773,15 +781,9 @@ window.addEventListener('load', function() {
 
             document.getElementById('status').innerText = 'Сохранение...';
             
-            // Определяем город именно по координатам клика, чтобы не было путаницы
+            // ФИКС: Берем город, который выбран у пользователя, чтобы метка не терялась
             let clickedCity = currentCity;
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&zoom=10&accept-language=ru`);
-                const data = await res.json();
-                const addr = data.address || {};
-                clickedCity = addr.city || addr.town || addr.village || addr.county || currentCity;
-            } catch(err) {}
-
+            
             const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: clickedCity, author: currentUser || 'Аноним', address: 'определяется...' };
             const { data, error } = await supabaseClient.from('vinera_markers').insert([m]).select().single();
             
@@ -795,7 +797,6 @@ window.addEventListener('load', function() {
             drawMarkers();
             updateCityStatus();
             resolveAddress(data);
-            loadMarkers();
             
             // Выключаем режим после установки
             isPlacingMarker = false;
