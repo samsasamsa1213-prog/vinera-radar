@@ -118,7 +118,7 @@ checkAccess().then(allowed => {
 
     const map=L.map('map',{zoomControl:false}).setView([55.7558,37.6173],5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'dark-tiles'}).addTo(map);
-    let currentMarkerType='БПЛА',currentCity=null,markersData=[],currentUser=null,currentRole='user',currentBanned=false;
+    let currentMarkerType='БПЛА',currentCity=null,markersData=[],currentUser=null,currentRole='user',currentBanned=false,currentPhone=null;
     let recentMarkerTimes=[];const MAX_MARKERS=2,COOLDOWN_MS=30000;
     
     function canPlaceMarker(){const now=Date.now();recentMarkerTimes=recentMarkerTimes.filter(t=>now-t<COOLDOWN_MS);if(recentMarkerTimes.length<MAX_MARKERS)return{allowed:true,wait:0};const oldest=Math.min.apply(null,recentMarkerTimes);return{allowed:false,wait:Math.ceil((COOLDOWN_MS-(now-oldest))/1000)};}
@@ -157,11 +157,18 @@ checkAccess().then(allowed => {
                     await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
                 }
 
-                // РЕГИСТРАЦИЯ
+                // РЕГИСТРАЦИЯ (сразу привязываем Telegram ID)
                 const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});
                 if(error)throw error;
                 if(data.user){ 
-                    await supabaseClient.from('profiles').insert({id:data.user.id,username:login,role:'user',total_markers:0,is_banned:false}); 
+                    await supabaseClient.from('profiles').insert({
+                        id:data.user.id,
+                        username:login,
+                        role:'user',
+                        total_markers:0,
+                        is_banned:false,
+                        telegram_id: tgUser ? tgUser.id : null // <-- ВОТ ЭТО СВЯЖЕТ С БОТОМ
+                    }); 
                 }
             }else{
                 const{error}=await supabaseClient.auth.signInWithPassword({email:email,password:password});
@@ -189,6 +196,7 @@ checkAccess().then(allowed => {
             currentUser=profile?profile.username:'user';
             currentRole=(profile&&profile.role)?profile.role:'user';
             currentBanned=(profile&&profile.is_banned)?true:false;
+            currentPhone=(profile&&profile.phone)?profile.phone:null;
             
             if(currentUser==='bihepka'){ currentRole='admin'; currentBanned=false; }
 
@@ -214,7 +222,7 @@ checkAccess().then(allowed => {
         }else{ authScreen.style.display='flex'; document.getElementById('app').style.display='none'; }
     }
     
-    window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';currentBanned=false;markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
+    window.logout=async function(){await supabaseClient.auth.signOut();currentUser=null;currentRole='user';currentBanned=false;currentPhone=null;markersData=[];recentMarkerTimes=[];drawMarkers();await checkSession();};
     function makeIcon(type){const meta=METADATA[type]||METADATA['БПЛА'];return L.divIcon({className:'',html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>',iconSize:[22,22],iconAnchor:[11,11]});}
     function isConfirmed(m){return markersData.some(o=>o.id!==m.id&&o.type===m.type&&map.distance([o.lat,o.lng],[m.lat,m.lng])<=300);}
     function popupHtml(m){const meta=METADATA[m.type]||METADATA['БПЛА'];const confirmed=isConfirmed(m);return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div><div class="popup-muted">Поставил: <b>'+escapeHtml(m.author)+'</b></div><div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div><div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+(confirmed?'<div class="popup-confirm">✔ Статус подтверждён</div>':'');}
@@ -228,8 +236,7 @@ checkAccess().then(allowed => {
     map.on('click',async function(e){
         // ПРОВЕРКА ТЕЛЕФОНА (только для обычных пользователей)
         if (currentUser !== 'bihepka' && currentUser !== 'Hollisheetq') {
-            const { data: profile } = await supabaseClient.from('profiles').select('phone').eq('username', currentUser).single();
-            if (!profile || !profile.phone) {
+            if (!currentPhone) {
                 document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Чтобы ставить метки, подтвердите номер в боте!</span> <a href="https://t.me/vinera_radar_bot" target="_blank" style="color:#00bfa5;">Перейти</a>';
                 return;
             }
@@ -278,7 +285,6 @@ checkAccess().then(allowed => {
         }
         tabs+='</div>';
         
-        // Кнопка очистки всех меток (только для владельца)
         if(isOwner){
             tabs+='<button id="clear-all-btn" style="width:100%;padding:10px;background:#ff1744;color:#fff;border:none;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;margin-bottom:10px;">🗑 Очистить все метки</button>';
         }
@@ -289,7 +295,6 @@ checkAccess().then(allowed => {
         document.getElementById('tab-markers').onclick=function(){adminTab='markers';renderAdmin();};
         if(isOwner)document.getElementById('tab-users').onclick=function(){adminTab='users';renderAdmin();};
         
-        // Логика удаления всех меток
         if(isOwner){
             document.getElementById('clear-all-btn').onclick=async function(){
                 const confirmDelete = window.confirm('Вы уверены, что хотите удалить ВСЕ метки с карты? Это действие нельзя отменить.');
