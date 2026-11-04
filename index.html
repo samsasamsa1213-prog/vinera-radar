@@ -110,7 +110,6 @@ async function checkAccess() {
 checkAccess().then(allowed => {
     if (!allowed) return;
 
-    // --- ВСТАВЬ СЮДА СВОИ ДАННЫЕ ОТ НОВОГО ПРОЕКТА ---
     const SUPABASE_URL='https://hpzemwurwkuthcgmtvlw.supabase.co';
     const SUPABASE_KEY='sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
     const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -138,20 +137,43 @@ checkAccess().then(allowed => {
         if(!login||!password){showAuthError('Введите логин и пароль');return;}
         if(login.length<3){showAuthError('Логин не короче 3 символов');return;}
         if(password.length<6){showAuthError('Пароль не короче 6 символов');return;}
+        
         authBtn.disabled=true;authBtn.textContent='Подождите...';authError.style.display='none';
         const email=login+'@vinera.app';
+        
         try{
             if(isRegisterMode){
+                // ПРОВЕРКА ЛИМИТА АККАУНТОВ
+                const tgUser = tg ? tg.initDataUnsafe?.user : null;
+                if (tgUser) {
+                    const { data: reg } = await supabaseClient.from('registrations').select('count').eq('telegram_id', tgUser.id).maybeSingle();
+                    const currentCount = reg ? reg.count : 0;
+                    
+                    if (currentCount >= 3) {
+                        throw new Error('Лимит аккаунтов исчерпан! С одного Telegram можно создать только 3 аккаунта.');
+                    }
+                    
+                    // Увеличиваем счетчик
+                    await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
+                }
+
+                // РЕГИСТРАЦИЯ
                 const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});
                 if(error)throw error;
-                if(data.user){ await supabaseClient.from('profiles').insert({id:data.user.id,username:login,role:'user',total_markers:0,is_banned:false}); }
+                if(data.user){ 
+                    await supabaseClient.from('profiles').insert({id:data.user.id,username:login,role:'user',total_markers:0,is_banned:false}); 
+                }
             }else{
                 const{error}=await supabaseClient.auth.signInWithPassword({email:email,password:password});
                 if(error)throw error;
             }
             await checkSession();
-        }catch(e){showAuthError(e.message||'Ошибка входа');}
-        finally{authBtn.disabled=false;authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';}
+        }catch(e){
+            showAuthError(e.message||'Ошибка входа');
+        }finally{
+            authBtn.disabled=false;
+            authBtn.textContent=isRegisterMode?'Зарегистрироваться':'Войти';
+        }
     }
     
     authBtn.addEventListener('click',handleAuth);
@@ -226,9 +248,7 @@ checkAccess().then(allowed => {
         }catch(e){document.getElementById('status').innerText='Ошибка поиска';}
     };
     window.toggleMenu=function(){document.getElementById('menu-panel').classList.toggle('open');};
-
-    // --- АДМИН ПАНЕЛЬ ---
-    let adminOpen=false,adminTab='markers';
+      let adminOpen=false,adminTab='markers';
     window.toggleAdmin=function(){
         const isOwner=(currentUser==='bihepka');
         const isModerator=(currentRole==='moderator'||currentRole==='admin');
