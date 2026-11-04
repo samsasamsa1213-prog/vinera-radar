@@ -200,6 +200,14 @@ checkAccess().then(allowed => {
             
             if(currentUser==='bihepka'){ currentRole='admin'; currentBanned=false; }
 
+            // ЕСЛИ НОМЕРА НЕТ В ПРОФИЛЕ, ИЩЕМ ЕГО ПО TELEGRAM ID
+            if(!currentPhone && tg && tg.initDataUnsafe?.user) {
+                const {data: tgProfile} = await supabaseClient.from('profiles').select('phone').eq('telegram_id', tg.initDataUnsafe.user.id).maybeSingle();
+                if(tgProfile && tgProfile.phone) {
+                    currentPhone = tgProfile.phone; // Нашли номер!
+                }
+            }
+
             if(currentBanned){
                 await supabaseClient.auth.signOut(); authScreen.style.display='none'; document.getElementById('app').style.display='none';
                 document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#1a0000;height:100vh;padding-top:50px;"><h2 style="color:#ff1744;">ВЫ ЗАБЛОКИРОВАНЫ</h2><p>Ваш аккаунт заблокирован навсегда.<br>По вопросам: <b>@Hollisheetq</b></p></div>';
