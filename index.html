@@ -16,6 +16,8 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #map-container { position: absolute; inset: 0; z-index: 1; padding-bottom: var(--nav-height); background: var(--bg); }
 #map { width: 100%; height: 100%; background: var(--bg); }
 .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9); }
+
+/* Экран входа */
 #auth-screen { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .auth-box { background: var(--panel); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px 24px; width: 100%; max-width: 350px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 15px; }
 .auth-box h2 { margin: 0 0 10px; color: var(--accent); text-align: center; font-size: 22px; letter-spacing: 2px; font-weight: 800; }
@@ -23,12 +25,16 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #auth-btn { padding: 14px; background: var(--accent); color: #001414; border: none; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; }
 #auth-toggle { padding: 12px; background: transparent; color: var(--accent-soft); border: 1px dashed var(--glass-border); border-radius: 12px; cursor: pointer; font-size: 14px; }
 #auth-error { display: none; color: var(--danger); font-size: 13px; text-align: center; padding: 8px; }
+
+/* Онбординг */
 #onboarding-screen { position: fixed; inset: 0; z-index: 9998; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 #onboarding-screen.active { display: flex; }
 #onboarding-screen h2 { color: var(--accent); font-size: 24px; margin-bottom: 10px; font-weight: 800; }
 #onboarding-screen p { color: var(--accent-soft); font-size: 14px; margin-bottom: 30px; line-height: 1.5; max-width: 300px; }
 .onboarding-btn { width: 100%; max-width: 300px; padding: 16px; background: var(--accent); color: #001414; border: none; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.4); }
 .onboarding-btn.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none; }
+
+/* Основной интерфейс */
 #app { display: none; height: 100%; position: relative; }
 #map-overlay { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
 #map-overlay > * { pointer-events: auto; }
@@ -38,21 +44,28 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #city-status .city-name { color: var(--accent); font-size: 10px; display: block; letter-spacing: 1px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
 #city-status .city-state { font-size: 14px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #site-title { background: linear-gradient(90deg, #00ffcc, #007a66); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 18px; letter-spacing: 3px; padding-top: 5px; white-space: nowrap; text-transform: uppercase; }
-#search-box { display: flex; gap: 8px; }
-#city-input { flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--panel); backdrop-filter: blur(10px); color: var(--text); outline: none; font-size: 14px; }
-#search-btn { padding: 12px 18px; background: var(--accent); color: #001414; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 14px; }
 #status { font-size: 11px; color: var(--accent-soft); text-align: center; padding: 6px 10px; background: var(--panel); backdrop-filter: blur(10px); border-radius: 10px; border: 1px solid var(--glass-border); }
-#show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 15px); z-index: 1000; padding: 12px 24px; border-radius: 24px; background: var(--accent); color: #001414; border: none; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.5); font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+/* Кнопки на карте */
+#show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 15px); z-index: 1000; padding: 12px 24px; border-radius: 24px; background: var(--accent); color: #001414; border: none; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.5); font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+#show-markers-btn:active { transform: translateX(-50%) scale(0.95); }
 #show-markers-btn svg { width: 20px; height: 20px; }
+
+#back-to-geo-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 70px); z-index: 1000; padding: 10px 20px; border-radius: 20px; background: var(--panel); color: var(--accent); border: 1px solid var(--accent); font-weight: 700; font-size: 13px; display: none; align-items: center; gap: 6px; cursor: pointer; backdrop-filter: blur(10px); }
+#back-to-geo-btn.active { display: flex; }
+
+/* Шторка выбора типа */
 #markers-sheet-overlay { position: absolute; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); display: none; opacity: 0; transition: opacity 0.3s; }
 #markers-sheet-overlay.active { display: block; opacity: 1; }
 #markers-sheet { position: absolute; bottom: var(--nav-height); left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--accent); border-radius: 24px 24px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s; z-index: 2001; }
 #markers-sheet.active { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 5px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; margin: 0 auto 20px; }
 #types-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-.marker-btn { width: 70px; height: 70px; border-radius: 50%; border: 2px solid transparent; background: rgba(0, 40, 40, 0.8); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--text); font-weight: 600; font-size: 10px; padding: 0; text-align: center; }
+.marker-btn { width: 70px; height: 70px; border-radius: 50%; border: 2px solid transparent; background: rgba(0, 40, 40, 0.8); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--text); font-weight: 600; font-size: 10px; padding: 0; text-align: center; transition: 0.2s; }
 .marker-btn svg { width: 28px; height: 28px; display: block; }
-.marker-btn.selected { border-color: var(--accent); background: rgba(0, 255, 204, 0.15); }
+.marker-btn.selected { border-color: var(--accent); background: rgba(0, 255, 204, 0.15); box-shadow: 0 0 15px rgba(0,255,204,0.3); }
+
+/* Попапы */
 .pulse-marker { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 15px currentColor; animation: pulse 1.5s infinite ease-in-out; }
 .pulse-marker svg { width: 60%; height: 60%; display: block; }
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
@@ -61,11 +74,15 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .popup-title svg { width: 20px; height: 20px; }
 .popup-muted { color: var(--accent-soft); font-size: 12px; margin-top: 3px; }
 .popup-confirm { display: inline-block; margin-top: 8px; padding: 4px 10px; background: rgba(0, 200, 83, 0.2); color: #00e676; border: 1px solid #00e676; border-radius: 8px; font-weight: 800; font-size: 11px; }
+
+/* Нижнее меню */
 #bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: var(--panel); backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); z-index: 2500; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
 .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: none; color: var(--accent-soft); font-size: 11px; font-weight: 600; cursor: pointer; flex: 1; height: 100%; }
 .nav-btn svg { width: 24px; height: 24px; }
 .nav-btn.active { color: var(--accent); }
 .nav-btn.active svg { transform: translateY(-3px); }
+
+/* Лента */
 #feed-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
 #feed-screen.active { display: flex; }
 .feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -79,6 +96,8 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .feed-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
 .feed-meta { font-size: 11px; color: var(--accent-soft); }
 .feed-empty { text-align: center; color: var(--accent-soft); margin-top: 50px; }
+
+/* Профиль */
 #profile-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
 #profile-screen.active { display: flex; }
 .profile-card { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 20px; }
@@ -93,6 +112,19 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .menu-item { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; color: var(--text); text-decoration: none; font-weight: 600; font-size: 14px; cursor: pointer; }
 .menu-item.danger { color: var(--danger); border-color: rgba(255, 23, 68, 0.3); }
 .menu-item svg { width: 20px; height: 20px; opacity: 0.7; }
+
+/* Модалка поиска города */
+#search-modal-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; }
+#search-modal-overlay.active { display: flex; }
+.search-modal { background: var(--panel); border: 1px solid var(--accent); border-radius: 20px; padding: 20px; width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.search-modal h3 { margin: 0; color: var(--accent); text-align: center; font-size: 18px; }
+.search-modal input { padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0, 40, 40, 0.5); color: var(--text); outline: none; font-size: 15px; }
+.search-modal .modal-actions { display: flex; gap: 10px; }
+.search-modal button { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; border: none; }
+#modal-search-btn { background: var(--accent); color: #001414; }
+#modal-cancel-btn { background: transparent; color: var(--text); border: 1px solid var(--glass-border); }
+
+/* Админка */
 #admin-panel-content { display: none; margin-top: 20px; flex-direction: column; gap: 15px; }
 #admin-panel-content.active { display: flex; }
 .admin-tabs { display: flex; gap: 10px; }
@@ -103,8 +135,6 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .admin-item .meta { color: var(--accent-soft); font-size: 11px; margin-top: 4px; }
 .admin-item .del-btn { margin-top: 10px; padding: 8px 14px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; width: 100%; }
 .clear-all-btn { width: 100%; padding: 14px; background: rgba(255, 23, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 10px; }
-#back-to-geo-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 70px); z-index: 1000; padding: 10px 20px; border-radius: 20px; background: var(--panel); color: var(--accent); border: 1px solid var(--accent); font-weight: 700; font-size: 13px; display: none; align-items: center; gap: 6px; cursor: pointer; backdrop-filter: blur(10px); }
-#back-to-geo-btn.active { display: flex; }
 </style>
 </head>
 <body>
@@ -129,17 +159,19 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
                 <div id="city-status"><span class="city-name">ГОРОД НЕ ВЫБРАН</span><span class="city-state">—</span></div>
                 <div style="text-align:right"><div id="site-title">VINERA RADAR</div></div>
             </div>
-            <div id="search-box"><input type="text" id="city-input" placeholder="Введите город"><button id="search-btn" onclick="searchCity()">Найти</button></div>
-            <div id="status">Выберите тип метки и кликните на карту</div>
+            <div id="status">Нажмите "Сообщить", чтобы поставить метку</div>
         </div>
+        
         <button id="show-markers-btn" onclick="toggleMarkersSheet()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Сообщить
         </button>
+        
         <button id="back-to-geo-btn" onclick="backToGeo()">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             Вернуться на моё гео
         </button>
+
         <div id="markers-sheet-overlay" onclick="toggleMarkersSheet()"></div>
         <div id="markers-sheet">
             <div class="sheet-handle"></div>
@@ -170,6 +202,10 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
             </div>
         </div>
         <div class="menu-list">
+            <div class="menu-item" onclick="openSearchModal()" style="color:var(--accent); border-color:var(--accent);">
+                <span>📍 Выбрать регион / город</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
             <a href="https://t.me/Hollisheetq" target="_blank" class="menu-item"><span>Связь с владельцем</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg></a>
             <div id="admin-toggle-btn" class="menu-item" onclick="toggleAdminPanel()" style="display: none;"><span>🛠 Админ-панель</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg></div>
             <div class="menu-item danger" onclick="logout()"><span>Выйти из аккаунта</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
@@ -185,6 +221,17 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
         <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
         <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
         <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
+    </div>
+</div>
+
+<div id="search-modal-overlay">
+    <div class="search-modal">
+        <h3>Выбор региона</h3>
+        <input type="text" id="modal-city-input" placeholder="Введите город">
+        <div class="modal-actions">
+            <button id="modal-cancel-btn" onclick="closeSearchModal()">Отмена</button>
+            <button id="modal-search-btn" onclick="searchCityFromModal()">Найти</button>
+        </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -215,7 +262,7 @@ window.addEventListener('load', function() {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        // ===== КАРТА (OSM + CSS invert = чёрная) =====
+        // ===== КАРТА =====
         const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -226,7 +273,8 @@ window.addEventListener('load', function() {
         setTimeout(function() { map.invalidateSize(); }, 1000);
 
         // ===== СОСТОЯНИЕ =====
-        let currentMarkerType = 'БПЛА';
+        let currentMarkerType = null; // Тип выбирается только через "Сообщить"
+        let isPlacingMarker = false;  // Режим установки метки
         let currentCity = null;
         let userCity = null;
         let markersData = [];
@@ -247,7 +295,6 @@ window.addEventListener('load', function() {
         const LIFETIME_MS = 900000;
         let userLocationLayer = null;
         let myGeo = null;
-        let isViewingOtherCity = false;
 
         function canPlaceMarker() {
             const now = Date.now();
@@ -346,8 +393,7 @@ window.addEventListener('load', function() {
                 if (o && online !== null) o.textContent = online;
             } catch (e) {}
         }
-
-        // ===== СЕССИЯ =====
+                // ===== СЕССИЯ =====
         async function checkSession() {
             const { data } = await supabaseClient.auth.getSession();
             if (data.session) {
@@ -396,13 +442,11 @@ window.addEventListener('load', function() {
                     document.getElementById('app').style.display = 'none';
                 } else {
                     userCity = savedCity;
-                    currentCity = savedCity;   // ФИКС: сразу ставим город
+                    currentCity = savedCity; 
                     if (userCity) {
-                        document.getElementById('city-input').value = userCity;
                         document.getElementById('status').innerText = `Ваш город: ${userCity}`;
                     }
 
-                    // Восстанавливаем сохранённое гео
                     if (savedGeo) {
                         try {
                             const g = JSON.parse(savedGeo);
@@ -412,7 +456,6 @@ window.addEventListener('load', function() {
                         } catch (e) {}
                     }
 
-                    // Если гео не сохранено — пробуем получить заново
                     if (navigator.geolocation && !myGeo) {
                         navigator.geolocation.getCurrentPosition((pos) => {
                             myGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
@@ -442,7 +485,7 @@ window.addEventListener('load', function() {
             localStorage.removeItem('vinera_geo');
             currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
             userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
-            myGeo = null; isViewingOtherCity = false;
+            myGeo = null; isPlacingMarker = false;
             document.getElementById('back-to-geo-btn').classList.remove('active');
             drawMarkers();
             await checkSession();
@@ -466,6 +509,7 @@ window.addEventListener('load', function() {
             return '<div class="popup-title">' + meta.svg + ' ' + escapeHtml(m.type) + '</div>' +
                 '<div class="popup-muted">Поставил: <b>' + escapeHtml(m.author) + '</b></div>' +
                 '<div class="popup-muted">Район: ' + escapeHtml(m.address || 'определяется...') + '</div>' +
+                '<div class="popup-muted">Город: ' + escapeHtml(m.city || 'Неизвестно') + '</div>' +
                 '<div class="popup-muted">' + new Date(m.created_at).toLocaleString('ru-RU') + '</div>' +
                 (confirmed ? '<div class="popup-confirm">✔ Статус подтверждён</div>' : '');
         }
@@ -548,7 +592,7 @@ window.addEventListener('load', function() {
             threats.forEach(t => counts[t] = (counts[t] || 0) + 1);
             const unique = Object.keys(counts);
             const hasDanger = unique.some(t => dangerTypes.includes(t));
-            const pm = { 'Взрыв': 'Взрывы', 'Сирена': 'Сирены', 'Ракета': 'Ракеты', 'БПЛА': 'БПЛА', 'Истребитель': 'Истребители' };
+            const pm = { 'Взрыв': 'Взрывы', 'Сирена': 'Сире höna', 'Ракета': 'Ракеты', 'БПЛА': 'БПЛА', 'Истребитель': 'Истребители' };
             const labels = unique.map(t => counts[t] > 1 ? (pm[t] || t) : t);
             return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
         }
@@ -565,14 +609,6 @@ window.addEventListener('load', function() {
             box.classList.toggle('danger', res.danger);
         }
 
-        window.setMarkerType = function(type, btn) {
-            currentMarkerType = type;
-            document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
-            if (btn) btn.classList.add('selected');
-            document.getElementById('status').innerText = 'Выбран: ' + type + '. Кликните на карту.';
-            toggleMarkersSheet();
-        };
-
         function showUserLocation(lat, lon) {
             if (userLocationLayer) map.removeLayer(userLocationLayer);
             userLocationLayer = L.layerGroup().addTo(map);
@@ -580,16 +616,61 @@ window.addEventListener('load', function() {
             L.circleMarker([lat, lon], { radius: 8, fillColor: '#00ffcc', color: '#fff', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(userLocationLayer).bindPopup('Вы здесь');
         }
 
+        // ===== ЛОГИКА ВОЗВРАТА НА ГЕО =====
         window.backToGeo = function() {
             if (!myGeo) { document.getElementById('status').innerText = 'Ваше гео не определено'; return; }
             map.setView([myGeo.lat, myGeo.lon], 13);
             document.getElementById('back-to-geo-btn').classList.remove('active');
-            isViewingOtherCity = false;
-            currentCity = userCity;
-            updateCityStatus();
             document.getElementById('status').innerText = 'Вы вернулись на своё гео';
         };
 
+        // Следим за картой: если отъехали от гео — показываем кнопку
+        map.on('moveend', function() {
+            if (!myGeo) return;
+            const center = map.getCenter();
+            const dist = map.distance([myGeo.lat, myGeo.lon], [center.lat, center.lng]);
+            if (dist > 5000) { // Если сдвинулись дальше 5 км
+                document.getElementById('back-to-geo-btn').classList.add('active');
+            } else {
+                document.getElementById('back-to-geo-btn').classList.remove('active');
+            }
+        });
+
+        // ===== МОДАЛКА ПОИСКА ГОРОДА =====
+        window.openSearchModal = function() {
+            document.getElementById('search-modal-overlay').classList.add('active');
+            document.getElementById('modal-city-input').value = userCity || '';
+        };
+
+        window.closeSearchModal = function() {
+            document.getElementById('search-modal-overlay').classList.remove('active');
+        };
+
+        window.searchCityFromModal = async function() {
+            const city = document.getElementById('modal-city-input').value.trim();
+            if (!city) return;
+            document.getElementById('status').innerText = 'Поиск...';
+            try {
+                const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(city) + '&limit=1&accept-language=ru');
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 12);
+                    document.getElementById('status').innerText = 'Найден: ' + data[0].display_name;
+                    currentCity = data[0].display_name.split(',')[0].trim();
+                    userCity = currentCity;
+                    localStorage.setItem('vinera_city', userCity);
+                    updateCityStatus();
+                    closeSearchModal();
+                    await loadMarkers();
+                } else {
+                    document.getElementById('status').innerText = 'Город не найден';
+                }
+            } catch (e) {
+                document.getElementById('status').innerText = 'Ошибка поиска';
+            }
+        };
+
+        // ===== ГЕОЛОКАЦИЯ =====
         window.requestGeoLocation = function() {
             if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
             document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
@@ -607,7 +688,6 @@ window.addEventListener('load', function() {
                         userCity = city;
                         currentCity = city;
                         localStorage.setItem('vinera_city', city);
-                        document.getElementById('city-input').value = city;
                         document.getElementById('status').innerText = `Ваш город: ${city}. Метки других городов скрыты.`;
                         map.setView([lat, lon], 13);
                         showUserLocation(lat, lon);
@@ -633,11 +713,46 @@ window.addEventListener('load', function() {
             document.getElementById('onboarding-screen').classList.remove('active');
             document.getElementById('app').style.display = 'block';
             setTimeout(() => map.invalidateSize(), 200);
-            document.getElementById('city-input').focus();
-            document.getElementById('status').innerText = 'Введите ваш город и нажмите Найти';
+            openSearchModal();
+            document.getElementById('status').innerText = 'Выберите город в поиске';
         };
-                // ===== КЛИК ПО КАРТЕ (телефон + кулдаун) =====
+                // ===== РЕЖИМ УСТАНОВКИ МЕТКИ (ШТОРКА) =====
+        window.toggleMarkersSheet = function() {
+            const sheet = document.getElementById('markers-sheet');
+            const overlay = document.getElementById('markers-sheet-overlay');
+            if (sheet.classList.contains('active')) {
+                sheet.classList.remove('active');
+                overlay.classList.remove('active');
+            } else {
+                sheet.classList.add('active');
+                overlay.classList.add('active');
+            }
+        };
+
+        window.setMarkerType = function(type, btn) {
+            if (isPlacingMarker && currentMarkerType === type) {
+                // Если уже выбран этот тип — отменяем режим
+                isPlacingMarker = false;
+                currentMarkerType = null;
+                document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('status').innerText = 'Режим установки метки отменен';
+            } else {
+                // Включаем режим
+                isPlacingMarker = true;
+                currentMarkerType = type;
+                document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
+                if (btn) btn.classList.add('selected');
+                document.getElementById('status').innerHTML = '<b>Режим прицела:</b> Тапните по карте, чтобы поставить метку ' + type;
+            }
+            toggleMarkersSheet(); // Закрываем шторку
+        };
+
+        // ===== КЛИК ПО КАРТЕ =====
         map.on('click', async function(e) {
+            // Если режим прицела выключен — ничего не делаем (карта просто листается/открывает попапы)
+            if (!isPlacingMarker || !currentMarkerType) return;
+
+            // Проверка телефона
             if (currentUser !== 'bihepka' && currentUser !== 'Hollisheetq') {
                 if (!currentPhone) {
                     document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Чтобы ставить метки, подтвердите номер в боте!</span>';
@@ -645,7 +760,10 @@ window.addEventListener('load', function() {
                 }
             }
 
-            if (!currentCity) { document.getElementById('status').innerText = 'Сначала найдите город через поиск!'; return; }
+            if (!currentCity) { 
+                document.getElementById('status').innerText = 'Сначала выберите город в профиле!'; 
+                return; 
+            }
 
             const cd = canPlaceMarker();
             if (!cd.allowed) {
@@ -654,9 +772,23 @@ window.addEventListener('load', function() {
             }
 
             document.getElementById('status').innerText = 'Сохранение...';
-            const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: currentCity, author: currentUser || 'Аноним', address: 'определяется...' };
+            
+            // Определяем город именно по координатам клика, чтобы не было путаницы
+            let clickedCity = currentCity;
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&zoom=10&accept-language=ru`);
+                const data = await res.json();
+                const addr = data.address || {};
+                clickedCity = addr.city || addr.town || addr.village || addr.county || currentCity;
+            } catch(err) {}
+
+            const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: clickedCity, author: currentUser || 'Аноним', address: 'определяется...' };
             const { data, error } = await supabaseClient.from('vinera_markers').insert([m]).select().single();
-            if (error) { document.getElementById('status').innerText = 'Ошибка: ' + error.message; return; }
+            
+            if (error) { 
+                document.getElementById('status').innerText = 'Ошибка: ' + error.message; 
+                return; 
+            }
 
             recentMarkerTimes.push(Date.now());
             markersData.unshift(data);
@@ -664,38 +796,13 @@ window.addEventListener('load', function() {
             updateCityStatus();
             resolveAddress(data);
             loadMarkers();
+            
+            // Выключаем режим после установки
+            isPlacingMarker = false;
+            currentMarkerType = null;
+            document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
             document.getElementById('status').innerText = 'Метка поставлена ✔';
         });
-
-        // ===== ПОИСК ГОРОДА (с кнопкой возврата) =====
-        window.searchCity = async function() {
-            const city = document.getElementById('city-input').value.trim();
-            if (!city) return;
-            document.getElementById('status').innerText = 'Поиск...';
-            try {
-                const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(city) + '&limit=1&accept-language=ru');
-                const data = await res.json();
-                if (data && data.length > 0) {
-                    map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 12);
-                    document.getElementById('status').innerText = 'Найден: ' + data[0].display_name;
-                    currentCity = data[0].display_name.split(',')[0].trim();
-                    userCity = currentCity;
-                    localStorage.setItem('vinera_city', userCity);
-                    updateCityStatus();
-
-                    if (myGeo) {
-                        isViewingOtherCity = true;
-                        document.getElementById('back-to-geo-btn').classList.add('active');
-                    }
-
-                    await loadMarkers();
-                } else {
-                    document.getElementById('status').innerText = 'Город не найден';
-                }
-            } catch (e) {
-                document.getElementById('status').innerText = 'Ошибка поиска';
-            }
-        };
 
         // ===== ВКЛАДКИ =====
         window.switchTab = function(tab) {
@@ -716,19 +823,6 @@ window.addEventListener('load', function() {
                 document.querySelectorAll('.nav-btn')[2].classList.add('active');
                 document.getElementById('map-container').style.display = 'none';
                 document.getElementById('profile-screen').classList.add('active');
-            }
-        };
-
-        // ===== ЛИСТ МЕТОК =====
-        window.toggleMarkersSheet = function() {
-            const sheet = document.getElementById('markers-sheet');
-            const overlay = document.getElementById('markers-sheet-overlay');
-            if (sheet.classList.contains('active')) {
-                sheet.classList.remove('active');
-                overlay.classList.remove('active');
-            } else {
-                sheet.classList.add('active');
-                overlay.classList.add('active');
             }
         };
 
