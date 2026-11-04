@@ -16,7 +16,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 
 #map-container { position: absolute; inset: 0; z-index: 1; padding-bottom: var(--nav-height); background: var(--bg); }
 #map { width: 100%; height: 100%; background: var(--bg); }
-.dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.6) contrast(1.2) saturate(0.8); }
+.dark-tiles { filter: brightness(0.9) contrast(1.1); } /* Убрали инверсию, Carto уже темная */
 
 #auth-screen { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .auth-box { background: var(--panel); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px 24px; width: 100%; max-width: 350px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 15px; }
@@ -220,8 +220,13 @@ checkAccess().then(allowed => {
     function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
     const map=L.map('map',{zoomControl:false}).setView([55.7558,37.6173],5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap', maxZoom: 19, className: 'dark-tiles', tileSize: 512, zoomOffset: -1
+    
+    // НОВАЯ ТЕМНАЯ КАРТА (CARTO)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap © CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19,
+        className: 'dark-tiles'
     }).addTo(map);
     
     let currentMarkerType='БПЛА',currentCity=null,userCity=null,markersData=[],feedData=[],currentUser=null,currentRole='user',currentBanned=false,currentPhone=null,currentTotalMarkers=0;
@@ -358,6 +363,13 @@ checkAccess().then(allowed => {
     function drawMarkers(){
         layerGroup.clearLayers();
         Object.keys(markerRefs).forEach(k=>delete markerRefs[k]);
+        
+        // ФИЛЬТР: Показываем метки только если зум >= 10
+        const currentZoom = map.getZoom();
+        if (currentZoom < 10) {
+            return; // Если отдалились — метки не рисуем
+        }
+
         markersData.forEach(m=>{
             const marker=L.marker([m.lat,m.lng],{icon:makeIcon(m.type)}).addTo(layerGroup);
             marker.bindPopup(popupHtml(m));
@@ -365,6 +377,11 @@ checkAccess().then(allowed => {
         });
     }
     
+    // Отслеживаем изменение зума, чтобы метки появлялись/исчезали
+    map.on('zoomend', function() {
+        drawMarkers();
+    });
+
     async function loadMarkers(){
         const{data,error}=await supabaseClient.from('vinera_markers').select('*').order('created_at',{ascending:false});
         if(error){document.getElementById('status').innerText='Ошибка: '+error.message;return;}
@@ -380,7 +397,7 @@ checkAccess().then(allowed => {
         const oneDayAgo = now - (24 * 60 * 60 * 1000);
         feedData = (data||[]).filter(m => new Date(m.created_at).getTime() > oneDayAgo);
         
-        drawMarkers();
+        drawMarkers(); // Вызываем drawMarkers, который проверит зум
         updateCityStatus();
         renderFeed();
     }
@@ -450,11 +467,29 @@ checkAccess().then(allowed => {
         }catch(e){document.getElementById('status').innerText='Ошибка поиска';}
     };
 
+    // === ИСПРАВЛЕННАЯ ГЕОЛОКАЦИЯ (СТАТИЧНАЯ ТОЧКА) ===
     function showUserLocation(lat, lon) {
         if (userLocationLayer) map.removeLayer(userLocationLayer);
         userLocationLayer = L.layerGroup().addTo(map);
-        L.circle([lat, lon], { color: '#00ffcc', fillColor: '#00ffcc', fillOpacity: 0.15, radius: 200 }).addTo(userLocationLayer);
-        L.circleMarker([lat, lon], { radius: 8, fillColor: '#00ffcc', color: '#fff', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(userLocationLayer).bindPopup('Вы здесь');
+        
+        // Круг (статичный, без анимации лагов)
+        L.circle([lat, lon], { 
+            color: '#00ffcc', 
+            fillColor: '#00ffcc', 
+            fillOpacity: 0.2, 
+            radius: 200,
+            weight: 1
+        }).addTo(userLocationLayer);
+        
+        // Точка (статичная, светится за счет обводки)
+        L.circleMarker([lat, lon], { 
+            radius: 8, 
+            fillColor: '#00ffcc', 
+            color: '#fff', 
+            weight: 3, 
+            opacity: 1, 
+            fillOpacity: 1 
+        }).addTo(userLocationLayer).bindPopup('Вы здесь');
     }
 
     window.requestGeoLocation = function() {
