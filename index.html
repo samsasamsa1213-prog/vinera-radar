@@ -31,7 +31,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #auth-toggle { padding: 12px; background: transparent; color: var(--accent-soft); border: 1px dashed var(--glass-border); border-radius: 12px; cursor: pointer; font-size: 14px; }
 #auth-error { display: none; color: var(--danger); font-size: 13px; text-align: center; padding: 8px; background: rgba(255, 23, 68, 0.1); border-radius: 8px; }
 
-/* Экран онбординга (выбор города/гео) */
+/* Экран онбординга */
 #onboarding-screen { position: fixed; inset: 0; z-index: 9998; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 #onboarding-screen.active { display: flex; animation: fadeIn 0.5s; }
 #onboarding-screen h2 { color: var(--accent); font-size: 24px; margin-bottom: 10px; font-weight: 800; letter-spacing: 1px; }
@@ -212,8 +212,15 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
         </div>
         <div id="admin-panel-content">
             <div class="admin-tabs"><button class="admin-tab active" id="tab-markers" onclick="switchAdminTab('markers')">Метки</button><button class="admin-tab" id="tab-users" onclick="switchAdminTab('users')">Юзеры</button></div>
-            <button id="clear
-                window.addEventListener('load',function(){
+            <button id="clear-all-btn" class="clear-all-btn">🗑 Очистить все метки</button>
+            <div id="admin-content" class="admin-list"></div>
+        </div>
+    </div>
+
+    <!-- Нижняя навигация -->
+    <div id="bottom-nav">
+        <button class="
+            window.addEventListener('load',function(){
 const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand();
 
 window.onTurnstileSuccess = function(token) { window.turnstileToken = token; };
@@ -236,11 +243,14 @@ checkAccess().then(allowed => {
     function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
     const map=L.map('map',{zoomControl:false}).setView([55.7558,37.6173],5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'dark-tiles', tileSize: 512, zoomOffset: -1}).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 19, className: 'dark-tiles', tileSize: 512, zoomOffset: -1
+    }).addTo(map);
     
     let currentMarkerType='БПЛА',currentCity=null,userCity=null,markersData=[],feedData=[],currentUser=null,currentRole='user',currentBanned=false,currentPhone=null,currentTotalMarkers=0;
     let recentMarkerTimes=[];const MAX_MARKERS=2,COOLDOWN_MS=30000;
-    
+    let userLocationLayer = null;
+
     function canPlaceMarker(){const now=Date.now();recentMarkerTimes=recentMarkerTimes.filter(t=>now-t<COOLDOWN_MS);if(recentMarkerTimes.length<MAX_MARKERS)return{allowed:true,wait:0};const oldest=Math.min.apply(null,recentMarkerTimes);return{allowed:false,wait:Math.ceil((COOLDOWN_MS-(now-oldest))/1000)};}
     
     const METADATA={'БПЛА':{color:'#00bfa5',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},'Ракета':{color:'#ff5252',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>'},'Истребитель':{color:'#40c4ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>'},'Сирена':{color:'#b388ff',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>'},'Взрыв':{color:'#ffc107',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>'},'Тихо':{color:'#00e676',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}};
@@ -338,10 +348,8 @@ checkAccess().then(allowed => {
             authScreen.style.display='none'; 
             document.getElementById('app').style.display='block';
             
-            // Проверка, выбран ли город (сохраняем в localStorage)
             const savedCity = localStorage.getItem('vinera_city');
             if(!savedCity && currentUser !== 'bihepka') {
-                // Если города нет, показываем онбординг
                 document.getElementById('onboarding-screen').classList.add('active');
                 document.getElementById('app').style.display='none';
             } else {
@@ -351,6 +359,13 @@ checkAccess().then(allowed => {
                     document.getElementById('status').innerText = `Ваш город: ${userCity}`;
                 }
                 setTimeout(function(){map.invalidateSize();},200); 
+                
+                if(navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                        showUserLocation(pos.coords.latitude, pos.coords.longitude);
+                    });
+                }
+                
                 await loadMarkers(); 
                 await updateCounters();
             }
@@ -379,7 +394,6 @@ checkAccess().then(allowed => {
         
         const now = Date.now();
         
-        // ФИЛЬТР ПО ВРЕМЕНИ И ПО ГОРОДУ
         markersData=(data||[]).filter(m => {
             const isFresh = (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
             const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
@@ -459,7 +473,15 @@ checkAccess().then(allowed => {
         }catch(e){document.getElementById('status').innerText='Ошибка поиска';}
     };
 
-    // ===== ОНБОРДИНГ И ГЕОЛОКАЦИЯ =====
+    // ===== ГЕОЛОКАЦИЯ И СИНЯЯ ТОЧКА =====
+    function showUserLocation(lat, lon) {
+        if (userLocationLayer) map.removeLayer(userLocationLayer);
+        userLocationLayer = L.layerGroup().addTo(map);
+
+        L.circle([lat, lon], { color: '#00ffcc', fillColor: '#00ffcc', fillOpacity: 0.15, radius: 200 }).addTo(userLocationLayer);
+        L.circleMarker([lat, lon], { radius: 8, fillColor: '#00ffcc', color: '#fff', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(userLocationLayer).bindPopup('Вы здесь');
+    }
+
     window.requestGeoLocation = function() {
         if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
         
@@ -476,14 +498,14 @@ checkAccess().then(allowed => {
                     const addr = data.address || {};
                     let city = addr.city || addr.town || addr.village || addr.county || 'Ваш город';
 
-                    // Сохраняем город
                     userCity = city;
                     localStorage.setItem('vinera_city', city);
 
                     document.getElementById('city-input').value = city;
                     document.getElementById('status').innerText = `Ваш город: ${city}. Метки других городов скрыты.`;
                     
-                    map.setView([lat, lon], 11);
+                    map.setView([lat, lon], 13);
+                    showUserLocation(lat, lon);
 
                     document.getElementById('onboarding-screen').classList.remove('active');
                     document.getElementById('app').style.display = 'block';
@@ -499,29 +521,25 @@ checkAccess().then(allowed => {
                 alert('Вы отклонили геолокацию. Придется выбрать город вручную.');
                 showManualCitySearch();
             },
-            { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
     window.showManualCitySearch = function() {
-        // Скрываем онбординг и показываем карту с поиском
         document.getElementById('onboarding-screen').classList.remove('active');
         document.getElementById('app').style.display = 'block';
         setTimeout(() => map.invalidateSize(), 200);
-        
-        // Фокусируемся на поле ввода
         document.getElementById('city-input').focus();
         document.getElementById('status').innerText = 'Введите ваш город и нажмите Найти';
     };
 
-    // Когда человек ищет город вручную, тоже сохраняем его
     const originalSearchCity = window.searchCity;
     window.searchCity = async function() {
         await originalSearchCity();
         if (currentCity) {
             userCity = currentCity;
             localStorage.setItem('vinera_city', userCity);
-            await loadMarkers(); // перезагружаем метки с учетом фильтра
+            await loadMarkers();
         }
     };
 
