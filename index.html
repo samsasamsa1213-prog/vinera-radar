@@ -267,10 +267,44 @@ checkAccess().then(allowed => {
         if(isOwner){
             tabs+='<button id="tab-users" style="flex:1;padding:8px;border-radius:8px;border:1px solid '+(adminTab==='users'?'#00bfa5':'#005a52')+';background:'+(adminTab==='users'?'#003a36':'transparent')+';color:'+(adminTab==='users'?'#00bfa5':'#4db6ac')+';font-weight:700;font-size:12px;cursor:pointer;">👥 Пользователи</button>';
         }
-        tabs+='</div><div id="admin-content"></div>';
+        tabs+='</div>';
+        
+        // Кнопка очистки всех меток (только для владельца)
+        if(isOwner){
+            tabs+='<button id="clear-all-btn" style="width:100%;padding:10px;background:#ff1744;color:#fff;border:none;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;margin-bottom:10px;">🗑 Очистить все метки</button>';
+        }
+        
+        tabs+='<div id="admin-content"></div>';
         list.innerHTML=tabs;
+        
         document.getElementById('tab-markers').onclick=function(){adminTab='markers';renderAdmin();};
         if(isOwner)document.getElementById('tab-users').onclick=function(){adminTab='users';renderAdmin();};
+        
+        // Логика удаления всех меток
+        if(isOwner){
+            document.getElementById('clear-all-btn').onclick=async function(){
+                const confirmDelete = window.confirm('Вы уверены, что хотите удалить ВСЕ метки с карты? Это действие нельзя отменить.');
+                if (!confirmDelete) return;
+                
+                this.textContent = 'Очистка...';
+                this.disabled = true;
+                
+                const { error } = await supabaseClient.from('vinera_markers').delete().neq('id', 0);
+                
+                if (error) {
+                    window.alert('Ошибка при очистке: ' + error.message);
+                    this.textContent = '🗑 Очистить все метки';
+                    this.disabled = false;
+                } else {
+                    markersData = [];
+                    drawMarkers();
+                    updateCityStatus();
+                    window.alert('Все метки успешно удалены!');
+                    renderAdmin();
+                }
+            };
+        }
+        
         if(adminTab==='markers')renderAdminMarkers();
         else renderAdminUsers();
     }
