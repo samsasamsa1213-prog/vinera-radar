@@ -8,133 +8,165 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
-:root { --bg: #000a0a; --panel: rgba(0, 20, 20, 0.85); --accent: #00ffcc; --accent-soft: #4db6ac; --text: #e0f2f1; --danger: #ff1744; --glass-border: rgba(0, 255, 204, 0.2); --nav-height: 70px; }
+:root { 
+    --bg: #050505; 
+    --panel: rgba(10, 20, 20, 0.75); 
+    --accent: #00ffcc; 
+    --accent-glow: rgba(0, 255, 204, 0.4);
+    --accent-soft: #4db6ac; 
+    --text: #ffffff; 
+    --danger: #ff1744; 
+    --danger-glow: rgba(255, 23, 68, 0.4);
+    --glass-border: rgba(0, 255, 204, 0.2); 
+    --nav-height: 75px; 
+}
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', -apple-system, sans-serif; }
 html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflow: hidden; color: var(--text); }
 #map-container { position: absolute; inset: 0; z-index: 1; padding-bottom: var(--nav-height); background: var(--bg); }
 #map { width: 100%; height: 100%; background: var(--bg); }
-.dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9); }
+.dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.1) saturate(0.8); }
 
 /* Экран входа */
-#auth-screen { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
-.auth-box { background: var(--panel); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px 24px; width: 100%; max-width: 350px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 15px; }
-.auth-box h2 { margin: 0 0 10px; color: var(--accent); text-align: center; font-size: 22px; letter-spacing: 2px; font-weight: 800; }
-.auth-box input { padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0, 40, 40, 0.5); color: var(--text); outline: none; font-size: 15px; }
-#auth-btn { padding: 14px; background: var(--accent); color: #001414; border: none; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; }
-#auth-toggle { padding: 12px; background: transparent; color: var(--accent-soft); border: 1px dashed var(--glass-border); border-radius: 12px; cursor: pointer; font-size: 14px; }
-#auth-error { display: none; color: var(--danger); font-size: 13px; text-align: center; padding: 8px; }
+#auth-screen { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at center, #0a1a1a 0%, #050505 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.auth-box { background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 35px 25px; width: 100%; max-width: 340px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 255, 204, 0.05); display: flex; flex-direction: column; gap: 15px; }
+.auth-box h2 { margin: 0 0 10px; color: var(--accent); text-align: center; font-size: 24px; letter-spacing: 3px; font-weight: 900; text-shadow: 0 0 10px var(--accent-glow); }
+.auth-box input { padding: 15px; border-radius: 14px; border: 1px solid var(--glass-border); background: rgba(0, 255, 204, 0.05); color: var(--text); outline: none; font-size: 15px; transition: 0.3s; }
+.auth-box input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); background: rgba(0, 255, 204, 0.1); }
+#auth-btn { padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 14px; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 5px 20px var(--accent-glow); transition: 0.2s; }
+#auth-btn:active { transform: scale(0.96); }
+#auth-toggle { padding: 12px; background: transparent; color: var(--accent-soft); border: 1px dashed var(--glass-border); border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s; }
+#auth-toggle:hover { background: rgba(0, 255, 204, 0.05); }
+#auth-error { display: none; color: var(--danger); font-size: 13px; text-align: center; padding: 8px; font-weight: 600; }
 
 /* Онбординг */
-#onboarding-screen { position: fixed; inset: 0; z-index: 9998; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+#onboarding-screen { position: fixed; inset: 0; z-index: 9998; background: radial-gradient(circle at center, #0a1a1a 0%, #050505 100%); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 #onboarding-screen.active { display: flex; }
-#onboarding-screen h2 { color: var(--accent); font-size: 24px; margin-bottom: 10px; font-weight: 800; }
-#onboarding-screen p { color: var(--accent-soft); font-size: 14px; margin-bottom: 30px; line-height: 1.5; max-width: 300px; }
-.onboarding-btn { width: 100%; max-width: 300px; padding: 16px; background: var(--accent); color: #001414; border: none; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.4); }
-.onboarding-btn.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); box-shadow: none; }
+#onboarding-screen h2 { color: var(--accent); font-size: 26px; margin-bottom: 15px; font-weight: 900; text-shadow: 0 0 15px var(--accent-glow); }
+#onboarding-screen p { color: var(--accent-soft); font-size: 15px; margin-bottom: 35px; line-height: 1.6; max-width: 300px; }
+.onboarding-btn { width: 100%; max-width: 300px; padding: 18px; background: var(--accent); color: #000; border: none; border-radius: 18px; font-weight: 900; font-size: 16px; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.2s; }
+.onboarding-btn:active { transform: scale(0.95); }
+.onboarding-btn.secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); box-shadow: none; }
 
 /* Основной интерфейс */
 #app { display: none; height: 100%; position: relative; }
-#map-overlay { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+#map-overlay { position: absolute; top: calc(15px + env(safe-area-inset-top)); left: 15px; right: 15px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
 #map-overlay > * { pointer-events: auto; }
 #top-row { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
-#city-status { flex: 0 1 auto; min-width: 0; padding: 10px 14px; border-radius: 14px; background: var(--panel); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: var(--text); font-weight: 600; font-size: 13px; max-width: 55%; overflow: hidden; }
-#city-status.danger { border-color: var(--danger); background: rgba(40, 0, 10, 0.8); }
-#city-status .city-name { color: var(--accent); font-size: 10px; display: block; letter-spacing: 1px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-#city-status .city-state { font-size: 14px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#site-title { background: linear-gradient(90deg, #00ffcc, #007a66); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 18px; letter-spacing: 3px; padding-top: 5px; white-space: nowrap; text-transform: uppercase; }
-#status { font-size: 11px; color: var(--accent-soft); text-align: center; padding: 6px 10px; background: var(--panel); backdrop-filter: blur(10px); border-radius: 10px; border: 1px solid var(--glass-border); }
+#city-status { flex: 0 1 auto; min-width: 0; padding: 12px 16px; border-radius: 16px; background: var(--panel); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border); color: var(--text); font-weight: 700; font-size: 13px; max-width: 60%; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s; }
+#city-status.danger { border-color: var(--danger); background: rgba(40, 0, 10, 0.85); box-shadow: 0 0 20px var(--danger-glow); }
+#city-status .city-name { color: var(--accent); font-size: 10px; display: block; letter-spacing: 1.5px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; text-shadow: 0 0 5px var(--accent-glow); }
+#city-status .city-state { font-size: 15px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#site-title { background: linear-gradient(90deg, #00ffcc, #007a66); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 22px; letter-spacing: 4px; padding-top: 5px; white-space: nowrap; text-transform: uppercase; filter: drop-shadow(0 0 10px rgba(0, 255, 204, 0.3)); }
+
+/* Уведомления (Тосты) */
+#status-toast { position: fixed; top: calc(80px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-20px); padding: 12px 24px; border-radius: 30px; background: var(--panel); backdrop-filter: blur(15px); border: 1px solid var(--accent); color: var(--text); font-weight: 800; font-size: 13px; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5000; box-shadow: 0 10px 25px var(--accent-glow); text-align: center; white-space: nowrap; }
+#status-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#status-toast.error { border-color: var(--danger); box-shadow: 0 10px 25px var(--danger-glow); color: #ff8a80; }
 
 /* Кнопки на карте */
-#show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 15px); z-index: 1000; padding: 12px 24px; border-radius: 24px; background: var(--accent); color: #001414; border: none; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.5); font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
-#show-markers-btn:active { transform: translateX(-50%) scale(0.95); }
-#show-markers-btn svg { width: 20px; height: 20px; }
+#show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 20px); z-index: 1000; padding: 14px 28px; border-radius: 30px; background: var(--accent); color: #000; border: none; box-shadow: 0 10px 30px var(--accent-glow); font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+#show-markers-btn:active { transform: translateX(-50%) scale(0.9); box-shadow: 0 5px 15px var(--accent-glow); }
+#show-markers-btn svg { width: 22px; height: 22px; stroke-width: 2.5; }
 
-#back-to-geo-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 70px); z-index: 1000; padding: 10px 20px; border-radius: 20px; background: var(--panel); color: var(--accent); border: 1px solid var(--accent); font-weight: 700; font-size: 13px; display: none; align-items: center; gap: 6px; cursor: pointer; backdrop-filter: blur(10px); }
-#back-to-geo-btn.active { display: flex; }
+#back-to-geo-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 80px); z-index: 1000; padding: 12px 20px; border-radius: 24px; background: var(--panel); color: var(--accent); border: 1px solid var(--accent); font-weight: 800; font-size: 13px; display: none; align-items: center; gap: 8px; cursor: pointer; backdrop-filter: blur(15px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.3s; }
+#back-to-geo-btn.active { display: flex; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
 /* Шторка выбора типа */
-#markers-sheet-overlay { position: absolute; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); display: none; opacity: 0; transition: opacity 0.3s; }
+#markers-sheet-overlay { position: absolute; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; opacity: 0; transition: opacity 0.3s; }
 #markers-sheet-overlay.active { display: block; opacity: 1; }
-#markers-sheet { position: absolute; bottom: var(--nav-height); left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--accent); border-radius: 24px 24px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s; z-index: 2001; }
-#markers-sheet.active { transform: translateY(0); }
-.sheet-handle { width: 40px; height: 5px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; margin: 0 auto 20px; }
-#types-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-.marker-btn { width: 70px; height: 70px; border-radius: 50%; border: 2px solid transparent; background: rgba(0, 40, 40, 0.8); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--text); font-weight: 600; font-size: 10px; padding: 0; text-align: center; transition: 0.2s; }
-.marker-btn svg { width: 28px; height: 28px; display: block; }
-.marker-btn.selected { border-color: var(--accent); background: rgba(0, 255, 204, 0.15); box-shadow: 0 0 15px rgba(0,255,204,0.3); }
+#markers-sheet { position: absolute; bottom: var(--nav-height); left: 10px; right: 10px; background: var(--panel); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 28px; padding: 25px 20px; transform: translateY(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); z-index: 2001; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); }
+#markers-sheet.active { transform: translateY(-15px); }
+.sheet-handle { width: 40px; height: 5px; background: rgba(255, 255, 255, 0.15); border-radius: 10px; margin: 0 auto 25px; }
+#types-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.marker-btn { width: 75px; height: 75px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.05); background: rgba(0, 0, 0, 0.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text); font-weight: 700; font-size: 10px; padding: 0; text-align: center; transition: 0.2s; }
+.marker-btn svg { width: 30px; height: 30px; display: block; transition: 0.3s; }
+.marker-btn.selected { border-color: var(--accent); background: rgba(0, 255, 204, 0.15); box-shadow: 0 0 20px var(--accent-glow); transform: scale(1.05); }
+.marker-btn.selected svg { transform: scale(1.1); }
 
 /* Попапы */
-.pulse-marker { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 15px currentColor; animation: pulse 1.5s infinite ease-in-out; }
-.pulse-marker svg { width: 60%; height: 60%; display: block; }
-@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); backdrop-filter: blur(15px); color: var(--text); border: 1px solid var(--accent); border-radius: 14px; }
-.popup-title { color: var(--accent); font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.popup-title svg { width: 20px; height: 20px; }
-.popup-muted { color: var(--accent-soft); font-size: 12px; margin-top: 3px; }
-.popup-confirm { display: inline-block; margin-top: 8px; padding: 4px 10px; background: rgba(0, 200, 83, 0.2); color: #00e676; border: 1px solid #00e676; border-radius: 8px; font-weight: 800; font-size: 11px; }
+.pulse-marker { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 20px currentColor, inset 0 0 10px currentColor; animation: pulse 2s infinite ease-in-out; }
+.pulse-marker svg { width: 60%; height: 60%; display: block; filter: drop-shadow(0 0 2px #000); }
+@keyframes pulse { 0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 10px currentColor; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 25px currentColor; } 100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 10px currentColor; } }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); backdrop-filter: blur(20px); color: var(--text); border: 1px solid var(--accent); border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px var(--accent-glow); }
+.leaflet-popup-content { margin: 15px 18px; }
+.popup-title { color: var(--accent); font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; text-shadow: 0 0 5px var(--accent-glow); }
+.popup-title svg { width: 22px; height: 22px; }
+.popup-muted { color: #aaa; font-size: 13px; margin-top: 4px; font-weight: 600; }
+.popup-muted b { color: #fff; }
+.popup-confirm { display: inline-block; margin-top: 10px; padding: 6px 12px; background: rgba(0, 200, 83, 0.15); color: #00e676; border: 1px solid #00e676; border-radius: 10px; font-weight: 900; font-size: 12px; box-shadow: 0 0 10px rgba(0, 230, 118, 0.3); }
 
 /* Нижнее меню */
-#bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: var(--panel); backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); z-index: 2500; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
-.nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: transparent; border: none; color: var(--accent-soft); font-size: 11px; font-weight: 600; cursor: pointer; flex: 1; height: 100%; }
-.nav-btn svg { width: 24px; height: 24px; }
+#bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(5, 10, 10, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid var(--glass-border); z-index: 2500; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
+.nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: transparent; border: none; color: #666; font-size: 11px; font-weight: 700; cursor: pointer; flex: 1; height: 100%; transition: 0.3s; }
+.nav-btn svg { width: 26px; height: 26px; transition: 0.3s; }
 .nav-btn.active { color: var(--accent); }
-.nav-btn.active svg { transform: translateY(-3px); }
+.nav-btn.active svg { transform: translateY(-4px); filter: drop-shadow(0 0 8px var(--accent-glow)); }
 
 /* Лента */
 #feed-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-#feed-screen.active { display: flex; }
-.feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.feed-header h2 { margin: 0; color: var(--accent); font-size: 20px; font-weight: 800; }
-.time-filter { background: var(--panel); color: var(--accent); border: 1px solid var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; }
-.feed-list { display: flex; flex-direction: column; gap: 10px; }
-.feed-item { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; }
-.feed-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.feed-icon svg { width: 20px; height: 20px; }
+#feed-screen.active { display: flex; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-top: 10px; }
+.feed-header h2 { margin: 0; color: var(--text); font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+.time-filter { background: rgba(0, 255, 204, 0.1); color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
+.feed-list { display: flex; flex-direction: column; gap: 12px; }
+.feed-item { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
+.feed-item:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
+.feed-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+.feed-icon svg { width: 24px; height: 24px; }
 .feed-content { flex: 1; }
-.feed-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
-.feed-meta { font-size: 11px; color: var(--accent-soft); }
-.feed-empty { text-align: center; color: var(--accent-soft); margin-top: 50px; }
+.feed-title { font-weight: 800; font-size: 15px; margin-bottom: 5px; }
+.feed-meta { font-size: 12px; color: #888; font-weight: 600; }
+.feed-empty { text-align: center; color: #666; margin-top: 80px; font-weight: 600; font-size: 15px; }
 
 /* Профиль */
 #profile-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-#profile-screen.active { display: flex; }
-.profile-card { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 20px; }
-.profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #005a52); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #000; font-weight: 800; }
-.profile-name { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
-.profile-role { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; background: rgba(0, 255, 204, 0.1); color: var(--accent); border: 1px solid var(--accent); }
-.profile-stats { display: flex; justify-content: space-around; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--glass-border); }
+#profile-screen.active { display: flex; animation: fadeIn 0.3s ease; }
+.profile-card { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; margin-top: 10px; }
+.profile-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 80px; background: linear-gradient(180deg, rgba(0, 255, 204, 0.15), transparent); z-index: 0; }
+.profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #005a52); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #000; font-weight: 900; box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow); position: relative; z-index: 1; }
+.profile-name { font-size: 24px; font-weight: 900; margin-bottom: 8px; position: relative; z-index: 1; letter-spacing: 1px; }
+.profile-role { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; background: rgba(0, 255, 204, 0.1); color: var(--accent); border: 1px solid var(--accent); position: relative; z-index: 1; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); }
+.profile-stats { display: flex; justify-content: space-around; margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 1; }
 .stat-item { text-align: center; }
-.stat-value { font-size: 18px; font-weight: 800; color: var(--accent); }
-.stat-label { font-size: 11px; color: var(--accent-soft); margin-top: 2px; }
-.menu-list { display: flex; flex-direction: column; gap: 10px; }
-.menu-item { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; color: var(--text); text-decoration: none; font-weight: 600; font-size: 14px; cursor: pointer; }
-.menu-item.danger { color: var(--danger); border-color: rgba(255, 23, 68, 0.3); }
-.menu-item svg { width: 20px; height: 20px; opacity: 0.7; }
+.stat-value { font-size: 22px; font-weight: 900; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+.stat-label { font-size: 12px; color: #888; margin-top: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.menu-list { display: flex; flex-direction: column; gap: 12px; }
+.menu-item { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 18px; display: flex; justify-content: space-between; align-items: center; color: var(--text); text-decoration: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; }
+.menu-item:active { background: rgba(255,255,255,0.05); transform: scale(0.98); }
+.menu-item.danger { color: var(--danger); border-color: rgba(255, 23, 68, 0.2); background: rgba(255, 23, 68, 0.05); }
+.menu-item svg { width: 22px; height: 22px; opacity: 0.6; }
 
 /* Модалка поиска города */
-#search-modal-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; }
-#search-modal-overlay.active { display: flex; }
-.search-modal { background: var(--panel); border: 1px solid var(--accent); border-radius: 20px; padding: 20px; width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.search-modal h3 { margin: 0; color: var(--accent); text-align: center; font-size: 18px; }
-.search-modal input { padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0, 40, 40, 0.5); color: var(--text); outline: none; font-size: 15px; }
-.search-modal .modal-actions { display: flex; gap: 10px; }
-.search-modal button { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; border: none; }
-#modal-search-btn { background: var(--accent); color: #001414; }
-#modal-cancel-btn { background: transparent; color: var(--text); border: 1px solid var(--glass-border); }
+#search-modal-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; }
+#search-modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+.search-modal { background: var(--panel); border: 1px solid var(--accent); border-radius: 24px; padding: 25px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px var(--accent-glow); transform: scale(0.9); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+@keyframes popIn { to { transform: scale(1); } }
+.search-modal h3 { margin: 0; color: var(--accent); text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 1px; }
+.search-modal input { padding: 16px; border-radius: 14px; border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.3); color: var(--text); outline: none; font-size: 16px; font-weight: 600; transition: 0.3s; }
+.search-modal input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+.search-modal .modal-actions { display: flex; gap: 12px; }
+.search-modal button { flex: 1; padding: 14px; border-radius: 14px; font-weight: 900; font-size: 15px; cursor: pointer; border: none; transition: 0.2s; }
+.search-modal button:active { transform: scale(0.95); }
+#modal-search-btn { background: var(--accent); color: #000; box-shadow: 0 5px 15px var(--accent-glow); }
+#modal-cancel-btn { background: transparent; color: #aaa; border: 1px solid rgba(255,255,255,0.1); }
 
 /* Админка */
 #admin-panel-content { display: none; margin-top: 20px; flex-direction: column; gap: 15px; }
 #admin-panel-content.active { display: flex; }
 .admin-tabs { display: flex; gap: 10px; }
-.admin-tab { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--panel); color: var(--accent-soft); font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; }
-.admin-tab.active { background: rgba(0, 255, 204, 0.1); color: var(--accent); border-color: var(--accent); }
+.admin-tab { flex: 1; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: var(--panel); color: #888; font-weight: 800; font-size: 14px; cursor: pointer; text-align: center; transition: 0.2s; }
+.admin-tab.active { background: rgba(0, 255, 204, 0.1); color: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
 .admin-list { display: flex; flex-direction: column; gap: 10px; }
-.admin-item { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; font-size: 13px; }
-.admin-item .meta { color: var(--accent-soft); font-size: 11px; margin-top: 4px; }
-.admin-item .del-btn { margin-top: 10px; padding: 8px 14px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; width: 100%; }
-.clear-all-btn { width: 100%; padding: 14px; background: rgba(255, 23, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 10px; }
+.admin-item { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; font-size: 14px; }
+.admin-item .meta { color: #888; font-size: 12px; margin-top: 6px; font-weight: 600; }
+.admin-item .del-btn { margin-top: 12px; padding: 10px 14px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 13px; width: 100%; transition: 0.2s; }
+.admin-item .del-btn:active { transform: scale(0.98); }
+.clear-all-btn { width: 100%; padding: 16px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 16px; font-weight: 900; font-size: 15px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
+.clear-all-btn:active { transform: scale(0.98); background: rgba(255, 23, 68, 0.2); }
 </style>
 </head>
 <body>
@@ -145,7 +177,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
     <h2>Привет! 👋</h2>
     <p>Чтобы видеть события только в твоем городе и ставить метки, нам нужно знать, где ты находишься.</p>
     <button class="onboarding-btn" onclick="requestGeoLocation()">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Поделиться геолокацией
     </button>
     <button class="onboarding-btn secondary" onclick="showManualCitySearch()">Выбрать город вручную</button>
@@ -157,19 +189,20 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
         <div id="map-overlay">
             <div id="top-row">
                 <div id="city-status"><span class="city-name">ГОРОД НЕ ВЫБРАН</span><span class="city-state">—</span></div>
-                <div style="text-align:right"><div id="site-title">VINERA RADAR</div></div>
+                <div style="text-align:right"><div id="site-title">VINERA</div></div>
             </div>
-            <div id="status">Нажмите "Сообщить", чтобы поставить метку</div>
         </div>
         
+        <div id="status-toast">Метки загружены</div>
+
         <button id="show-markers-btn" onclick="toggleMarkersSheet()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Сообщить
         </button>
         
         <button id="back-to-geo-btn" onclick="backToGeo()">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Вернуться на моё гео
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            На моё гео
         </button>
 
         <div id="markers-sheet-overlay" onclick="toggleMarkersSheet()"></div>
@@ -180,7 +213,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
                 <button class="marker-btn" onclick="setMarkerType('Ракета',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="2"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>Ракета</button>
                 <button class="marker-btn" onclick="setMarkerType('Истребитель',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#40c4ff" stroke-width="2"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>Истребитель</button>
                 <button class="marker-btn" onclick="setMarkerType('Сирена',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#b388ff" stroke-width="2"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>Сирена</button>
-                <button class="marker-btn" onclick="setMarkerType('Взрыв',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="2"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>Взрыв</button>
+                <button class="marker                <button class="marker-btn" onclick="setMarkerType('Взрыв',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="2"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>Взрыв</button>
                 <button class="marker-btn" onclick="setMarkerType('Тихо',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>Тихо</button>
             </div>
         </div>
@@ -202,7 +235,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
             </div>
         </div>
         <div class="menu-list">
-            <div class="menu-item" onclick="openSearchModal()" style="color:var(--accent); border-color:var(--accent);">
+            <div class="menu-item" onclick="openSearchModal()" style="color:var(--accent); border-color:var(--glass-border);">
                 <span>📍 Выбрать регион / город</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             </div>
@@ -261,6 +294,23 @@ window.addEventListener('load', function() {
             if (!str) return '';
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
+
+        // ===== СИСТЕМА УВЕДОМЛЕНИЙ (ТОСТЫ) =====
+        let toastTimeout = null;
+        window.showToast = function(text, isError = false) {
+            const toast = document.getElementById('status-toast');
+            if (!toast) return;
+            
+            toast.innerHTML = text;
+            toast.className = isError ? 'show error' : 'show';
+            
+            if (toastTimeout) clearTimeout(toastTimeout);
+            
+            // Исчезает через 7 секунд
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 7000);
+        };
 
         // ===== КАРТА =====
         const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
@@ -417,7 +467,7 @@ window.addEventListener('load', function() {
 
                 document.getElementById('profile-name').textContent = currentUser;
                 document.getElementById('profile-avatar-letter').textContent = currentUser.charAt(0).toUpperCase();
-                document.getElementById('profile-stat-markers').textContent = currentTotalMarkers; // Вывод счетчика
+                document.getElementById('profile-stat-markers').textContent = currentTotalMarkers; // Счетчик
 
                 let roleText = 'ПОЛЬЗОВАТЕЛЬ';
                 if (currentRole === 'admin') roleText = 'АДМИНИСТРАТОР';
@@ -444,8 +494,8 @@ window.addEventListener('load', function() {
                     userCity = savedCity;
                     currentCity = savedCity; 
                     
-                    // Убрали навязчивую надпись "Ваш город: ..."
-                    document.getElementById('status').innerText = `Метки загружены`;
+                    // Выводим приветствие через новый тост
+                    showToast('Метки загружены');
 
                     if (savedGeo) {
                         try {
@@ -529,18 +579,18 @@ window.addEventListener('load', function() {
 
         map.on('zoomend', function() { drawMarkers(); });
 
-        // ===== ЗАГРУЗКА МЕТОК (ИСПРАВЛЕНО) =====
+        // ===== ЗАГРУЗКА МЕТОК =====
         async function loadMarkers() {
             if (isLoggedOut) return;
             const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
-            if (error) { document.getElementById('status').innerText = 'Ошибка: ' + error.message; return; }
+            if (error) { showToast('Ошибка: ' + error.message, true); return; }
 
             const now = Date.now();
             markersData = (data || []).filter(m => {
                 const isFresh = (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
                 const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
                 
-                // Показываем метку, если она свежая И (она в моем городе ИЛИ ей меньше 10 секунд)
+                // Если метке меньше 10 сек, показываем её, даже если города не совпадают (фикс исчезновения)
                 const justPlaced = (now - new Date(m.created_at).getTime()) < 10000;
                 
                 return isFresh && (isMyCity || justPlaced);
@@ -622,16 +672,17 @@ window.addEventListener('load', function() {
 
         // ===== ЛОГИКА ВОЗВРАТА НА ГЕО =====
         window.backToGeo = function() {
-            if (!myGeo) { document.getElementById('status').innerText = 'Ваше гео не определено'; return; }
+            if (!myGeo) { showToast('Ваше гео не определено', true); return; }
             map.setView([myGeo.lat, myGeo.lon], 13);
             document.getElementById('back-to-geo-btn').classList.remove('active');
-            document.getElementById('status').innerText = 'Вы вернулись на своё гео';
+            showToast('Вы вернулись на своё гео');
         };
 
         map.on('moveend', function() {
             if (!myGeo) return;
             const center = map.getCenter();
             const dist = map.distance([myGeo.lat, myGeo.lon], [center.lat, center.lng]);
+            // Если отодвинулись дальше 5 км от гео — показываем кнопку
             if (dist > 5000) {
                 document.getElementById('back-to-geo-btn').classList.add('active');
             } else {
@@ -652,13 +703,13 @@ window.addEventListener('load', function() {
         window.searchCityFromModal = async function() {
             const city = document.getElementById('modal-city-input').value.trim();
             if (!city) return;
-            document.getElementById('status').innerText = 'Поиск...';
+            showToast('Поиск...');
             try {
                 const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(city) + '&limit=1&accept-language=ru');
                 const data = await res.json();
                 if (data && data.length > 0) {
                     map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 12);
-                    document.getElementById('status').innerText = 'Найден: ' + data[0].display_name;
+                    showToast('Найден: ' + data[0].display_name.split(',')[0].trim());
                     currentCity = data[0].display_name.split(',')[0].trim();
                     userCity = currentCity;
                     localStorage.setItem('vinera_city', userCity);
@@ -666,10 +717,10 @@ window.addEventListener('load', function() {
                     closeSearchModal();
                     await loadMarkers();
                 } else {
-                    document.getElementById('status').innerText = 'Город не найден';
+                    showToast('Город не найден', true);
                 }
             } catch (e) {
-                document.getElementById('status').innerText = 'Ошибка поиска';
+                showToast('Ошибка поиска', true);
             }
         };
 
@@ -688,15 +739,15 @@ window.addEventListener('load', function() {
                         const data = await res.json();
                         const addr = data.address || {};
                         
-                        // ФИКС: Убрали "state", чтобы не кидало в Москву. Берем только город/поселок.
+                        // ФИКС: Убрали "state", чтобы не кидало в Москву. Берем только город/поселок/деревню.
                         let city = addr.city || addr.town || addr.village || addr.municipality || addr.county || 'Ваш город';
                         
                         userCity = city;
                         currentCity = city;
                         localStorage.setItem('vinera_city', city);
                         
-                        // Убрали надпись "Ваш город: [Город]" сверху, чтобы не путала
-                        document.getElementById('status').innerText = 'Местоположение определено. Метки загружены.';
+                        // Убрали навязчивую надпись "Ваш город: [Город]" сверху, теперь через всплывашку
+                        showToast('Город определен: ' + city);
                         
                         map.setView([lat, lon], 13);
                         showUserLocation(lat, lon);
@@ -723,10 +774,9 @@ window.addEventListener('load', function() {
             document.getElementById('app').style.display = 'block';
             setTimeout(() => map.invalidateSize(), 200);
             openSearchModal();
-            document.getElementById('status').innerText = 'Выберите город в поиске';
+            showToast('Выберите город в поиске');
         };
-
-        // ===== РЕЖИМ УСТАНОВКИ МЕТКИ =====
+                // ===== РЕЖИМ УСТАНОВКИ МЕТКИ (ШТОРКА) =====
         window.toggleMarkersSheet = function() {
             const sheet = document.getElementById('markers-sheet');
             const overlay = document.getElementById('markers-sheet-overlay');
@@ -741,43 +791,47 @@ window.addEventListener('load', function() {
 
         window.setMarkerType = function(type, btn) {
             if (isPlacingMarker && currentMarkerType === type) {
+                // Если уже выбран этот тип — отменяем режим
                 isPlacingMarker = false;
                 currentMarkerType = null;
                 document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
-                document.getElementById('status').innerText = 'Режим установки метки отменен';
+                showToast('Режим установки метки отменен');
             } else {
+                // Включаем режим
                 isPlacingMarker = true;
                 currentMarkerType = type;
                 document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
                 if (btn) btn.classList.add('selected');
-                document.getElementById('status').innerHTML = '<b>Режим прицела:</b> Тапните по карте, чтобы поставить метку ' + type;
+                showToast('Тапните по карте, чтобы поставить метку ' + type);
             }
-            toggleMarkersSheet(); 
+            toggleMarkersSheet(); // Закрываем шторку
         };
 
-        // ===== КЛИК ПО КАРТЕ + СЧЕТЧИК =====
+        // ===== КЛИК ПО КАРТЕ (ИСПРАВЛЕНО) =====
         map.on('click', async function(e) {
+            // Если режим прицела выключен — ничего не делаем (карта просто листается/открывает попапы)
             if (!isPlacingMarker || !currentMarkerType) return;
 
+            // Проверка телефона
             if (currentUser !== 'bihepka' && currentUser !== 'Hollisheetq') {
                 if (!currentPhone) {
-                    document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Чтобы ставить метки, подтвердите номер в боте!</span>';
+                    showToast('⚠ Чтобы ставить метки, подтвердите номер в боте!', true);
                     return;
                 }
             }
 
             if (!currentCity) { 
-                document.getElementById('status').innerText = 'Сначала выберите город в профиле!'; 
+                showToast('Сначала выберите город в профиле!', true);
                 return; 
             }
 
             const cd = canPlaceMarker();
             if (!cd.allowed) {
-                document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⏳ Подождите ' + cd.wait + ' сек. перед следующей меткой</span>';
+                showToast('⏳ Подождите ' + cd.wait + ' сек. перед следующей меткой', true);
                 return;
             }
 
-            document.getElementById('status').innerText = 'Сохранение...';
+            showToast('Сохранение...');
             
             // Определяем точный город по клику (без областей)
             let clickedCity = currentCity;
@@ -792,7 +846,7 @@ window.addEventListener('load', function() {
             const { data, error } = await supabaseClient.from('vinera_markers').insert([m]).select().single();
             
             if (error) { 
-                document.getElementById('status').innerText = 'Ошибка: ' + error.message; 
+                showToast('Ошибка: ' + error.message, true); 
                 return; 
             }
 
@@ -812,7 +866,7 @@ window.addEventListener('load', function() {
             isPlacingMarker = false;
             currentMarkerType = null;
             document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
-            document.getElementById('status').innerText = 'Метка поставлена ✔';
+            showToast('Метка поставлена ✔');
         });
 
         // ===== ВКЛАДКИ =====
@@ -861,11 +915,11 @@ window.addEventListener('load', function() {
             this.textContent = 'Очистка...';
             this.disabled = true;
             const { error } = await supabaseClient.from('vinera_markers').delete().neq('id', 0);
-            if (error) { window.alert('Ошибка при очистке: ' + error.message); }
+            if (error) { showToast('Ошибка при очистке: ' + error.message, true); }
             else {
                 markersData = []; feedData = [];
                 drawMarkers(); updateCityStatus(); renderFeed();
-                window.alert('Все метки успешно удалены!');
+                showToast('Все метки успешно удалены!');
             }
             this.textContent = '🗑 Очистить все метки';
             this.disabled = false;
@@ -921,7 +975,7 @@ window.addEventListener('load', function() {
             if (reason === null) return;
             if (!reason.trim()) { window.alert('Причина обязательна!'); return; }
             const { error } = await supabaseClient.from('vinera_markers').delete().eq('id', id);
-            if (error) { window.alert('Ошибка: ' + error.message); return; }
+            if (error) { showToast('Ошибка: ' + error.message, true); return; }
             markersData = markersData.filter(m => String(m.id) !== String(id));
             feedData = feedData.filter(m => String(m.id) !== String(id));
             drawMarkers(); updateCityStatus(); renderFeed(); renderAdmin();
@@ -930,13 +984,13 @@ window.addEventListener('load', function() {
 
         window.setBan = async function(id, ban) {
             const { error } = await supabaseClient.from('profiles').update({ is_banned: ban }).eq('id', id);
-            if (error) { window.alert('Ошибка: ' + error.message); return; }
+            if (error) { showToast('Ошибка: ' + error.message, true); return; }
             renderAdmin();
         };
 
         window.setUserRole = async function(id, role) {
             const { error } = await supabaseClient.from('profiles').update({ role: role }).eq('id', id);
-            if (error) { window.alert('Ошибка: ' + error.message); return; }
+            if (error) { showToast('Ошибка: ' + error.message, true); return; }
             renderAdmin();
         };
 
