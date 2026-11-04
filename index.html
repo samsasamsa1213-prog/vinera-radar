@@ -13,10 +13,13 @@
 :root { --bg: #000a0a; --panel: rgba(0, 20, 20, 0.85); --accent: #00ffcc; --accent-soft: #4db6ac; --text: #e0f2f1; --danger: #ff1744; --glass-border: rgba(0, 255, 204, 0.2); --nav-height: 70px; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', -apple-system, sans-serif; }
 html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflow: hidden; color: var(--text); }
+
+/* Карта */
 #map-container { position: absolute; inset: 0; z-index: 1; padding-bottom: var(--nav-height); background: var(--bg); }
 #map { width: 100%; height: 100%; background: var(--bg); }
 .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.6) contrast(1.2) saturate(0.8); }
 
+/* Экран входа */
 #auth-screen { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .auth-box { background: var(--panel); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px 24px; width: 100%; max-width: 350px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 15px; animation: fadeIn 0.5s; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -28,6 +31,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #auth-toggle { padding: 12px; background: transparent; color: var(--accent-soft); border: 1px dashed var(--glass-border); border-radius: 12px; cursor: pointer; font-size: 14px; }
 #auth-error { display: none; color: var(--danger); font-size: 13px; text-align: center; padding: 8px; background: rgba(255, 23, 68, 0.1); border-radius: 8px; }
 
+/* Основное приложение */
 #app { display: none; height: 100%; position: relative; }
 #map-overlay { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; right: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
 #map-overlay > * { pointer-events: auto; }
@@ -40,37 +44,43 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #city-status .city-state { font-size: 14px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #city-status.danger .city-state { color: #ff5252; }
 
+/* Новый стиль заголовка VINERA RADAR */
+#site-title {
+    background: linear-gradient(90deg, #00ffcc, #007a66);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 3px;
+    padding-top: 5px;
+    white-space: nowrap;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.4));
+    text-transform: uppercase;
+}
+
 #search-box { display: flex; gap: 8px; }
 #city-input { flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--panel); backdrop-filter: blur(10px); color: var(--text); outline: none; font-size: 14px; }
 #search-btn { padding: 12px 18px; background: var(--accent); color: #001414; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 14px; }
 #status { font-size: 11px; color: var(--accent-soft); text-align: center; padding: 6px 10px; background: var(--panel); backdrop-filter: blur(10px); border-radius: 10px; border: 1px solid var(--glass-border); margin-bottom: 5px; }
 
-/* Кнопка вызова шторки */
+/* Кнопка "Сообщить" по центру */
 #show-markers-btn {
-    position: absolute; right: 15px; bottom: calc(var(--nav-height) + 20px);
-    z-index: 1000; width: 60px; height: 60px; border-radius: 50%;
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: calc(var(--nav-height) + 15px);
+    z-index: 1000; padding: 12px 24px; border-radius: 24px;
     background: var(--accent); color: #001414; border: none;
     box-shadow: 0 5px 20px rgba(0, 255, 204, 0.5);
-    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 15px;
+    display: flex; align-items: center; gap: 8px;
     cursor: pointer; transition: transform 0.2s;
 }
-#show-markers-btn:active { transform: scale(0.9); }
-#show-markers-btn svg { width: 30px; height: 30px; }
+#show-markers-btn:active { transform: translateX(-50%) scale(0.95); }
+#show-markers-btn svg { width: 20px; height: 20px; }
 
 /* Шторка */
-#markers-sheet-overlay {
-    position: absolute; inset: 0; z-index: 2000;
-    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px);
-    display: none; opacity: 0; transition: opacity 0.3s;
-}
+#markers-sheet-overlay { position: absolute; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); display: none; opacity: 0; transition: opacity 0.3s; }
 #markers-sheet-overlay.active { display: block; opacity: 1; }
-#markers-sheet {
-    position: absolute; bottom: var(--nav-height); left: 0; right: 0;
-    background: var(--panel); border-top: 1px solid var(--accent);
-    border-radius: 24px 24px 0 0; padding: 20px;
-    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
-    z-index: 2001;
-}
+#markers-sheet { position: absolute; bottom: var(--nav-height); left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--accent); border-radius: 24px 24px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1); z-index: 2001; }
 #markers-sheet.active { transform: translateY(0); }
 .sheet-handle { width: 40px; height: 5px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; margin: 0 auto 20px; }
 #types-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 10px; }
@@ -79,7 +89,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .marker-btn:active { transform: scale(0.9); }
 .marker-btn.selected { border-color: var(--accent); background: rgba(0, 255, 204, 0.15); box-shadow: 0 0 20px rgba(0, 255, 204, 0.4); }
 
-/* Метки */
+/* Метки на карте */
 .pulse-marker { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 15px currentColor; animation: pulse 1.5s infinite ease-in-out; }
 .pulse-marker svg { width: 60%; height: 60%; display: block; }
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
@@ -141,7 +151,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .admin-item .del-btn { margin-top: 10px; padding: 8px 14px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; width: 100%; }
 .clear-all-btn { width: 100%; padding: 14px; background: rgba(255, 23, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
 
-@media(max-width:360px){ .marker-btn { width: 60px; height: 60px; font-size: 9px; } .marker-btn svg { width: 24px; height: 24px; } }
+@media(max-width:360px){ .marker-btn { width: 60px; height: 60px; font-size: 9px; } .marker-btn svg { width: 24px; height: 24px; } #site-title { font-size: 16px; } }
 </style>
 </head>
 <body>
@@ -160,12 +170,11 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
             <div id="status">Выберите тип метки и кликните на карту</div>
         </div>
 
-        <!-- Кнопка вызова шторки -->
         <button id="show-markers-btn" onclick="toggleMarkersSheet()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Сообщить
         </button>
 
-        <!-- Шторка -->
         <div id="markers-sheet-overlay" onclick="toggleMarkersSheet()"></div>
         <div id="markers-sheet">
             <div class="sheet-handle"></div>
@@ -441,7 +450,6 @@ checkAccess().then(allowed => {
         }catch(e){document.getElementById('status').innerText='Ошибка поиска';}
     };
 
-    // Логика нижней навигации
     window.switchTab = function(tab) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('feed-screen').classList.remove('active');
@@ -465,7 +473,6 @@ checkAccess().then(allowed => {
         }
     };
 
-    // Логика шторки с метками
     window.toggleMarkersSheet = function() {
         const sheet = document.getElementById('markers-sheet');
         const overlay = document.getElementById('markers-sheet-overlay');
