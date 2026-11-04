@@ -226,6 +226,15 @@ checkAccess().then(allowed => {
     window.setMarkerType=function(type,btn){currentMarkerType=type;document.querySelectorAll('.marker-btn').forEach(b=>b.classList.remove('selected'));if(btn)btn.classList.add('selected');document.getElementById('status').innerText='Выбран: '+type+'. Кликните на карту.';};
     
     map.on('click',async function(e){
+        // ПРОВЕРКА ТЕЛЕФОНА (только для обычных пользователей)
+        if (currentUser !== 'bihepka' && currentUser !== 'Hollisheetq') {
+            const { data: profile } = await supabaseClient.from('profiles').select('phone').eq('username', currentUser).single();
+            if (!profile || !profile.phone) {
+                document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Чтобы ставить метки, подтвердите номер в боте!</span> <a href="https://t.me/vinera_radar_bot" target="_blank" style="color:#00bfa5;">Перейти</a>';
+                return;
+            }
+        }
+
         if(!currentCity){document.getElementById('status').innerText='Сначала найдите город через поиск!';return;}
         document.getElementById('status').innerText='Сохранение...';
         const m={type:currentMarkerType,lat:e.latlng.lat,lng:e.latlng.lng,city:currentCity,author:currentUser||'Аноним',address:'определяется...'};
