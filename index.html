@@ -97,81 +97,10 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .popup-muted { color: #aaa; font-size: 13px; margin-top: 4px; font-weight: 600; }
 .popup-muted b { color: #fff; }
 .popup-confirm { display: inline-block; margin-top: 10px; padding: 6px 12px; background: rgba(0, 200, 83, 0.15); color: #00e676; border: 1px solid #00e676; border-radius: 10px; font-weight: 900; font-size: 12px; box-shadow: 0 0 10px rgba(0, 230, 118, 0.3); }
-
-/* Нижнее меню */
-#bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(5, 10, 10, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid var(--glass-border); z-index: 2500; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
-.nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: transparent; border: none; color: #666; font-size: 11px; font-weight: 700; cursor: pointer; flex: 1; height: 100%; transition: 0.3s; }
-.nav-btn svg { width: 26px; height: 26px; transition: 0.3s; }
-.nav-btn.active { color: var(--accent); }
-.nav-btn.active svg { transform: translateY(-4px); filter: drop-shadow(0 0 8px var(--accent-glow)); }
-
-/* Лента */
-#feed-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-#feed-screen.active { display: flex; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-top: 10px; }
-.feed-header h2 { margin: 0; color: var(--text); font-size: 24px; font-weight: 900; letter-spacing: 1px; }
-.time-filter { background: rgba(0, 255, 204, 0.1); color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
-.feed-list { display: flex; flex-direction: column; gap: 12px; }
-.feed-item { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
-.feed-item:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
-.feed-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
-.feed-icon svg { width: 24px; height: 24px; }
-.feed-content { flex: 1; }
-.feed-title { font-weight: 800; font-size: 15px; margin-bottom: 5px; }
-.feed-meta { font-size: 12px; color: #888; font-weight: 600; }
-.feed-empty { text-align: center; color: #666; margin-top: 80px; font-weight: 600; font-size: 15px; }
-
-/* Профиль */
-#profile-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 20px; overflow-y: auto; }
-#profile-screen.active { display: flex; animation: fadeIn 0.3s ease; }
-.profile-card { background: var(--panel); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; margin-top: 10px; }
-.profile-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 80px; background: linear-gradient(180deg, rgba(0, 255, 204, 0.15), transparent); z-index: 0; }
-.profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #005a52); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #000; font-weight: 900; box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow); position: relative; z-index: 1; }
-.profile-name { font-size: 24px; font-weight: 900; margin-bottom: 8px; position: relative; z-index: 1; letter-spacing: 1px; }
-.profile-role { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; background: rgba(0, 255, 204, 0.1); color: var(--accent); border: 1px solid var(--accent); position: relative; z-index: 1; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); }
-.profile-stats { display: flex; justify-content: space-around; margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 1; }
-.stat-item { text-align: center; }
-.stat-value { font-size: 22px; font-weight: 900; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
-.stat-label { font-size: 12px; color: #888; margin-top: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-.menu-list { display: flex; flex-direction: column; gap: 12px; }
-.menu-item { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 18px; display: flex; justify-content: space-between; align-items: center; color: var(--text); text-decoration: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; }
-.menu-item:active { background: rgba(255,255,255,0.05); transform: scale(0.98); }
-.menu-item.danger { color: var(--danger); border-color: rgba(255, 23, 68, 0.2); background: rgba(255, 23, 68, 0.05); }
-.menu-item svg { width: 22px; height: 22px; opacity: 0.6; }
-
-/* Модалка поиска города */
-#search-modal-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; }
-#search-modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
-.search-modal { background: var(--panel); border: 1px solid var(--accent); border-radius: 24px; padding: 25px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px var(--accent-glow); transform: scale(0.9); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-@keyframes popIn { to { transform: scale(1); } }
-.search-modal h3 { margin: 0; color: var(--accent); text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 1px; }
-.search-modal input { padding: 16px; border-radius: 14px; border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.3); color: var(--text); outline: none; font-size: 16px; font-weight: 600; transition: 0.3s; }
-.search-modal input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-.search-modal .modal-actions { display: flex; gap: 12px; }
-.search-modal button { flex: 1; padding: 14px; border-radius: 14px; font-weight: 900; font-size: 15px; cursor: pointer; border: none; transition: 0.2s; }
-.search-modal button:active { transform: scale(0.95); }
-#modal-search-btn { background: var(--accent); color: #000; box-shadow: 0 5px 15px var(--accent-glow); }
-#modal-cancel-btn { background: transparent; color: #aaa; border: 1px solid rgba(255,255,255,0.1); }
-
-/* Админка */
-#admin-panel-content { display: none; margin-top: 20px; flex-direction: column; gap: 15px; }
-#admin-panel-content.active { display: flex; }
-.admin-tabs { display: flex; gap: 10px; }
-.admin-tab { flex: 1; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: var(--panel); color: #888; font-weight: 800; font-size: 14px; cursor: pointer; text-align: center; transition: 0.2s; }
-.admin-tab.active { background: rgba(0, 255, 204, 0.1); color: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
-.admin-list { display: flex; flex-direction: column; gap: 10px; }
-.admin-item { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; font-size: 14px; }
-.admin-item .meta { color: #888; font-size: 12px; margin-top: 6px; font-weight: 600; }
-.admin-item .del-btn { margin-top: 12px; padding: 10px 14px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 13px; width: 100%; transition: 0.2s; }
-.admin-item .del-btn:active { transform: scale(0.98); }
-.clear-all-btn { width: 100%; padding: 16px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 16px; font-weight: 900; font-size: 15px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
-.clear-all-btn:active { transform: scale(0.98); background: rgba(255, 23, 68, 0.2); }
 </style>
 </head>
 <body>
-
-<div id="auth-screen"><div class="auth-box"><h2 id="auth-title">ВХОД</h2><input type="text" id="auth-login" placeholder="Логин" autocomplete="username"><input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password"><div id="auth-error"></div><div class="cf-turnstile" data-sitekey="0x4AAAAAAFzf1X8HqQLWzdve" data-callback="onTurnstileSuccess" style="margin-bottom: 10px;"></div><button id="auth-btn">Войти</button><button id="auth-toggle">Создать аккаунт</button></div></div>
+    <div id="auth-screen"><div class="auth-box"><h2 id="auth-title">ВХОД</h2><input type="text" id="auth-login" placeholder="Логин" autocomplete="username"><input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password"><div id="auth-error"></div><div class="cf-turnstile" data-sitekey="0x4AAAAAAFzf1X8HqQLWzdve" data-callback="onTurnstileSuccess" style="margin-bottom: 10px;"></div><button id="auth-btn">Войти</button><button id="auth-toggle">Создать аккаунт</button></div></div>
 
 <div id="onboarding-screen">
     <h2>Привет! 👋</h2>
@@ -213,7 +142,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
                 <button class="marker-btn" onclick="setMarkerType('Ракета',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="2"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>Ракета</button>
                 <button class="marker-btn" onclick="setMarkerType('Истребитель',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#40c4ff" stroke-width="2"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>Истребитель</button>
                 <button class="marker-btn" onclick="setMarkerType('Сирена',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#b388ff" stroke-width="2"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>Сирена</button>
-                <button class="marker                <button class="marker-btn" onclick="setMarkerType('Взрыв',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="2"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>Взрыв</button>
+                <button class="marker-btn" onclick="setMarkerType('Взрыв',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="2"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>Взрыв</button>
                 <button class="marker-btn" onclick="setMarkerType('Тихо',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>Тихо</button>
             </div>
         </div>
@@ -265,6 +194,35 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
             <button id="modal-cancel-btn" onclick="closeSearchModal()">Отмена</button>
             <button id="modal-search-btn" onclick="searchCityFromModal()">Найти</button>
         </div>
+    </div>
+</div>
+
+<!-- Модалка профиля юзера в админке -->
+<div id="user-profile-modal" style="position: fixed; inset: 0; z-index: 4000; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="search-modal" style="max-width: 320px; border-color: var(--accent);">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <div class="profile-avatar" id="modal-user-avatar" style="width: 70px; height: 70px; font-size: 28px; margin-bottom: 15px;">U</div>
+            <h3 id="modal-user-name" style="font-size: 22px; margin-bottom: 5px; color: #fff;">Имя</h3>
+            <div id="modal-user-role" style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; background: rgba(0, 255, 204, 0.1); color: var(--accent); border: 1px solid var(--accent);">USER</div>
+        </div>
+        
+        <div style="background: rgba(0,0,0,0.3); border-radius: 14px; padding: 15px; margin: 15px 0; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">
+                <span style="color: #888;">Меток поставлено:</span>
+                <span id="modal-user-markers" style="color: var(--accent); font-weight: 900; font-size: 16px;">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">
+                <span style="color: #888;">ID в Telegram:</span>
+                <span id="modal-user-tg" style="color: #fff;">Нет</span>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button id="modal-user-ban-btn" onclick="toggleBanFromModal()" style="background: rgba(255, 23, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); padding: 12px; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s;">Забанить</button>
+            <button id="modal-user-role-btn" onclick="toggleRoleFromModal()" style="background: rgba(0, 191, 165, 0.15); color: var(--accent); border: 1px solid var(--accent); padding: 12px; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s;">Сделать модером</button>
+        </div>
+
+        <button onclick="closeUserProfileModal()" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #aaa; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: 5px;">Закрыть</button>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -776,7 +734,8 @@ window.addEventListener('load', function() {
             openSearchModal();
             showToast('Выберите город в поиске');
         };
-                // ===== РЕЖИМ УСТАНОВКИ МЕТКИ (ШТОРКА) =====
+
+        // ===== РЕЖИМ УСТАНОВКИ МЕТКИ (ШТОРКА) =====
         window.toggleMarkersSheet = function() {
             const sheet = document.getElementById('markers-sheet');
             const overlay = document.getElementById('markers-sheet-overlay');
@@ -807,7 +766,7 @@ window.addEventListener('load', function() {
             toggleMarkersSheet(); // Закрываем шторку
         };
 
-        // ===== КЛИК ПО КАРТЕ (ИСПРАВЛЕНО) =====
+        // ===== КЛИК ПО КАРТЕ =====
         map.on('click', async function(e) {
             // Если режим прицела выключен — ничего не делаем (карта просто листается/открывает попапы)
             if (!isPlacingMarker || !currentMarkerType) return;
@@ -868,8 +827,7 @@ window.addEventListener('load', function() {
             document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
             showToast('Метка поставлена ✔');
         });
-
-        // ===== ВКЛАДКИ =====
+                // ===== ВКЛАДКИ =====
         window.switchTab = function(tab) {
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('feed-screen').classList.remove('active');
@@ -952,19 +910,20 @@ window.addEventListener('load', function() {
                     if (u.username === 'bihepka' || u.username === 'Hollisheetq') return;
                     const item = document.createElement('div');
                     item.className = 'admin-item';
+                    
+                    // Делаем карточку кликабельной
+                    item.style.cursor = 'pointer';
+                    item.onclick = () => openUserProfileModal(u);
+                    
                     item.style.opacity = u.is_banned ? '0.6' : '1';
-                    const badge = u.is_banned ? '<span style="color:var(--danger);font-size:10px;">[БАН]</span>' : '';
+                    const badge = u.is_banned ? '<span style="color:var(--danger);font-size:10px; border: 1px solid var(--danger); padding: 2px 6px; border-radius: 6px;">[БАН]</span>' : '';
+                    
                     item.innerHTML =
-                        '<div style="display:flex;justify-content:space-between;"><b>' + escapeHtml(u.username || 'без имени') + '</b>' + badge + '</div>' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+                            '<b>' + escapeHtml(u.username || 'без имени') + '</b>' + badge +
+                        '</div>' +
                         '<div class="meta">Меток: ' + (u.total_markers || 0) + ' · Роль: ' + escapeHtml(u.role || 'user') + '</div>' +
-                        '<div style="display:flex;gap:5px;margin-top:10px;">' +
-                        (!u.is_banned
-                            ? '<button onclick="setBan(\'' + u.id + '\', true)" style="flex:1;padding:8px;background:rgba(255,23,68,0.1);color:var(--danger);border:1px solid var(--danger);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">Забанить</button>'
-                            : '<button onclick="setBan(\'' + u.id + '\', false)" style="flex:1;padding:8px;background:rgba(0,200,83,0.1);color:#00c853;border:1px solid #00c853;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">Разбанить</button>') +
-                        (u.role !== 'moderator'
-                            ? '<button onclick="setUserRole(\'' + u.id + '\', \'moderator\')" style="flex:1;padding:8px;background:rgba(0,191,165,0.1);color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">Модер</button>'
-                            : '<button onclick="setUserRole(\'' + u.id + '\', \'user\')" style="flex:1;padding:8px;background:rgba(255,152,0,0.1);color:#ff9800;border:1px solid #ff9800;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">Снять</button>') +
-                        '</div>';
+                        '<div style="font-size: 11px; color: #666; margin-top: 8px; text-align: right;">Нажмите для управления →</div>';
                     content.appendChild(item);
                 });
             }
@@ -982,6 +941,87 @@ window.addEventListener('load', function() {
             window.alert('Метка удалена.\nПричина: ' + reason);
         };
 
+        // ===== МОДАЛКА ПРОФИЛЯ ЮЗЕРА =====
+        let selectedUserId = null;
+        let selectedUserData = null;
+
+        window.openUserProfileModal = function(u) {
+            selectedUserId = u.id;
+            selectedUserData = u;
+
+            document.getElementById('modal-user-avatar').textContent = (u.username || 'U').charAt(0).toUpperCase();
+            document.getElementById('modal-user-name').textContent = u.username || 'Без имени';
+            
+            let roleText = 'ПОЛЬЗОВАТЕЛЬ';
+            if (u.role === 'admin') roleText = 'АДМИНИСТРАТОР';
+            else if (u.role === 'moderator') roleText = 'МОДЕРАТОР';
+            document.getElementById('modal-user-role').textContent = roleText;
+
+            document.getElementById('modal-user-markers').textContent = u.total_markers || 0;
+            document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
+
+            // Настройка кнопки Бана
+            const banBtn = document.getElementById('modal-user-ban-btn');
+            if (u.is_banned) {
+                banBtn.textContent = 'Разбанить';
+                banBtn.style.color = '#00c853';
+                banBtn.style.borderColor = '#00c853';
+                banBtn.style.background = 'rgba(0, 200, 83, 0.15)';
+            } else {
+                banBtn.textContent = 'Забанить';
+                banBtn.style.color = 'var(--danger)';
+                banBtn.style.borderColor = 'var(--danger)';
+                banBtn.style.background = 'rgba(255, 23, 68, 0.15)';
+            }
+
+            // Настройка кнопки Роли
+            const roleBtn = document.getElementById('modal-user-role-btn');
+            if (u.role === 'moderator') {
+                roleBtn.textContent = 'Снять модератора';
+                roleBtn.style.color = '#ff9800';
+                roleBtn.style.borderColor = '#ff9800';
+                roleBtn.style.background = 'rgba(255, 152, 0, 0.15)';
+            } else {
+                roleBtn.textContent = 'Сделать модером';
+                roleBtn.style.color = 'var(--accent)';
+                roleBtn.style.borderColor = 'var(--accent)';
+                roleBtn.style.background = 'rgba(0, 191, 165, 0.15)';
+            }
+
+            document.getElementById('user-profile-modal').style.display = 'flex';
+        };
+
+        window.closeUserProfileModal = function() {
+            document.getElementById('user-profile-modal').style.display = 'none';
+            selectedUserId = null;
+            selectedUserData = null;
+        };
+
+        window.toggleBanFromModal = async function() {
+            if (!selectedUserId || !selectedUserData) return;
+            const newBanStatus = !selectedUserData.is_banned;
+            
+            const { error } = await supabaseClient.from('profiles').update({ is_banned: newBanStatus }).eq('id', selectedUserId);
+            if (error) { showToast('Ошибка: ' + error.message, true); return; }
+            
+            showToast(newBanStatus ? 'Пользователь забанен' : 'Пользователь разбанен');
+            closeUserProfileModal();
+            renderAdmin(); // Обновляем список
+        };
+
+        window.toggleRoleFromModal = async function() {
+            if (!selectedUserId || !selectedUserData) return;
+            const newRole = selectedUserData.role === 'moderator' ? 'user' : 'moderator';
+            
+            const { error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', selectedUserId);
+            if (error) { showToast('Ошибка: ' + error.message, true); return; }
+            
+            showToast(newRole === 'moderator' ? 'Выдан статус модератора' : 'Статус модератора снят');
+            closeUserProfileModal();
+            renderAdmin(); // Обновляем список
+        };
+
+        // ===== СТАРЫЕ ФУНКЦИИ БАНА (оставил для совместимости, если где-то вызываются) =====
         window.setBan = async function(id, ban) {
             const { error } = await supabaseClient.from('profiles').update({ is_banned: ban }).eq('id', id);
             if (error) { showToast('Ошибка: ' + error.message, true); return; }
