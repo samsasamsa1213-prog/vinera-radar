@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
 :root{--bg:#001414;--panel:rgba(0,26,26,.95);--accent:#00bfa5;--accent-soft:#4db6ac;--text:#b2dfdb;--danger:#ff1744}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -75,7 +76,7 @@ html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Ro
 </style>
 </head>
 <body>
-<div id="auth-screen"><div class="auth-box"><h2 id="auth-title">ВХОД</h2><input type="text" id="auth-login" placeholder="Логин" autocomplete="username"><input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password"><div id="auth-error"></div><button id="auth-btn">Войти</button><button id="auth-toggle">Создать аккаунт</button></div></div>
+<div id="auth-screen"><div class="auth-box"><h2 id="auth-title">ВХОД</h2><input type="text" id="auth-login" placeholder="Логин" autocomplete="username"><input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password"><div id="auth-error"></div><div class="cf-turnstile" data-sitekey="0x4AAAAAAFzf1X8HqQLWzdve" data-callback="onTurnstileSuccess" style="margin-bottom: 10px;"></div><button id="auth-btn">Войти</button><button id="auth-toggle">Создать аккаунт</button></div></div>
 <div id="app">
 <div id="controls">
 <div id="top-row"><div id="city-status"><span class="city-name">ГОРОД НЕ ВЫБРАН</span><span class="city-state">—</span></div><div style="text-align:right"><div id="site-title">VINERA RADAR</div><div id="user-badge">👤 <span id="current-user">—</span></div><div id="counters">🟢 <span id="online-count">—</span> онлайн · 👥 <span id="total-count">—</span> всего</div></div></div>
@@ -98,6 +99,8 @@ html,body{margin:0;padding:0;height:100%;font-family:-apple-system,"Segoe UI",Ro
 <script>
   window.addEventListener('load',function(){
 const tg=window.Telegram?window.Telegram.WebApp:null;if(tg&&tg.expand)tg.expand();
+
+window.onTurnstileSuccess = function(token) { window.turnstileToken = token; };
 
 async function checkAccess() {
     if (!tg || !tg.initData) {
@@ -153,7 +156,13 @@ checkAccess().then(allowed => {
                     await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
                 }
 
-                const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});
+                // РЕГИСТРАЦИЯ С КАПЧЕЙ
+                const{data,error}=await supabaseClient.auth.signUp({
+                    email: email, 
+                    password: password,
+                    options: { captchaToken: window.turnstileToken }
+                });
+                
                 if(error)throw error;
                 if(data.user){ 
                     await supabaseClient.from('profiles').insert({
@@ -330,7 +339,7 @@ checkAccess().then(allowed => {
             content.appendChild(item);
         });
     }
-      async function renderAdminUsers(){
+    async function renderAdminUsers(){
         const content=document.getElementById('admin-content');
         if(!content)return;
         if(currentUser!=='bihepka'&&currentUser!=='Hollisheetq'){content.innerHTML='<div class="admin-empty">Нет прав</div>';return;}
