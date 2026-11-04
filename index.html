@@ -209,15 +209,17 @@ window.addEventListener('load', function() {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        // ===== КАРТА (рабочий бесплатный тёмный слой CARTO без ключа) =====
+        // ===== КАРТА (OpenStreetMap — гарантированно рабочий, без ключа) =====
         const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             maxZoom: 19,
             className: 'dark-tiles'
         }).addTo(map);
+
+        // Принудительно обновляем размер карты несколько раз — на случай, если контейнер был скрыт
         setTimeout(function() { map.invalidateSize(); }, 300);
+        setTimeout(function() { map.invalidateSize(); }, 1000);
 
         // ===== СОСТОЯНИЕ =====
         let currentMarkerType = 'БПЛА';
