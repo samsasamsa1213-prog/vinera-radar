@@ -15,10 +15,7 @@
 html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflow: hidden; color: var(--text); }
 #map-container { position: absolute; inset: 0; z-index: 1; padding-bottom: var(--nav-height); background: var(--bg); }
 #map { width: 100%; height: 100%; background: var(--bg); }
-
-/* ЧЁРНАЯ КАРТА: инвертируем светлый OSM */
 .dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9); }
-
 #auth-screen { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at center, #002222 0%, #000a0a 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .auth-box { background: var(--panel); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px 24px; width: 100%; max-width: 350px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 15px; }
 .auth-box h2 { margin: 0 0 10px; color: var(--accent); text-align: center; font-size: 22px; letter-spacing: 2px; font-weight: 800; }
@@ -106,7 +103,6 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 .admin-item .meta { color: var(--accent-soft); font-size: 11px; margin-top: 4px; }
 .admin-item .del-btn { margin-top: 10px; padding: 8px 14px; background: rgba(255, 23, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; width: 100%; }
 .clear-all-btn { width: 100%; padding: 14px; background: rgba(255, 23, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 10px; }
-/* Кнопка возврата на гео */
 #back-to-geo-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 70px); z-index: 1000; padding: 10px 20px; border-radius: 20px; background: var(--panel); color: var(--accent); border: 1px solid var(--accent); font-weight: 700; font-size: 13px; display: none; align-items: center; gap: 6px; cursor: pointer; backdrop-filter: blur(10px); }
 #back-to-geo-btn.active { display: flex; }
 </style>
@@ -238,7 +234,7 @@ window.addEventListener('load', function() {
         let currentUser = null;
         let currentRole = 'user';
         let currentBanned = false;
-        let currentPhone = null;        // ← ВОЗВРАЩЕНА ПРОВЕРКА ТЕЛЕФОНА
+        let currentPhone = null;
         let currentTotalMarkers = 0;
         let isLoggedOut = false;
         let pollInterval = null;
@@ -250,8 +246,8 @@ window.addEventListener('load', function() {
         const COOLDOWN_MS = 30000;
         const LIFETIME_MS = 900000;
         let userLocationLayer = null;
-        let myGeo = null;               // {lat, lon} — своё гео
-        let isViewingOtherCity = false; // флаг: смотрим чужой город
+        let myGeo = null;
+        let isViewingOtherCity = false;
 
         function canPlaceMarker() {
             const now = Date.now();
@@ -360,7 +356,7 @@ window.addEventListener('load', function() {
                 currentUser = profile ? profile.username : 'user';
                 currentRole = (profile && profile.role) ? profile.role : 'user';
                 currentBanned = (profile && profile.is_banned) ? true : false;
-                currentPhone = (profile && profile.phone) ? profile.phone : null;  // ← телефон из БД
+                currentPhone = (profile && profile.phone) ? profile.phone : null;
                 currentTotalMarkers = (profile && profile.total_markers) ? profile.total_markers : 0;
 
                 if (currentUser === 'bihepka' || currentUser === 'Hollisheetq') { currentRole = 'admin'; currentBanned = false; }
@@ -393,23 +389,40 @@ window.addEventListener('load', function() {
                 setTimeout(function() { map.invalidateSize(); }, 200);
 
                 const savedCity = localStorage.getItem('vinera_city');
+                const savedGeo = localStorage.getItem('vinera_geo');
+
                 if (!savedCity && currentUser !== 'bihepka') {
                     document.getElementById('onboarding-screen').classList.add('active');
                     document.getElementById('app').style.display = 'none';
                 } else {
                     userCity = savedCity;
+                    currentCity = savedCity;   // ФИКС: сразу ставим город
                     if (userCity) {
                         document.getElementById('city-input').value = userCity;
                         document.getElementById('status').innerText = `Ваш город: ${userCity}`;
                     }
 
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition((pos) => {
-                            myGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                            showUserLocation(pos.coords.latitude, pos.coords.longitude);
-                        });
+                    // Восстанавливаем сохранённое гео
+                    if (savedGeo) {
+                        try {
+                            const g = JSON.parse(savedGeo);
+                            myGeo = { lat: g.lat, lon: g.lon };
+                            map.setView([g.lat, g.lon], 13);
+                            showUserLocation(g.lat, g.lon);
+                        } catch (e) {}
                     }
 
+                    // Если гео не сохранено — пробуем получить заново
+                    if (navigator.geolocation && !myGeo) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                            myGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                            localStorage.setItem('vinera_geo', JSON.stringify({ lat: myGeo.lat, lon: myGeo.lon }));
+                            showUserLocation(myGeo.lat, myGeo.lon);
+                            map.setView([myGeo.lat, myGeo.lon], 13);
+                        }, function() {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+                    }
+
+                    updateCityStatus();
                     await loadMarkers();
                     await updateCounters();
                 }
@@ -426,6 +439,7 @@ window.addEventListener('load', function() {
             if (countersInterval) clearInterval(countersInterval);
             await supabaseClient.auth.signOut();
             localStorage.removeItem('vinera_city');
+            localStorage.removeItem('vinera_geo');
             currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
             userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
             myGeo = null; isViewingOtherCity = false;
@@ -566,7 +580,6 @@ window.addEventListener('load', function() {
             L.circleMarker([lat, lon], { radius: 8, fillColor: '#00ffcc', color: '#fff', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(userLocationLayer).bindPopup('Вы здесь');
         }
 
-        // ===== КНОПКА ВОЗВРАТА НА ГЕО =====
         window.backToGeo = function() {
             if (!myGeo) { document.getElementById('status').innerText = 'Ваше гео не определено'; return; }
             map.setView([myGeo.lat, myGeo.lon], 13);
@@ -577,7 +590,6 @@ window.addEventListener('load', function() {
             document.getElementById('status').innerText = 'Вы вернулись на своё гео';
         };
 
-        // ===== ГЕОЛОКАЦИЯ (телепорт на своё гео) =====
         window.requestGeoLocation = function() {
             if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
             document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
@@ -586,6 +598,7 @@ window.addEventListener('load', function() {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
                     myGeo = { lat: lat, lon: lon };
+                    localStorage.setItem('vinera_geo', JSON.stringify({ lat: lat, lon: lon }));
                     try {
                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=ru`);
                         const data = await res.json();
@@ -623,9 +636,8 @@ window.addEventListener('load', function() {
             document.getElementById('city-input').focus();
             document.getElementById('status').innerText = 'Введите ваш город и нажмите Найти';
         };
-                // ===== КЛИК ПО КАРТЕ (с проверкой телефона и кулдауном) =====
+                // ===== КЛИК ПО КАРТЕ (телефон + кулдаун) =====
         map.on('click', async function(e) {
-            // 1) Проверка телефона (админы — исключение)
             if (currentUser !== 'bihepka' && currentUser !== 'Hollisheetq') {
                 if (!currentPhone) {
                     document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Чтобы ставить метки, подтвердите номер в боте!</span>';
@@ -633,10 +645,8 @@ window.addEventListener('load', function() {
                 }
             }
 
-            // 2) Проверка города
             if (!currentCity) { document.getElementById('status').innerText = 'Сначала найдите город через поиск!'; return; }
 
-            // 3) Кулдаун
             const cd = canPlaceMarker();
             if (!cd.allowed) {
                 document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⏳ Подождите ' + cd.wait + ' сек. перед следующей меткой</span>';
@@ -657,7 +667,7 @@ window.addEventListener('load', function() {
             document.getElementById('status').innerText = 'Метка поставлена ✔';
         });
 
-        // ===== ПОИСК ГОРОДА (с кнопкой возврата на гео) =====
+        // ===== ПОИСК ГОРОДА (с кнопкой возврата) =====
         window.searchCity = async function() {
             const city = document.getElementById('city-input').value.trim();
             if (!city) return;
@@ -673,7 +683,6 @@ window.addEventListener('load', function() {
                     localStorage.setItem('vinera_city', userCity);
                     updateCityStatus();
 
-                    // Если есть своё гео и мы смотрим другой город — показываем кнопку возврата
                     if (myGeo) {
                         isViewingOtherCity = true;
                         document.getElementById('back-to-geo-btn').classList.add('active');
