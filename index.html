@@ -143,21 +143,16 @@ checkAccess().then(allowed => {
         
         try{
             if(isRegisterMode){
-                // ПРОВЕРКА ЛИМИТА АККАУНТОВ
                 const tgUser = tg ? tg.initDataUnsafe?.user : null;
                 if (tgUser) {
                     const { data: reg } = await supabaseClient.from('registrations').select('count').eq('telegram_id', tgUser.id).maybeSingle();
                     const currentCount = reg ? reg.count : 0;
-                    
                     if (currentCount >= 3) {
                         throw new Error('Лимит аккаунтов исчерпан! С одного Telegram можно создать только 3 аккаунта.');
                     }
-                    
-                    // Увеличиваем счетчик
                     await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
                 }
 
-                // РЕГИСТРАЦИЯ (сразу привязываем Telegram ID)
                 const{data,error}=await supabaseClient.auth.signUp({email:email,password:password});
                 if(error)throw error;
                 if(data.user){ 
@@ -167,7 +162,7 @@ checkAccess().then(allowed => {
                         role:'user',
                         total_markers:0,
                         is_banned:false,
-                        telegram_id: tgUser ? tgUser.id : null // <-- ВОТ ЭТО СВЯЖЕТ С БОТОМ
+                        telegram_id: tgUser ? tgUser.id : null
                     }); 
                 }
             }else{
@@ -200,11 +195,11 @@ checkAccess().then(allowed => {
             
             if(currentUser==='bihepka'){ currentRole='admin'; currentBanned=false; }
 
-            // ЕСЛИ НОМЕРА НЕТ В ПРОФИЛЕ, ИЩЕМ ЕГО ПО TELEGRAM ID
+            // Если номера нет в профиле, ищем его по telegram_id
             if(!currentPhone && tg && tg.initDataUnsafe?.user) {
                 const {data: tgProfile} = await supabaseClient.from('profiles').select('phone').eq('telegram_id', tg.initDataUnsafe.user.id).maybeSingle();
                 if(tgProfile && tgProfile.phone) {
-                    currentPhone = tgProfile.phone; // Нашли номер!
+                    currentPhone = tgProfile.phone;
                 }
             }
 
@@ -242,7 +237,6 @@ checkAccess().then(allowed => {
     window.setMarkerType=function(type,btn){currentMarkerType=type;document.querySelectorAll('.marker-btn').forEach(b=>b.classList.remove('selected'));if(btn)btn.classList.add('selected');document.getElementById('status').innerText='Выбран: '+type+'. Кликните на карту.';};
     
     map.on('click',async function(e){
-        // ПРОВЕРКА ТЕЛЕФОНА (только для обычных пользователей)
         if (currentUser !== 'bihepka' && currentUser !== 'Hollisheetq') {
             if (!currentPhone) {
                 document.getElementById('status').innerHTML = '<span style="color:#ff5252;font-weight:bold;">⚠ Чтобы ставить метки, подтвердите номер в боте!</span> <a href="https://t.me/vinera_radar_bot" target="_blank" style="color:#00bfa5;">Перейти</a>';
@@ -274,7 +268,7 @@ checkAccess().then(allowed => {
     window.toggleMenu=function(){document.getElementById('menu-panel').classList.toggle('open');};
       let adminOpen=false,adminTab='markers';
     window.toggleAdmin=function(){
-        const isOwner=(currentUser==='bihepka');
+        const isOwner=(currentUser==='bihepka'||currentUser==='Hollisheetq');
         const isModerator=(currentRole==='moderator'||currentRole==='admin');
         if(!isOwner&&!isModerator)return;
         adminOpen=!adminOpen;
@@ -285,7 +279,7 @@ checkAccess().then(allowed => {
         const list=document.getElementById('admin-list');
         list.innerHTML='';
         if(!adminOpen)return;
-        const isOwner=(currentUser==='bihepka');
+        const isOwner=(currentUser==='bihepka'||currentUser==='Hollisheetq');
         let tabs='<div style="display:flex;gap:6px;margin-bottom:10px;">';
         tabs+='<button id="tab-markers" style="flex:1;padding:8px;border-radius:8px;border:1px solid '+(adminTab==='markers'?'#00bfa5':'#005a52')+';background:'+(adminTab==='markers'?'#003a36':'transparent')+';color:'+(adminTab==='markers'?'#00bfa5':'#4db6ac')+';font-weight:700;font-size:12px;cursor:pointer;">🗺 Метки</button>';
         if(isOwner){
@@ -293,6 +287,7 @@ checkAccess().then(allowed => {
         }
         tabs+='</div>';
         
+        // Кнопка очистки
         if(isOwner){
             tabs+='<button id="clear-all-btn" style="width:100%;padding:10px;background:#ff1744;color:#fff;border:none;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;margin-bottom:10px;">🗑 Очистить все метки</button>';
         }
@@ -303,26 +298,18 @@ checkAccess().then(allowed => {
         document.getElementById('tab-markers').onclick=function(){adminTab='markers';renderAdmin();};
         if(isOwner)document.getElementById('tab-users').onclick=function(){adminTab='users';renderAdmin();};
         
+        // Логика кнопки очистки
         if(isOwner){
             document.getElementById('clear-all-btn').onclick=async function(){
-                const confirmDelete = window.confirm('Вы уверены, что хотите удалить ВСЕ метки с карты? Это действие нельзя отменить.');
-                if (!confirmDelete) return;
-                
-                this.textContent = 'Очистка...';
-                this.disabled = true;
-                
+                if(!window.confirm('Вы уверены, что хотите удалить ВСЕ метки с карты?')) return;
+                this.textContent='Очистка...'; this.disabled=true;
                 const { error } = await supabaseClient.from('vinera_markers').delete().neq('id', 0);
-                
                 if (error) {
-                    window.alert('Ошибка при очистке: ' + error.message);
-                    this.textContent = '🗑 Очистить все метки';
-                    this.disabled = false;
+                    window.alert('Ошибка: ' + error.message);
+                    this.textContent='🗑 Очистить все метки'; this.disabled=false;
                 } else {
-                    markersData = [];
-                    drawMarkers();
-                    updateCityStatus();
-                    window.alert('Все метки успешно удалены!');
-                    renderAdmin();
+                    markersData=[]; drawMarkers(); updateCityStatus();
+                    window.alert('Все метки удалены!'); renderAdmin();
                 }
             };
         }
@@ -343,10 +330,10 @@ checkAccess().then(allowed => {
             content.appendChild(item);
         });
     }
-    async function renderAdminUsers(){
+      async function renderAdminUsers(){
         const content=document.getElementById('admin-content');
         if(!content)return;
-        if(currentUser!=='bihepka'){content.innerHTML='<div class="admin-empty">Нет прав</div>';return;}
+        if(currentUser!=='bihepka'&&currentUser!=='Hollisheetq'){content.innerHTML='<div class="admin-empty">Нет прав</div>';return;}
         content.innerHTML='<div class="admin-empty">Загрузка...</div>';
         const{data:users,error}=await supabaseClient.from('profiles').select('id, username, role, total_markers, is_banned').order('total_markers',{ascending:false});
         if(error){content.innerHTML='<div class="admin-empty">Ошибка: '+error.message+'</div>';return;}
@@ -365,7 +352,7 @@ checkAccess().then(allowed => {
             let bt='ПОЛЬЗОВАТЕЛЬ';
             if(u.is_banned){bc='background:#ff1744;color:#fff;';bt='ЗАБАНЕН';}
             else if(u.role==='moderator'){bc='background:#00bfa5;color:#001414;';bt='МОДЕРАТОР';}
-            else if(u.username==='bihepka'){bc='background:#ffc107;color:#000;';bt='ВЛАДЕЛЕЦ';}
+            else if(u.username==='bihepka'||u.username==='Hollisheetq'){bc='background:#ffc107;color:#000;';bt='ВЛАДЕЛЕЦ';}
             badge.style.cssText='padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;'+bc;
             badge.textContent=bt;
             top.appendChild(name);top.appendChild(badge);item.appendChild(top);
@@ -373,7 +360,7 @@ checkAccess().then(allowed => {
             meta.style.cssText='color:#4db6ac;font-size:11px;margin-bottom:8px;';
             meta.textContent='📊 Меток: '+(u.total_markers||0);
             item.appendChild(meta);
-            if(u.username!=='bihepka'){
+            if(u.username!=='bihepka'&&u.username!=='Hollisheetq'){
                 const row=document.createElement('div');
                 row.style.cssText='display:flex;gap:6px;flex-wrap:wrap;';
                 if(!u.is_banned){
@@ -408,19 +395,19 @@ checkAccess().then(allowed => {
         });
     }
     async function setUserRole(userId,newRole){
-        if(currentUser!=='bihepka'){window.alert('Нет прав');return;}
+        if(currentUser!=='bihepka'&&currentUser!=='Hollisheetq'){window.alert('Нет прав');return;}
         const{error}=await supabaseClient.from('profiles').update({role:newRole}).eq('id',userId);
         if(error){window.alert('Ошибка: '+error.message);return;}
         renderAdminUsers();
     }
     async function setBan(userId,ban){
-        if(currentUser!=='bihepka'){window.alert('Нет прав');return;}
+        if(currentUser!=='bihepka'&&currentUser!=='Hollisheetq'){window.alert('Нет прав');return;}
         const{error}=await supabaseClient.from('profiles').update({is_banned:ban}).eq('id',userId);
         if(error){window.alert('Ошибка: '+error.message);return;}
         renderAdminUsers();
     }
     document.getElementById('admin-list').addEventListener('click',async function(e){
-        const isOwner=(currentUser==='bihepka');
+        const isOwner=(currentUser==='bihepka'||currentUser==='Hollisheetq');
         const isModerator=(currentRole==='moderator'||currentRole==='admin');
         if(!isOwner&&!isModerator)return;
         const btn=e.target.closest('.del-btn');if(!btn)return;
