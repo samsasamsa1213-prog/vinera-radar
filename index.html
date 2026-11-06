@@ -218,8 +218,8 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 
 <div id="bottom-nav">
     <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
-    <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span
-                                                                                                                                                                                                                  </svg><span>События</span></button>
+    <
+            <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
     <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
 </div>
 
@@ -307,7 +307,6 @@ window.addEventListener('load', function() {
             }, 7000);
         };
 
-        // Карта
         const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -528,10 +527,7 @@ window.addEventListener('load', function() {
             currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
             userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
             myGeo = null; isPlacingMarker = false;
-            drawMarkers();
-            await checkSession();
-        };
-                    drawMarkers();
+                        drawMarkers();
             await checkSession();
         };
 
@@ -568,12 +564,6 @@ window.addEventListener('load', function() {
                 const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.type) }).addTo(layerGroup);
                 marker.bindPopup(popupHtml(m));
                 markerRefs[m.id] = marker;
-                
-                // Волна от метки (эффект пульсации района)
-                if (m.id === (markersData[0] && markersData[0].id)) {
-                    const waveIcon = L.divIcon({ className: 'marker-wave', iconSize: [0, 0] });
-                    L.marker([m.lat, m.lng], { icon: waveIcon, interactive: false }).addTo(layerGroup);
-                }
             });
         }
 
@@ -725,13 +715,12 @@ window.addEventListener('load', function() {
             L.circle([lat, lon], { color: '#10b981', fillColor: '#10b981', fillOpacity: 0.2, radius: 200, weight: 1 }).addTo(userLocationLayer);
             L.circleMarker([lat, lon], { radius: 6, fillColor: '#10b981', color: '#fff', weight: 2, opacity: 1, fillOpacity: 1 }).addTo(userLocationLayer).bindPopup('Вы здесь');
         }
-            window.backToGeo = function() {
+                window.backToGeo = function() {
             if (!myGeo) { showToast('Ваше гео не определено', true); return; }
             map.setView([myGeo.lat, myGeo.lon], 13);
             showToast('Вы вернулись на своё гео');
         };
 
-        // ===== ПОИСК ГОРОДА =====
         window.openSearchModal = function() {
             document.getElementById('search-modal-overlay').style.display = 'flex';
             document.getElementById('modal-city-input').value = userCity || '';
@@ -765,7 +754,6 @@ window.addEventListener('load', function() {
             }
         };
 
-        // ===== ГЕОЛОКАЦИЯ =====
         window.requestGeoLocation = function() {
             if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
             document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
@@ -822,7 +810,6 @@ window.addEventListener('load', function() {
             }
         };
 
-        // ===== РЕЖИМ УСТАНОВКИ МЕТКИ =====
         window.toggleMarkersSheet = function() {
             const sheet = document.getElementById('markers-sheet');
             const overlay = document.getElementById('markers-sheet-overlay');
@@ -851,7 +838,6 @@ window.addEventListener('load', function() {
             toggleMarkersSheet();
         };
 
-        // ===== КЛИК ПО КАРТЕ =====
         map.on('click', async function(e) {
             if (!isPlacingMarker || !currentMarkerType) return;
 
@@ -910,7 +896,6 @@ window.addEventListener('load', function() {
             showToast('Метка поставлена ✔');
         });
 
-        // ===== ВКЛАДКИ =====
         window.switchTab = function(tab) {
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('feed-screen').classList.remove('active');
@@ -932,7 +917,6 @@ window.addEventListener('load', function() {
             }
         };
 
-        // ===== АДМИН-ПАНЕЛЬ =====
         let adminOpen = false;
         let adminTab = 'markers';
 
@@ -1029,7 +1013,6 @@ window.addEventListener('load', function() {
             showToast('Метка удалена');
         };
 
-        // ===== МОДАЛКА ПРОФИЛЯ ЮЗЕРА =====
         let selectedUserId = null;
         let selectedUserData = null;
 
@@ -1103,7 +1086,6 @@ window.addEventListener('load', function() {
             renderAdmin();
         };
 
-        // ===== ЗАПУСК И ИНТЕРВАЛЫ =====
         checkSession();
 
         pollInterval = setInterval(function() {
