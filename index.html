@@ -61,21 +61,6 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 100%{transform:translateY(105vh) translateX(40px) rotate(360deg);opacity:0}
 }
 
-/* ===== ГИРЛЯНДА (для украшений) ===== */
-.garland{position:absolute;top:0;left:0;right:0;height:18px;z-index:2;pointer-events:none;overflow:hidden}
-.garland::before{
-content:'';position:absolute;top:6px;left:0;right:0;height:2px;
-background:linear-gradient(90deg,transparent,rgba(20,224,194,.4) 20%,rgba(20,224,194,.7) 50%,rgba(20,224,194,.4) 80%,transparent);
-}
-.garland-bulb{
-position:absolute;top:0;width:8px;height:8px;border-radius:50%;
-background:var(--accent);box-shadow:0 0 10px var(--accent),0 0 20px rgba(20,224,194,.4);
-animation:twinkle 2s infinite alternate;
-}
-.garland-bulb:nth-child(2n){background:#ffd93d;box-shadow:0 0 10px #ffd93d,0 0 20px rgba(255,217,61,.4)}
-.garland-bulb:nth-child(3n){background:#ff6b9d;box-shadow:0 0 10px #ff6b9d,0 0 20px rgba(255,107,157,.4)}
-@keyframes twinkle{from{opacity:.5;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
-
 /* ===== УКРАШЕНИЕ ВХОДА ===== */
 .auth-snow-cap{
 position:absolute;top:-12px;left:20px;right:20px;height:30px;z-index:0;
@@ -138,14 +123,11 @@ text-transform:uppercase;letter-spacing:2px;font-weight:600;
 .auth-subtitle span{color:var(--accent);text-shadow:0 0 8px var(--accent-glow)}
 
 /* Гирлянда над заголовком */
-.auth-garland{
-display:flex;justify-content:center;gap:6px;margin-bottom:6px;
-}
+.auth-garland{display:flex;justify-content:center;gap:6px;margin-bottom:6px}
 .auth-garland i{
 width:6px;height:6px;border-radius:50%;background:var(--accent);
 box-shadow:0 0 8px var(--accent),0 0 16px rgba(20,224,194,.4);
-animation:twinkle 1.6s infinite alternate;
-display:block;
+animation:twinkle 1.6s infinite alternate;display:block;
 }
 .auth-garland i:nth-child(2){background:#ffd93d;box-shadow:0 0 8px #ffd93d,0 0 16px rgba(255,217,61,.4);animation-delay:.2s}
 .auth-garland i:nth-child(3){background:#ff6b9d;box-shadow:0 0 8px #ff6b9d,0 0 16px rgba(255,107,157,.4);animation-delay:.4s}
@@ -153,6 +135,7 @@ display:block;
 .auth-garland i:nth-child(5){background:#ffd93d;animation-delay:.8s}
 .auth-garland i:nth-child(6){background:#ff6b9d;animation-delay:1s}
 .auth-garland i:nth-child(7){background:var(--accent);animation-delay:1.2s}
+@keyframes twinkle{from{opacity:.5;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
 
 /* Инпуты */
 .auth-box input{
@@ -180,7 +163,6 @@ background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
 transition:left .6s;
 }
 #auth-btn:active::before{left:100%}
-#auth-btn:hover{box-shadow:0 10px 30px -5px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.3)}
 
 /* Кнопка "Создать аккаунт" */
 #auth-toggle{
@@ -230,18 +212,43 @@ box-shadow:none;
 }
 
 /* ============================================================
-   КАРТА — СВЕТЛЕЕ, НО ТЁМНАЯ
+   КАРТА — СВЕТЛЕЕ, НО ТЁМНАЯ + УКРАШЕНИЯ СВЕРХУ/СНИЗУ
    ============================================================ */
 #map-container{
 position:absolute;inset:0;z-index:1;padding-bottom:var(--nav-h);
 background:var(--bg);
 }
 #map{width:100%;height:100%;background:#0a1512}
-/* Осветлённая тёмная карта (было brightness .6 — стало .82) */
 .dark-tiles{
 filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(1.05) saturate(.35);
 }
 .leaflet-control-attribution,.leaflet-control-zoom{display:none!important}
+
+/* Украшение карты сверху (под статусом города) */
+.map-top-deco{
+position:absolute;top:calc(70px + env(safe-area-inset-top));left:0;right:0;height:24px;
+z-index:900;pointer-events:none;
+background:linear-gradient(180deg,rgba(20,224,194,.08) 0%,transparent 100%);
+display:flex;justify-content:space-between;align-items:flex-start;padding:0 16px;
+opacity:.6;
+}
+.map-top-deco::before{content:'❄';font-size:14px;color:var(--accent);text-shadow:0 0 8px var(--accent-glow);animation:floatSnow 3s ease-in-out infinite}
+.map-top-deco::after{content:'❅';font-size:16px;color:var(--accent);text-shadow:0 0 8px var(--accent-glow);animation:floatSnow 3s ease-in-out infinite 1.5s}
+@keyframes floatSnow{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(4px) rotate(15deg)}}
+
+/* Украшение карты снизу (над кнопкой Сообщить) */
+.map-bottom-deco{
+position:absolute;bottom:calc(var(--nav-h) + 100px);left:0;right:0;height:20px;
+z-index:900;pointer-events:none;
+display:flex;justify-content:center;gap:24px;
+opacity:.4;
+}
+.map-bottom-deco span{
+color:var(--accent);font-size:12px;text-shadow:0 0 10px var(--accent-glow);
+animation:floatSnow 3s ease-in-out infinite;
+}
+.map-bottom-deco span:nth-child(2){animation-delay:.5s}
+.map-bottom-deco span:nth-child(3){animation-delay:1s}
 
 /* Оверлеи карты */
 #map-overlay{
@@ -292,7 +299,7 @@ box-shadow:0 0 20px rgba(20,224,194,.1);
 </style>
 <style>
 /* ============================================================
-   АЛЕРТЫ (плашки тревоги) — НОВАЯ ЛОГИКА
+   АЛЕРТЫ (плашки тревоги)
    ============================================================ */
 #alerts-container{
 position:absolute;top:calc(85px + env(safe-area-inset-top));
@@ -315,15 +322,10 @@ position:relative;overflow:hidden;
 content:'';position:absolute;top:0;left:0;right:0;height:1px;
 background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
 }
-/* Город — ракета (красный) */
 .alert-card.rocket-city{border-left-color:#ff3b5c;background:linear-gradient(90deg,rgba(60,10,20,.95),rgba(10,22,20,.94))}
-/* Область — ракета (синий) */
 .alert-card.rocket-region{border-left-color:var(--info);background:linear-gradient(90deg,rgba(10,30,60,.95),rgba(10,22,20,.94))}
-/* Город — сирена (фиолетовый) */
 .alert-card.siren-city{border-left-color:var(--violet);background:linear-gradient(90deg,rgba(35,10,60,.95),rgba(10,22,20,.94))}
-/* Общий инфо */
 .alert-card.info{border-left-color:var(--info)}
-/* Критическая */
 .alert-card.critical{border-left-color:#ff3b5c;background:linear-gradient(90deg,rgba(70,5,15,.96),rgba(10,22,20,.94))}
 
 .alert-dot{
@@ -359,20 +361,22 @@ color:var(--text-muted);font-size:11px;font-weight:700;white-space:nowrap;
 @keyframes slideDownAlert{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
 
 /* ============================================================
-   ТОСТ
+   ТОСТ — УМЕНЬШЕННЫЙ
    ============================================================ */
 #status-toast{
-position:fixed;top:calc(85px + env(safe-area-inset-top));left:50%;
-transform:translateX(-50%) translateY(-15px);
-padding:14px 24px;border-radius:16px;
+position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;
+transform:translateX(-50%) translateY(-10px);
+padding:10px 18px; /* было 14px 24px */
+border-radius:12px; /* было 16px */
 background:rgba(10,22,20,.95);
 backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
 border:1px solid var(--border-strong);color:var(--text);
-font-weight:600;font-size:14px;opacity:0;pointer-events:none;
-transition:opacity .4s,transform .4s,border-color .3s;
+font-weight:600;font-size:13px; /* было 14px */
+opacity:0;pointer-events:none;
+transition:opacity .3s,transform .3s,border-color .3s;
 z-index:5000;text-align:center;max-width:calc(100% - 40px);
-word-wrap:break-word;line-height:1.4;
-box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 24px rgba(20,224,194,.15);
+word-wrap:break-word;line-height:1.3;
+box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 20px rgba(20,224,194,.15);
 }
 
 /* ============================================================
@@ -399,12 +403,6 @@ color:#02120f;font-weight:800;font-size:16px;
 display:flex;align-items:center;gap:10px;
 box-shadow:0 12px 30px -5px var(--accent-glow),0 0 40px rgba(20,224,194,.2),inset 0 1px 0 rgba(255,255,255,.3);
 }
-#show-markers-btn::before{
-content:'';position:absolute;inset:-2px;border-radius:32px;
-background:linear-gradient(135deg,rgba(20,224,194,.6),transparent,rgba(20,224,194,.6));
-z-index:-1;opacity:0;transition:opacity .3s;filter:blur(6px);
-}
-#show-markers-btn:hover::before{opacity:1}
 #show-markers-btn svg{width:20px;height:20px}
 
 /* ============================================================
@@ -484,12 +482,14 @@ text-transform:uppercase;letter-spacing:.3px;
 .popup-title svg{width:18px;height:18px;flex-shrink:0}
 .popup-muted{color:var(--text-muted);margin-top:4px}
 .popup-muted b{color:var(--text)}
+/* Новая темно-бирюзовая SVG галочка в попапе */
 .popup-confirm{
-display:inline-block;margin-top:8px;padding:4px 8px;
+display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 8px;
 background:rgba(20,224,194,.15);color:var(--accent);
 border:1px solid var(--accent);border-radius:6px;
 font-weight:700;font-size:10px;box-shadow:0 0 12px rgba(20,224,194,.25);
 }
+.popup-confirm svg{width:12px;height:12px;stroke:var(--accent)}
 </style>
 <style>
 /* ============================================================
@@ -567,26 +567,53 @@ font-size:15px;line-height:1.5;
 }
 
 /* ============================================================
-   ПРОФИЛЬ
+   ПРОФИЛЬ — С НОВОГОДНЕЙ ШАПКОЙ
    ============================================================ */
 .profile-card{
+position:relative;
 background:linear-gradient(160deg,rgba(10,22,20,.9),rgba(8,18,16,.96));
 border:1px solid var(--border-strong);border-radius:24px;
-padding:30px 20px;text-align:center;margin-bottom:24px;
+padding:40px 20px 30px; /* Увеличили верхний паддинг для шапки */
+text-align:center;margin-bottom:24px;
 backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
 box-shadow:0 10px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(20,224,194,.12);
+overflow:hidden;
 }
+/* Сама снежная шапка */
+.profile-snow-cap{
+position:absolute;top:0;left:0;right:0;height:36px;
+background:
+radial-gradient(ellipse at 20% 0%,rgba(216,255,248,.25),transparent 50%),
+radial-gradient(ellipse at 50% 0%,rgba(20,224,194,.15),transparent 50%),
+radial-gradient(ellipse at 80% 0%,rgba(216,255,248,.25),transparent 50%);
+border-bottom-left-radius:50% 20px;
+border-bottom-right-radius:50% 20px;
+z-index:0;pointer-events:none;
+}
+/* Новогодние украшения внутри шапки (снежинки) */
+.profile-snow-cap::before,.profile-snow-cap::after{
+content:'❄';position:absolute;top:8px;font-size:12px;color:#fff;opacity:.5;
+text-shadow:0 0 8px var(--accent-glow);
+}
+.profile-snow-cap::before{left:20%}
+.profile-snow-cap::after{right:20%}
+
+/* Контент профиля поверх шапки */
+.profile-card > *:not(.profile-snow-cap){position:relative;z-index:1}
+
 .profile-avatar{
 width:80px;height:80px;border-radius:50%;
 background:linear-gradient(135deg,#14e0c2,#0ea5a0);
 margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
 font-size:32px;color:#02120f;font-weight:800;
 box-shadow:0 8px 24px -5px var(--accent-glow),0 0 40px rgba(20,224,194,.2);
+border:2px solid rgba(216,255,248,.2);
 }
 .profile-name{
 font-size:22px;margin-bottom:8px;
 font-family:'Unbounded',sans-serif;
 color:var(--accent);text-shadow:0 0 16px var(--accent-glow);
+word-break:break-all;
 }
 .profile-badge{
 display:inline-block;padding:6px 14px;border-radius:20px;
@@ -603,6 +630,10 @@ padding-top:20px;border-top:1px solid var(--border);
 font-size:11px;color:var(--text-muted);margin-top:4px;
 text-transform:uppercase;letter-spacing:.5px;
 }
+
+/* ============================================================
+   МЕНЮ ПРОФИЛЯ И АДМИНКА (стили оставляем, меняем иконки в HTML)
+   ============================================================ */
 .profile-menu{display:flex;flex-direction:column;gap:12px}
 .menu-item{
 background:var(--panel);border:1px solid var(--border);border-radius:16px;
@@ -612,11 +643,9 @@ color:var(--text);text-decoration:none;font-weight:600;font-size:15px;
 .menu-item.danger{
 background:rgba(244,63,94,.05);border-color:rgba(244,63,94,.2);color:var(--danger);
 }
-.menu-item svg{width:20px;height:20px;opacity:.5;flex-shrink:0}
+.menu-item svg{width:20px;height:20px;opacity:.8;flex-shrink:0;transition:opacity .3s}
+.menu-item:hover svg{opacity:1;filter:drop-shadow(0 0 6px var(--accent-glow))}
 
-/* ============================================================
-   АДМИН-ПАНЕЛЬ
-   ============================================================ */
 #admin-panel-content{display:none;margin-top:24px;flex-direction:column;gap:16px}
 .admin-tabs{display:flex;gap:10px}
 .admin-tab{
@@ -639,9 +668,7 @@ padding:16px;font-size:14px;
 .admin-item.banned{opacity:.6}
 .admin-item-clickable{cursor:pointer}
 
-/* ============================================================
-   МОДАЛКИ
-   ============================================================ */
+/* Модалки */
 #search-modal-overlay,#user-profile-modal{
 position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.82);
 backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -655,37 +682,18 @@ width:100%;max-width:320px;display:flex;flex-direction:column;gap:16px;
 max-height:90vh;overflow-y:auto;
 box-shadow:0 25px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(20,224,194,.1);
 }
-.search-modal h3{
-margin:0;text-align:center;font-size:20px;color:var(--text);
-font-family:'Unbounded',sans-serif;
-}
+.search-modal h3{margin:0;text-align:center;font-size:20px;color:var(--text);font-family:'Unbounded',sans-serif}
 .search-modal input{
-padding:16px;border-radius:14px;
-border:1px solid rgba(20,224,194,.2);
+padding:16px;border-radius:14px;border:1px solid rgba(20,224,194,.2);
 background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
 }
-.search-modal input:focus{
-border-color:var(--accent);
-box-shadow:0 0 0 3px rgba(20,224,194,.1),0 0 20px rgba(20,224,194,.15);
-}
+.search-modal input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(20,224,194,.1),0 0 20px rgba(20,224,194,.15)}
 .modal-buttons{display:flex;gap:12px}
-.modal-btn-cancel{
-flex:1;background:transparent;color:var(--text-muted);
-border:1px solid var(--border);padding:15px;border-radius:14px;font-weight:600;
-}
-.modal-btn-primary{
-flex:1;background:linear-gradient(135deg,#14e0c2,#0ea5a0);color:#02120f;
-padding:15px;border-radius:14px;font-weight:700;
-box-shadow:0 8px 20px -5px var(--accent-glow);
-}
+.modal-btn-cancel{flex:1;background:transparent;color:var(--text-muted);border:1px solid var(--border);padding:15px;border-radius:14px;font-weight:600}
+.modal-btn-primary{flex:1;background:linear-gradient(135deg,#14e0c2,#0ea5a0);color:#02120f;padding:15px;border-radius:14px;font-weight:700;box-shadow:0 8px 20px -5px var(--accent-glow)}
 
-/* ============================================================
-   АНИМАЦИИ ГОРОДА (глоу на статусе, пульс)
-   ============================================================ */
-@keyframes cityGlow{
-0%,100%{box-shadow:0 0 20px rgba(20,224,194,.15)}
-50%{box-shadow:0 0 32px rgba(20,224,194,.3)}
-}
+/* Анимация города */
+@keyframes cityGlow{0%,100%{box-shadow:0 0 20px rgba(20,224,194,.15)}50%{box-shadow:0 0 32px rgba(20,224,194,.3)}}
 #city-status{animation:cityGlow 3s ease-in-out infinite}
 </style>
 </head>
@@ -747,8 +755,11 @@ box-shadow:0 8px 20px -5px var(--accent-glow);
             </div>
         </div>
 
-        <div id="alerts-container"></div>
+        <!-- Украшения карты (сверху и снизу) -->
+        <div class="map-top-deco"></div>
+        <div class="map-bottom-deco"><span>❄</span><span>❅</span><span>❆</span></div>
 
+        <div id="alerts-container"></div>
         <div id="status-toast">Метки загружены</div>
         <div id="loading-spinner"></div>
 
@@ -787,6 +798,9 @@ box-shadow:0 8px 20px -5px var(--accent-glow);
      ============================================================ -->
 <div id="profile-screen">
     <div class="profile-card">
+        <!-- Новогодняя снежная шапка -->
+        <div class="profile-snow-cap"></div>
+        
         <div class="profile-avatar" id="profile-avatar-letter">U</div>
         <div class="profile-name" id="profile-name">Загрузка...</div>
         <div class="profile-badge" id="profile-role-badge">ПОЛЬЗОВАТЕЛЬ</div>
@@ -797,25 +811,26 @@ box-shadow:0 8px 20px -5px var(--accent-glow);
     </div>
 
     <div class="profile-menu">
+        <!-- Заменены смайлики на кастомные бирюзовые SVG -->
         <div class="menu-item" id="profile-search-city-btn">
-            <span>🌍 Выбрать регион / город</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Выбрать регион / город</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         </div>
         <div class="menu-item" id="profile-share-btn">
-            <span>📤 Поделиться радаром</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            <span>Поделиться радаром</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
         </div>
         <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item">
-            <span>👨‍💻 Связь с владельцем</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+            <span>Связь с владельцем</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         </a>
         <div class="menu-item" id="admin-toggle-btn" style="display:none;">
-            <span>🛠 Админ-панель</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+            <span>Админ-панель</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </div>
         <div class="menu-item danger" id="logout-btn">
             <span>Выйти из аккаунта</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
         </div>
     </div>
 
@@ -824,7 +839,7 @@ box-shadow:0 8px 20px -5px var(--accent-glow);
             <button class="admin-tab active" id="tab-markers">Метки</button>
             <button class="admin-tab" id="tab-users">Юзеры</button>
         </div>
-        <button id="clear-all-btn">🗑 Очистить все метки</button>
+        <button id="clear-all-btn">Удалить все метки</button>
         <div id="admin-content"></div>
     </div>
 </div>
@@ -941,12 +956,12 @@ let selectedUserId = null;
 let selectedUserData = null;
 
 const METADATA = {
-'БПЛА':{color:'#10b981',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},
+'БПЛА':{color:'#14e0c2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},
 'Ракета':{color:'#f43f5e',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>'},
 'Истребитель':{color:'#3b82f6',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>'},
 'Сирена':{color:'#8b5cf6',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>'},
 'Взрыв':{color:'#f59e0b',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>'},
-'Тихо':{color:'#10b981',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}
+'Тихо':{color:'#14e0c2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}
 };
 const dangerTypes = ['Взрыв','Сирена','Ракета','БПЛА','Истребитель'];
 
@@ -984,23 +999,13 @@ toast.style.borderColor = isError ? 'rgba(244,63,94,0.4)' : 'var(--border-strong
 if (toastTimeout) clearTimeout(toastTimeout);
 toastTimeout = setTimeout(function () {
 toast.style.opacity = '0';
-toast.style.transform = 'translateX(-50%) translateY(-15px)';
-}, 7000);
+toast.style.transform = 'translateX(-50%) translateY(-10px)';
+}, 3000); // Исчезает через 3 секунды
 }
 
 function showSpinner(show) {
 const s = document.getElementById('loading-spinner');
 if (s) s.style.display = show ? 'block' : 'none';
-}
-
-function debounce(fn, wait) {
-let t = null;
-return function () {
-const args = arguments;
-const ctx = this;
-if (t) clearTimeout(t);
-t = setTimeout(function () { fn.apply(ctx, args); }, wait);
-};
 }
 
 function checkTelegramAccess() {
@@ -1069,7 +1074,7 @@ return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div>'+
 '<div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div>'+
 '<div class="popup-muted">Город: '+escapeHtml(m.city||'Неизвестно')+'</div>'+
 '<div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+
-(confirmed ? '<div class="popup-confirm">✔ Подтверждено</div>' : '');
+(confirmed ? '<div class="popup-confirm"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Подтверждено</div>' : '');
 }
 
 function drawMarkers() {
@@ -1116,9 +1121,7 @@ if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
 
 async function handleMapClick(e) {
 if (!isPlacingMarker || !currentMarkerType) return;
-if (currentUser !== ADMIN_USERNAME) {
-if (!currentPhone) { showToast('⚠ Подтвердите номер в боте!', true); return; }
-}
+// Проверка номера полностью удалена!
 if (!currentCity) { showToast('Сначала выберите город в профиле!', true); return; }
 const cd = canPlaceMarker();
 if (!cd.allowed) { showToast('⏳ Подождите '+cd.wait+' сек.', true); return; }
@@ -1153,9 +1156,9 @@ resolveAddress(data);
 isPlacingMarker = false;
 currentMarkerType = null;
 document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
-showToast('Метка поставлена ✔');
+showToast('Метка поставлена <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:4px;filter:drop-shadow(0 0 4px var(--accent))"><path d="M20 6L9 17l-5-5"/></svg>');
 }
-    async function loadMarkers() {
+   async function loadMarkers() {
 if (isLoggedOut || !supabaseClient) return;
 showSpinner(true);
 try {
@@ -1226,9 +1229,6 @@ stateEl.textContent = res.text;
 box.classList.toggle('danger', res.danger);
 }
 
-/* ============================================================
-   НОВАЯ ЛОГИКА АЛЕРТОВ
-   ============================================================ */
 function checkAlerts() {
 const container = document.getElementById('alerts-container');
 if (!container) return;
@@ -1236,57 +1236,29 @@ container.innerHTML = '';
 if (!currentCity) return;
 
 const cityThreats = markersData.filter(function (m) { return m.city === currentCity && m.type !== 'Тихо'; });
-
 const cityRocket = cityThreats.filter(function (m) { return m.type === 'Ракета'; }).length;
 const citySiren  = cityThreats.filter(function (m) { return m.type === 'Сирена'; }).length;
 const cityBpla   = cityThreats.filter(function (m) { return m.type === 'БПЛА'; }).length;
 const cityExp    = cityThreats.filter(function (m) { return m.type === 'Взрыв'; }).length;
-const cityFighter= cityThreats.filter(function (m) { return m.type === 'Истребитель'; }).length;
 
 let alertsHtml = '';
 
-/* 1. Ракета В ГОРОДЕ → "В вашем городе ракетная опасность" */
-if (cityRocket >= 1) {
-alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>В вашем городе ракетная опасность</span></div></div>';
-}
+if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>В вашем городе ракетная опасность</span></div></div>';
+if (citySiren >= 1) alertsHtml += '<div class="alert-card siren-city"><div class="alert-dot"></div><div class="alert-text"><span>В городе воют сирены</span></div></div>';
+if (cityExp >= 2 && cityBpla >= 2) alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Критическая опасность</span></div></div>';
+if (cityThreats.length >= 3 && alertsHtml === '') alertsHtml += '<div class="alert-card"><div class="alert-dot"></div><div class="alert-text"><span>Высокая опасность</span></div></div>';
 
-/* 2. Сирена В ГОРОДЕ → "В городе воют сирены" */
-if (citySiren >= 1) {
-alertsHtml += '<div class="alert-card siren-city"><div class="alert-dot"></div><div class="alert-text"><span>В городе воют сирены</span></div></div>';
-}
-
-/* 3. Критическая: взрыв + бпла в городе */
-if (cityExp >= 2 && cityBpla >= 2) {
-alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Критическая опасность</span></div></div>';
-}
-
-/* 4. Высокая: 3+ угроз в городе, если ещё нет алертов */
-if (cityThreats.length >= 3 && alertsHtml === '') {
-alertsHtml += '<div class="alert-card"><div class="alert-dot"></div><div class="alert-text"><span>Высокая опасность</span></div></div>';
-}
-
-/* 5. Ракета ПО ОБЛАСТИ (но не в городе) → "Ракетная опасность по области" */
 const currentMarker = markersData.find(function (m) { return m.city === currentCity; });
 const currentRegion = currentMarker ? currentMarker.region : null;
 
 if (currentRegion) {
-const regionThreats = markersData.filter(function (m) {
-return m.region === currentRegion && dangerTypes.indexOf(m.type) !== -1;
-});
+const regionThreats = markersData.filter(function (m) { return m.region === currentRegion && dangerTypes.indexOf(m.type) !== -1; });
 const regionRocket = regionThreats.filter(function (m) { return m.type === 'Ракета'; });
 const regionBpla   = regionThreats.filter(function (m) { return m.type === 'БПЛА'; });
 
-/* Ракета по области — если в городе НЕТ ракеты (иначе уже есть алерт выше) */
-if (regionRocket.length >= 1 && cityRocket === 0) {
-alertsHtml += '<div class="alert-card rocket-region"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность по области</span><span class="alert-more">250 км</span></div></div>';
+if (regionRocket.length >= 1 && cityRocket === 0) alertsHtml += '<div class="alert-card rocket-region"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность по области</span><span class="alert-more">250 км</span></div></div>';
+if (regionBpla.length >= 1 && cityBpla === 0) alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>БПЛА по области</span><span class="alert-more">± 50 км</span></div></div>';
 }
-
-/* БПЛА по области — если в городе нет БПЛА */
-if (regionBpla.length >= 1 && cityBpla === 0) {
-alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>БПЛА по области</span><span class="alert-more">± 50 км</span></div></div>';
-}
-}
-
 container.innerHTML = alertsHtml;
 }
 
@@ -1295,11 +1267,20 @@ if (!supabaseClient) return;
 const { data } = await supabaseClient.auth.getSession();
 if (!data.session) { showAuthScreen(); return; }
 const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
-currentUser = profile ? profile.username : 'user';
+
+// ИСПРАВЛЕНО: Если username пустой или сгенерирован системой, пробуем взять логин из email (который мы сами создаем как login@vinera.app)
+let displayName = profile ? profile.username : 'user';
+const email = data.session.user.email || '';
+if ((!displayName || displayName.startsWith('user_')) && email.includes('@vinera.app')) {
+    displayName = email.split('@')[0];
+}
+
+currentUser = displayName;
 currentRole = (profile && profile.role) ? profile.role : 'user';
 currentBanned = profile ? !!profile.is_banned : false;
 currentPhone = (profile && profile.phone) ? profile.phone : null;
 currentTotalMarkers = (profile && profile.total_markers) ? profile.total_markers : 0;
+
 if (currentUser === ADMIN_USERNAME) { currentRole = 'admin'; currentBanned = false; }
 if (currentBanned) {
 await supabaseClient.auth.signOut();
@@ -1668,29 +1649,41 @@ document.getElementById('modal-user-role').textContent = roleText;
 document.getElementById('modal-user-markers').textContent = u.total_markers || 0;
 document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
 const banBtn = document.getElementById('modal-user-ban-btn');
-if (u.is_banned) {
-banBtn.textContent = 'Разбанить';
-banBtn.style.color = '#14e0c2';
-banBtn.style.borderColor = 'rgba(20,224,194,0.2)';
-banBtn.style.background = 'rgba(20,224,194,0.1)';
-} else {
-banBtn.textContent = 'Забанить';
-banBtn.style.color = 'var(--danger)';
-banBtn.style.borderColor = 'rgba(244,63,94,0.2)';
-banBtn.style.background = 'rgba(244,63,94,0.1)';
-}
 const roleBtn = document.getElementById('modal-user-role-btn');
-if (u.role === 'moderator') {
-roleBtn.textContent = 'Снять модератора';
-roleBtn.style.color = '#f59e0b';
-roleBtn.style.borderColor = 'rgba(245,158,11,0.2)';
-roleBtn.style.background = 'rgba(245,158,11,0.1)';
+
+// ИСПРАВЛЕНО: Модератор не может управлять админами и другими модераторами. И не может банить сам себя.
+if (currentRole === 'moderator' && (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME)) {
+    banBtn.style.display = 'none';
+    roleBtn.style.display = 'none';
 } else {
-roleBtn.textContent = 'Сделать модератором';
-roleBtn.style.color = 'var(--accent)';
-roleBtn.style.borderColor = 'rgba(20,224,194,0.2)';
-roleBtn.style.background = 'rgba(20,224,194,0.1)';
+    banBtn.style.display = 'block';
+    roleBtn.style.display = 'block';
+
+    if (u.is_banned) {
+        banBtn.textContent = 'Разбанить';
+        banBtn.style.color = '#14e0c2';
+        banBtn.style.borderColor = 'rgba(20,224,194,0.2)';
+        banBtn.style.background = 'rgba(20,224,194,0.1)';
+    } else {
+        banBtn.textContent = 'Забанить';
+        banBtn.style.color = 'var(--danger)';
+        banBtn.style.borderColor = 'rgba(244,63,94,0.2)';
+        banBtn.style.background = 'rgba(244,63,94,0.1)';
+    }
+
+    if (u.role === 'moderator') {
+        roleBtn.textContent = 'Снять модератора';
+        roleBtn.style.color = '#f59e0b';
+        roleBtn.style.borderColor = 'rgba(245,158,11,0.2)';
+        roleBtn.style.background = 'rgba(245,158,11,0.1)';
+    } else {
+        roleBtn.textContent = 'Сделать модератором';
+        roleBtn.style.color = 'var(--accent)';
+        roleBtn.style.borderColor = 'rgba(20,224,194,0.2)';
+        roleBtn.style.background = 'rgba(20,224,194,0.1)';
+    }
 }
+
 document.getElementById('user-profile-modal').classList.add('active');
 }
 
