@@ -56,6 +56,10 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 #city-status.danger { border-color: rgba(244, 63, 94, 0.4); background: rgba(30, 10, 15, 0.9); }
 #city-status .city-name { color: var(--accent); font-size: 10px; display: block; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; text-shadow: 0 0 5px var(--accent-glow); }
 #geo-btn { width: 50px; height: 50px; border-radius: 18px; background: var(--panel); backdrop-filter: blur(20px); border: 1px solid var(--border); color: var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+</style>
+</head>
+<body>
+    <style>
 #alerts-container { position: absolute; top: calc(85px + env(safe-area-inset-top)); left: 16px; right: 16px; z-index: 4000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .alert-card { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 13px; color: var(--text); background: rgba(15, 20, 18, 0.9); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid var(--danger); animation: slideDownAlert 0.4s ease forwards; }
 .alert-card.info { border-left-color: #3b82f6; }
@@ -105,6 +109,9 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 
 #search-modal-overlay, #user-profile-modal { position: fixed; inset: 0; z-index: 99998; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; padding: 20px; }
 .search-modal { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 24px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 16px; }
+</style>
+</head>
+<body>
     <div id="auth-screen">
     <div class="auth-box">
         <h2 id="auth-title">Вход в Vinera</h2>
