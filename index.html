@@ -568,10 +568,48 @@ window.addEventListener('load', function() {
                     '<div class="feed-icon" style="background:' + meta.color + '15; border: 1px solid ' + meta.color + '40;">' + meta.svg.replace('stroke="#fff"', 'stroke="' + meta.color + '"') + '</div>' +
                     '<div class="feed-content">' +
                     '<div class="feed-title">' + escapeHtml(m.type) + ' — ' + escapeHtml(m.city || 'Неизвестно') + '</div>' +
-                    '<div class="feed-meta">' + time + ' · ' + escapeHtml(m.author || 'Аноним') + '</div>' +
+                                        '<div class="feed-meta">' + time + ' · ' + escapeHtml(m.author || 'Аноним') + '</div>' +
                     '</div>';
                 list.appendChild(item);
             });
+        }
+
+        async function resolveAddress(m) {
+            try {
+                const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + m.lat + '&lon=' + m.lng + '&zoom=14&accept-language=ru';
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                const data = await res.json();
+                const a = data.address || {};
+                const parts = [a.city || a.town || a.village || a.county, a.suburb || a.neighbourhood || a.road];
+                const address = parts.filter(Boolean).join(', ') || (data.display_name || 'неизвестно');
+                await supabaseClient.from('vinera_markers').update({ address: address }).eq('id', m.id);
+                m.address = address;
+                if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
+            } catch (e) {}
+        }
+
+        function pluralizeStatus(types) {
+            const threats = types.filter(t => t !== 'Тихо');
+            if (threats.length === 0) return { text: types.length === 0 ? '—' : 'Тихо', danger: false };
+            const counts = {};
+            threats.forEach(t => counts[t] = (counts[t] || 0) + 1);
+            const unique = Object.keys(counts);
+            const hasDanger = unique.some(t => dangerTypes.includes(t));
+            const pm = { 'Взрыв': 'Взрывы', 'Сирена': 'Сирены', 'Ракета': 'Ракеты', 'БПЛА': 'БПЛА', 'Истребитель': 'Истребители' };
+            const labels = unique.map(t => counts[t] > 1 ? (pm[t] || t) : t);
+            return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
+        }
+
+        function updateCityStatus() {
+            const box = document.getElementById('city-status');
+            const nameEl = box.querySelector('.city-name');
+            const stateEl = box.querySelector('.city-state');
+            nameEl.textContent = (currentCity || 'Город не выбран').toUpperCase();
+            if (!currentCity) { stateEl.textContent = '—'; box.classList.remove('danger'); return; }
+            const types = markersData.filter(m => m.city === currentCity).map(m => m.type);
+            const res = pluralizeStatus(types);
+            stateEl.textContent = res.text;
+            box.classList.toggle('danger', res.danger);
         }
 
         async function resolveAddress(m) {
