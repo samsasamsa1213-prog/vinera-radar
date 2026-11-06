@@ -64,12 +64,6 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 #status-toast { position: fixed; top: calc(85px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%) translateY(-15px); padding: 14px 24px; border-radius: 16px; background: rgba(20, 30, 40, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 14px; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5000; box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6); text-align: center; white-space: nowrap; }
 #status-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 #status-toast.error { border-color: rgba(244, 63, 94, 0.4); color: #fda4af; }
-
-#loading-spinner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; display: none; width: 40px; height: 40px; border: 4px solid rgba(20, 184, 166, 0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-
-.marker-drop { animation: dropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-@keyframes dropIn { 0% { transform: translateY(-20px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 </style>
 </head>
 <body>
@@ -87,9 +81,6 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 .alert-text { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
 .alert-text span { font-weight: 700; }
 .alert-more { font-size: 11px; opacity: 0.6; font-weight: 500; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 8px; }
-
-#filter-btn { position: absolute; right: 16px; bottom: calc(var(--nav-height) + 24px); z-index: 1000; width: 50px; height: 50px; border-radius: 18px; background: var(--panel); backdrop-filter: blur(20px); border: 1px solid var(--border); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-#filter-btn.active { color: var(--danger); border-color: var(--danger); }
 
 #show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 24px); z-index: 1000; padding: 16px 32px; border-radius: 30px; background: linear-gradient(135deg, var(--accent), #0d9488); color: #fff; border: none; box-shadow: 0 12px 30px -5px var(--accent-glow); font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
 #show-markers-btn svg { width: 22px; height: 22px; stroke-width: 2.5; }
@@ -182,15 +173,10 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
             </div>
         </div>
         
-        <!-- Контейнер для каскадных плашек тревоги -->
         <div id="alerts-container"></div>
 
         <div id="status-toast">Метки загружены</div>
-        <div id="loading-spinner"></div>
-
-        <button id="filter-btn" onclick="toggleFilter()" title="Фильтр: только угрозы">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-        </button>
+        <div id="loading-spinner" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; display: none; width: 40px; height: 40px; border: 4px solid rgba(20, 184, 166, 0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
 
         <button id="show-markers-btn" onclick="toggleMarkersSheet()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -198,7 +184,7 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
         </button>
     </div>
 </div>
-<!-- Шторка выбора типа метки (внутри map-container) -->
+        <!-- Шторка выбора типа метки (внутри map-container) -->
         <div id="markers-sheet-overlay" onclick="toggleMarkersSheet()"></div>
         <div id="markers-sheet">
             <div class="sheet-handle"></div>
@@ -245,7 +231,128 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
             <span style="display: flex; align-items: center; gap: 10px;"><span class="emoji-glow">👨‍💻</span> Связь с владельцем</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; opacity: 0.5;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
         </a>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <div id="admin-toggle-btn" onclick="toggleAdminPanel()" style="display: none; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; justify-content: space-between; align-items: center; color: var(--text); font-weight: 600; font-size: 15px; cursor: pointer;">
+            <span style="display: flex; align-items: center; gap: 10px;"><span class="emoji-glow">🛠</span> Админ-панель</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; opacity: 0.5;"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+        </div>
+        <div onclick="logout()" style="background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; color: var(--danger); font-weight: 600; font-size: 15px; cursor: pointer;">
+            <span>Выйти из аккаунта</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; opacity: 0.5;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </div>
+    </div>
+</div> <!-- Закрывается profile-screen -->
+
+<!-- Модалки -->
+<div id="search-modal-overlay">
+    <div class="search-modal">
+        <h3>Выбор региона</h3>
+        <input type="text" id="modal-city-input" placeholder="Введите город">
+        <div class="modal-actions">
+            <button id="modal-cancel-btn" onclick="closeSearchModal()" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border);">Отмена</button>
+            <button id="modal-search-btn" onclick="searchCityFromModal()" style="background: var(--accent); color: #fff;">Найти</button>
+        </div>
+    </div>
+</div>
+
+<div id="user-profile-modal">
+    <div class="search-modal" style="max-width: 320px;">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: #334155; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700;" id="modal-user-avatar">U</div>
+            <h3 id="modal-user-name" style="font-size: 20px; margin-bottom: 8px; color: var(--text);">Имя</h3>
+            <div id="modal-user-role" style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border);">USER</div>
+        </div>
+        
+        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; margin: 16px 0; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500;">
+                <span style="color: var(--text-muted);">Меток:</span>
+                <span id="modal-user-markers" style="color: var(--text); font-weight: 600;">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500;">
+                <span style="color: var(--text-muted);">Telegram ID:</span>
+                <span id="modal-user-tg" style="color: var(--text);">Нет</span>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button id="modal-user-ban-btn" onclick="toggleBanFromModal()" style="background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;">Забанить</button>
+            <button id="modal-user-role-btn" onclick="toggleRoleFromModal()" style="background: rgba(20, 184, 166, 0.1); color: var(--accent); border: 1px solid rgba(20, 184, 166, 0.2); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;">Сделать модератором</button>
+        </div>
+
+        <button onclick="closeUserProfileModal()" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 10px;">Закрыть</button>
+    </div>
+</div>
+
+<!-- Нижнее меню -->
+<div id="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
+    <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
+    <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
+</div>
+
+</div> <!-- Закрывается app -->
+        </div> <!-- Закрывается profile-screen -->
+
+    <!-- Блок Админ-панели -->
+    <div id="admin-panel-content" style="display: none; margin-top: 24px; flex-direction: column; gap: 16px;">
+        <div style="display: flex; gap: 10px;">
+            <button class="admin-tab active" id="tab-markers" onclick="switchAdminTab('markers')" style="flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--accent); background: rgba(20, 184, 166, 0.1); color: var(--accent); font-weight: 600; font-size: 14px; cursor: pointer;">Метки</button>
+            <button class="admin-tab" id="tab-users" onclick="switchAdminTab('users')" style="flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--text-muted); font-weight: 600; font-size: 14px; cursor: pointer;">Юзеры</button>
+        </div>
+        <button id="clear-all-btn" class="clear-all-btn" style="width: 100%; padding: 16px; background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer;">🗑 Очистить все метки</button>
+        <div id="admin-content" class="admin-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+</div> <!-- Закрывается profile-screen -->
+
+<!-- Нижнее меню -->
+<div id="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
+    <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
+    <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
+</div>
+
+</div> <!-- Закрывается app -->
+
+<!-- Модалка поиска города -->
+<div id="search-modal-overlay">
+    <div class="search-modal">
+        <h3>Выбор региона</h3>
+        <input type="text" id="modal-city-input" placeholder="Введите город">
+        <div class="modal-actions">
+            <button id="modal-cancel-btn" onclick="closeSearchModal()" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border);">Отмена</button>
+            <button id="modal-search-btn" onclick="searchCityFromModal()" style="background: var(--accent); color: #fff;">Найти</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка профиля юзера в админке -->
+<div id="user-profile-modal">
+    <div class="search-modal" style="max-width: 320px;">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: #334155; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700;" id="modal-user-avatar">U</div>
+            <h3 id="modal-user-name" style="font-size: 20px; margin-bottom: 8px; color: var(--text);">Имя</h3>
+            <div id="modal-user-role" style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border);">USER</div>
+        </div>
+        
+        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; margin: 16px 0; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500;">
+                <span style="color: var(--text-muted);">Меток:</span>
+                <span id="modal-user-markers" style="color: var(--text); font-weight: 600;">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500;">
+                <span style="color: var(--text-muted);">Telegram ID:</span>
+                <span id="modal-user-tg" style="color: var(--text);">Нет</span>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button id="modal-user-ban-btn" onclick="toggleBanFromModal()" style="background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;">Забанить</button>
+            <button id="modal-user-role-btn" onclick="toggleRoleFromModal()" style="background: rgba(20, 184, 166, 0.1); color: var(--accent); border: 1px solid rgba(20, 184, 166, 0.2); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;">Сделать модератором</button>
+        </div>
+
+        <button onclick="closeUserProfileModal()" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 10px;">Закрыть</button>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 window.addEventListener('load', function() {
     const tg = window.Telegram ? window.Telegram.WebApp : null;
@@ -273,7 +380,6 @@ window.addEventListener('load', function() {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        // ===== СИСТЕМА УВЕДОМЛЕНИЙ =====
         let toastTimeout = null;
         window.showToast = function(text, isError = false) {
             const toast = document.getElementById('status-toast');
@@ -284,7 +390,6 @@ window.addEventListener('load', function() {
             toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 7000);
         };
 
-        // ===== КАРТА =====
         const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -293,9 +398,6 @@ window.addEventListener('load', function() {
         setTimeout(function() { map.invalidateSize(); }, 300);
         setTimeout(function() { map.invalidateSize(); }, 1000);
 
-        let showOnlyThreats = false;
-
-        // ===== СОСТОЯНИЕ =====
         let currentMarkerType = null; 
         let isPlacingMarker = false;  
         let currentCity = null;
@@ -339,7 +441,6 @@ window.addEventListener('load', function() {
         const layerGroup = L.layerGroup().addTo(map);
         const markerRefs = {};
 
-        // ===== AUTH UI =====
         const authScreen = document.getElementById('auth-screen');
         const authLogin = document.getElementById('auth-login');
         const authPassword = document.getElementById('auth-password');
@@ -392,7 +493,11 @@ window.addEventListener('load', function() {
                         });
                     }
                 } else {
-                    const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+                    const { error } = await supabaseClient.auth.signInWithPassword({ 
+                        email: email, 
+                        password: password,
+                        options: { captchaToken: window.turnstileToken }
+                    });
                     if (error) throw error;
                 }
                 await checkSession();
@@ -407,7 +512,6 @@ window.addEventListener('load', function() {
         authBtn.addEventListener('click', handleAuth);
         authPassword.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleAuth(); });
 
-        // ===== ПРОВЕРКА СЕССИИ =====
         async function checkSession() {
             const { data } = await supabaseClient.auth.getSession();
             if (data.session) {
@@ -443,8 +547,12 @@ window.addEventListener('load', function() {
                 document.getElementById('profile-role-badge').textContent = roleText;
                 document.getElementById('profile-stat-role').textContent = currentRole;
 
-                if (currentRole === 'admin' || currentRole === 'moderator') {
-                    document.getElementById('admin-toggle-btn').style.display = 'flex';
+                // Защита от вылета кнопки админа
+                const adminBtn = document.getElementById('admin-toggle-btn');
+                if (adminBtn) {
+                    if (currentRole === 'admin' || currentRole === 'moderator') {
+                        adminBtn.style.display = 'flex';
+                    }
                 }
 
                 authScreen.style.display = 'none';
@@ -505,26 +613,275 @@ window.addEventListener('load', function() {
             drawMarkers();
             await checkSession();
         };
-                // ===== ФИЛЬТР =====
-        function toggleFilter() {
-            showOnlyThreats = !showOnlyThreats;
-            const btn = document.getElementById('filter-btn');
-            if (showOnlyThreats) {
-                btn.classList.add('active');
-                showToast('Фильтр: только угрозы');
-            } else {
-                btn.classList.remove('active');
-                showToast('Показаны все метки');
-            }
-            drawMarkers();
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+window.addEventListener('load', function() {
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (tg && tg.expand) tg.expand();
+
+    window.onTurnstileSuccess = function(token) { window.turnstileToken = token; };
+
+    async function checkAccess() {
+        if (!tg || !tg.initData) {
+            document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#06080a;height:100vh;font-family:sans-serif;"><h2 style="color:#14b8a6;margin-top:50px;">Доступ запрещен</h2><p style="margin-top:20px;font-size:16px;color:#94a3b8;">Откройте радар через Telegram-бота <b>@vinera_radar_bot</b></p></div>';
+            return false;
+        }
+        return true;
+    }
+
+    checkAccess().then(allowed => {
+        if (!allowed) return;
+
+        const SUPABASE_URL = 'https://hpzemwurwkuthcgmtvlw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        // ===== ИКОНКИ И ПОПАПЫ =====
+        let toastTimeout = null;
+        window.showToast = function(text, isError = false) {
+            const toast = document.getElementById('status-toast');
+            if (!toast) return;
+            toast.innerHTML = text;
+            toast.className = isError ? 'show error' : 'show';
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 7000);
+        };
+
+        const map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            className: 'dark-tiles'
+        }).addTo(map);
+        setTimeout(function() { map.invalidateSize(); }, 300);
+        setTimeout(function() { map.invalidateSize(); }, 1000);
+
+        let currentMarkerType = null; 
+        let isPlacingMarker = false;  
+        let currentCity = null;
+        let userCity = null;
+        let markersData = [];
+        let feedData = [];
+        let currentUser = null;
+        let currentRole = 'user';
+        let currentBanned = false;
+        let currentPhone = null;
+        let currentTotalMarkers = 0;
+        let isLoggedOut = false;
+        let pollInterval = null;
+        let cleanupInterval = null;
+        let countersInterval = null;
+
+        let recentMarkerTimes = [];
+        const MAX_MARKERS = 2;
+        const COOLDOWN_MS = 30000;
+        const LIFETIME_MS = 900000;
+        let userLocationLayer = null;
+        let myGeo = null;
+
+        function canPlaceMarker() {
+            const now = Date.now();
+            recentMarkerTimes = recentMarkerTimes.filter(t => now - t < COOLDOWN_MS);
+            if (recentMarkerTimes.length < MAX_MARKERS) return { allowed: true, wait: 0 };
+            const oldest = Math.min.apply(null, recentMarkerTimes);
+            return { allowed: false, wait: Math.ceil((COOLDOWN_MS - (now - oldest)) / 1000) };
+        }
+
+        const METADATA = {
+            'БПЛА': { color: '#14b8a6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>' },
+            'Ракета': { color: '#f43f5e', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>' },
+            'Истребитель': { color: '#3b82f6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>' },
+            'Сирена': { color: '#8b5cf6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>' },
+            'Взрыв': { color: '#f59e0b', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>' },
+            'Тихо': { color: '#14b8a6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>' }
+        };
+        const dangerTypes = ['Взрыв', 'Сирена', 'Ракета', 'БПЛА', 'Истребитель'];
+        const layerGroup = L.layerGroup().addTo(map);
+        const markerRefs = {};
+
+        const authScreen = document.getElementById('auth-screen');
+        const authLogin = document.getElementById('auth-login');
+        const authPassword = document.getElementById('auth-password');
+        const authBtn = document.getElementById('auth-btn');
+        const authToggle = document.getElementById('auth-toggle');
+        const authTitle = document.getElementById('auth-title');
+        const authError = document.getElementById('auth-error');
+        let isRegisterMode = false;
+
+        function showAuthError(msg) { authError.textContent = msg; authError.style.display = 'block'; }
+
+        authToggle.addEventListener('click', function() {
+            isRegisterMode = !isRegisterMode;
+            authTitle.textContent = isRegisterMode ? 'Регистрация' : 'Вход в Vinera';
+            authBtn.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
+            authToggle.textContent = isRegisterMode ? 'У меня уже есть аккаунт' : 'Создать аккаунт';
+            authError.style.display = 'none';
+        });
+
+        async function handleAuth() {
+            const login = authLogin.value.trim().toLowerCase();
+            const password = authPassword.value;
+            if (!login || !password) { showAuthError('Введите логин и пароль'); return; }
+            if (login.length < 3) { showAuthError('Логин не короче 3 символов'); return; }
+            if (password.length < 6) { showAuthError('Пароль не короче 6 символов'); return; }
+
+            authBtn.disabled = true;
+            authBtn.textContent = 'Подождите...';
+            authError.style.display = 'none';
+            const email = login + '@vinera.app';
+
+            try {
+                if (isRegisterMode) {
+                    const tgUser = tg ? tg.initDataUnsafe?.user : null;
+                    if (tgUser) {
+                        const { data: reg } = await supabaseClient.from('registrations').select('count').eq('telegram_id', tgUser.id).maybeSingle();
+                        const currentCount = reg ? reg.count : 0;
+                        if (currentCount >= 3) throw new Error('Лимит аккаунтов исчерпан!');
+                        await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
+                    }
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email, password: password,
+                        options: { captchaToken: window.turnstileToken }
+                    });
+                    if (error) throw error;
+                    if (data.user) {
+                        await supabaseClient.from('profiles').insert({
+                            id: data.user.id, username: login, role: 'user', total_markers: 0, is_banned: false,
+                            telegram_id: tgUser ? tgUser.id : null
+                        });
+                    }
+                } else {
+                    const { error } = await supabaseClient.auth.signInWithPassword({ 
+                        email: email, 
+                        password: password,
+                        options: { captchaToken: window.turnstileToken } 
+                    });
+                    if (error) throw error;
+                }
+                await checkSession();
+            } catch (e) {
+                showAuthError(e.message || 'Ошибка входа');
+            } finally {
+                authBtn.disabled = false;
+                authBtn.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
+            }
+        }
+
+        authBtn.addEventListener('click', handleAuth);
+        authPassword.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleAuth(); });
+
+        async function checkSession() {
+            const { data } = await supabaseClient.auth.getSession();
+            if (data.session) {
+                const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
+
+                currentUser = profile ? profile.username : 'user';
+                currentRole = (profile && profile.role) ? profile.role : 'user';
+                currentBanned = (profile && profile.is_banned) ? true : false;
+                currentPhone = (profile && profile.phone) ? profile.phone : null;
+                currentTotalMarkers = (profile && profile.total_markers) ? profile.total_markers : 0;
+
+                if (currentUser === 'bihepka') { 
+                    currentRole = 'admin'; 
+                    currentBanned = false; 
+                }
+
+                if (currentBanned) {
+                    await supabaseClient.auth.signOut();
+                    authScreen.style.display = 'none';
+                    document.getElementById('app').style.display = 'none';
+                    document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#06080a;height:100vh;padding-top:50px;"><h2 style="color:#f43f5e;">Аккаунт заблокирован</h2><p style="margin-top:10px;color:#94a3b8;">По вопросам: <b>@VineraRadarr</b></p></div>';
+                    return;
+                }
+
+                document.getElementById('profile-name').textContent = currentUser;
+                document.getElementById('profile-avatar-letter').textContent = currentUser.charAt(0).toUpperCase();
+                document.getElementById('profile-stat-markers').textContent = currentTotalMarkers;
+
+                let roleText = 'ПОЛЬЗОВАТЕЛЬ';
+                if (currentRole === 'admin') roleText = 'АДМИНИСТРАТОР';
+                else if (currentRole === 'moderator') roleText = 'МОДЕРАТОР';
+
+                document.getElementById('profile-role-badge').textContent = roleText;
+                document.getElementById('profile-stat-role').textContent = currentRole;
+
+                // Защита от вылета кнопки админа (фикс)
+                const adminBtn = document.getElementById('admin-toggle-btn');
+                if (adminBtn) {
+                    if (currentRole === 'admin' || currentRole === 'moderator') {
+                        adminBtn.style.display = 'flex';
+                    } else {
+                        adminBtn.style.display = 'none';
+                    }
+                }
+
+                authScreen.style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                setTimeout(function() { map.invalidateSize(); }, 200);
+
+                const savedCity = localStorage.getItem('vinera_city');
+                const savedGeo = localStorage.getItem('vinera_geo');
+
+                if (!savedCity && currentUser !== 'bihepka') {
+                    document.getElementById('onboarding-screen').classList.add('active');
+                    document.getElementById('app').style.display = 'none';
+                } else {
+                    userCity = savedCity;
+                    currentCity = savedCity; 
+                    
+                    showToast('Метки загружены');
+
+                    if (savedGeo) {
+                        try {
+                            const g = JSON.parse(savedGeo);
+                            myGeo = { lat: g.lat, lon: g.lon };
+                            map.setView([g.lat, g.lon], 13);
+                            showUserLocation(g.lat, g.lon);
+                        } catch (e) {}
+                    }
+
+                    if (navigator.geolocation && !myGeo) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                            myGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                            localStorage.setItem('vinera_geo', JSON.stringify({ lat: myGeo.lat, lon: myGeo.lon }));
+                            showUserLocation(myGeo.lat, myGeo.lon);
+                            map.setView([myGeo.lat, myGeo.lon], 13);
+                        }, function() {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+                    }
+
+                    updateCityStatus();
+                    await loadMarkers();
+                    await updateCounters();
+                }
+            } else {
+                authScreen.style.display = 'flex';
+                document.getElementById('app').style.display = 'none';
+            }
+        }
+
+        window.logout = async function() {
+            isLoggedOut = true;
+            if (pollInterval) clearInterval(pollInterval);
+            if (cleanupInterval) clearInterval(cleanupInterval);
+            if (countersInterval) clearInterval(countersInterval);
+            await supabaseClient.auth.signOut();
+            localStorage.removeItem('vinera_city');
+            localStorage.removeItem('vinera_geo');
+            currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
+            userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
+            myGeo = null; isPlacingMarker = false;
+            drawMarkers();
+            await checkSession();
+        };
+                // ===== ИКОНКИ И ПОПАПЫ =====
         function makeIcon(type) {
             const meta = METADATA[type] || METADATA['БПЛА'];
             return L.divIcon({
                 className: '',
-                html: '<div class="pulse-marker marker-drop" style="width:22px;height:22px;background:' + meta.color + ';color:' + meta.color + ';">' + meta.svg + '</div>',
+                html: '<div class="pulse-marker" style="width:22px;height:22px;background:' + meta.color + ';color:' + meta.color + ';">' + meta.svg + '</div>',
                 iconSize: [22, 22], iconAnchor: [11, 11]
             });
         }
@@ -549,7 +906,6 @@ window.addEventListener('load', function() {
             if (currentZoom < 10) return;
 
             markersData.forEach(m => {
-                if (showOnlyThreats && m.type === 'Тихо') return;
                 const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.type) }).addTo(layerGroup);
                 marker.bindPopup(popupHtml(m));
                 markerRefs[m.id] = marker;
@@ -650,7 +1006,7 @@ window.addEventListener('load', function() {
             box.classList.toggle('danger', res.danger);
         }
 
-        // ===== УМНАЯ ЛОГИКА ПЛАШЕК ТРЕВОГИ =====
+        // ===== ПЛАШКИ ТРЕВОГИ =====
         function checkAlerts() {
             if (!currentCity) return;
             const container = document.getElementById('alerts-container');
@@ -889,7 +1245,8 @@ window.addEventListener('load', function() {
             document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
             showToast('Метка поставлена ✔');
         });
-                // ===== ВКЛАДКИ =====
+
+        // ===== ВКЛАДКИ =====
         window.switchTab = function(tab) {
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('feed-screen').classList.remove('active');
