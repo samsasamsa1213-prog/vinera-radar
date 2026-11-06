@@ -56,7 +56,10 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 #city-status.danger { border-color: rgba(244, 63, 94, 0.4); background: rgba(30, 10, 15, 0.9); }
 #city-status .city-name { color: var(--accent); font-size: 10px; display: block; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; text-shadow: 0 0 5px var(--accent-glow); }
 #geo-btn { width: 50px; height: 50px; border-radius: 18px; background: var(--panel); backdrop-filter: blur(20px); border: 1px solid var(--border); color: var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
+</style>
+</head>
+<body>
+    <style>
 #alerts-container { position: absolute; top: calc(85px + env(safe-area-inset-top)); left: 16px; right: 16px; z-index: 4000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .alert-card { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 13px; color: var(--text); background: rgba(15, 20, 18, 0.9); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid var(--danger); animation: slideDownAlert 0.4s ease forwards; }
 .alert-card.info { border-left-color: #3b82f6; }
@@ -66,6 +69,7 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 @keyframes blink-red { from { opacity: 0.4; } to { opacity: 1; box-shadow: 0 0 15px var(--danger); } }
 @keyframes blink-blue { from { opacity: 0.4; } to { opacity: 1; box-shadow: 0 0 15px #3b82f6; } }
 @keyframes slideDownAlert { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
 #show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 24px); z-index: 1000; padding: 16px 32px; border-radius: 30px; background: var(--accent); color: #000; border: none; box-shadow: 0 12px 30px -5px var(--accent-glow); font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
 
@@ -108,8 +112,7 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 </style>
 </head>
 <body>
-
-<div id="auth-screen">
+    <div id="auth-screen">
     <div class="auth-box">
         <h2 id="auth-title">Вход в Vinera</h2>
         <input type="text" id="auth-login" placeholder="Логин" autocomplete="username">
@@ -163,7 +166,7 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
         </div>
     </div>
 </div>
-
+<!-- Экран событий -->
 <div id="feed-screen">
     <div class="feed-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-top:10px;">
         <h2 style="margin:0;font-size:24px;font-weight:700;">События</h2>
@@ -172,6 +175,7 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
     <div id="feed-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
 </div>
 
+<!-- Экран профиля -->
 <div id="profile-screen">
     <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 30px 20px; text-align: center; margin-bottom: 24px; backdrop-filter: blur(20px);">
         <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #047857); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; font-weight: 700; box-shadow: 0 8px 20px -5px var(--accent-glow);" id="profile-avatar-letter">U</div>
@@ -206,6 +210,7 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
         </div>
     </div>
     
+    <!-- Админ-панель -->
     <div id="admin-panel-content" style="display: none; margin-top: 24px; flex-direction: column; gap: 16px;">
         <div style="display: flex; gap: 10px;">
             <button class="admin-tab active" id="tab-markers" onclick="switchAdminTab('markers')" style="flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--accent); background: rgba(16, 185, 129, 0.1); color: var(--accent); font-weight: 600; font-size: 14px; cursor: pointer;">Метки</button>
@@ -216,15 +221,16 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
     </div>
 </div>
 
+<!-- Нижнее меню -->
 <div id="bottom-nav">
     <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
-    <
-            <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
+    <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
     <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
 </div>
 
 </div> <!-- Закрывается app -->
 
+<!-- Модалки -->
 <div id="search-modal-overlay">
     <div class="search-modal">
         <h3 style="margin:0;text-align:center;font-size:20px;">Выбор региона</h3>
@@ -527,11 +533,10 @@ window.addEventListener('load', function() {
             currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
             userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
             myGeo = null; isPlacingMarker = false;
-                        drawMarkers();
+            drawMarkers();
             await checkSession();
         };
-
-        // ===== ИКОНКИ И ПОПАПЫ =====
+                // ===== ИКОНКИ И ПОПАПЫ =====
         function makeIcon(type) {
             const meta = METADATA[type] || METADATA['БПЛА'];
             return L.divIcon({
@@ -721,6 +726,7 @@ window.addEventListener('load', function() {
             showToast('Вы вернулись на своё гео');
         };
 
+        // ===== ПОИСК ГОРОДА =====
         window.openSearchModal = function() {
             document.getElementById('search-modal-overlay').style.display = 'flex';
             document.getElementById('modal-city-input').value = userCity || '';
@@ -754,6 +760,7 @@ window.addEventListener('load', function() {
             }
         };
 
+        // ===== ГЕОЛОКАЦИЯ =====
         window.requestGeoLocation = function() {
             if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
             document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
@@ -800,6 +807,7 @@ window.addEventListener('load', function() {
             showToast('Выберите город в поиске');
         };
 
+        // ===== ПОДЕЛИТЬСЯ =====
         window.shareRadar = function() {
             const url = 'https://t.me/VineraRadarr';
             if (navigator.share) {
@@ -810,6 +818,7 @@ window.addEventListener('load', function() {
             }
         };
 
+        // ===== РЕЖИМ УСТАНОВКИ МЕТКИ =====
         window.toggleMarkersSheet = function() {
             const sheet = document.getElementById('markers-sheet');
             const overlay = document.getElementById('markers-sheet-overlay');
@@ -838,6 +847,7 @@ window.addEventListener('load', function() {
             toggleMarkersSheet();
         };
 
+        // ===== КЛИК ПО КАРТЕ =====
         map.on('click', async function(e) {
             if (!isPlacingMarker || !currentMarkerType) return;
 
@@ -895,7 +905,7 @@ window.addEventListener('load', function() {
             document.querySelectorAll('.marker-btn').forEach(b => b.classList.remove('selected'));
             showToast('Метка поставлена ✔');
         });
-
+                // ===== ВКЛАДКИ =====
         window.switchTab = function(tab) {
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('feed-screen').classList.remove('active');
@@ -917,6 +927,7 @@ window.addEventListener('load', function() {
             }
         };
 
+        // ===== АДМИН-ПАНЕЛЬ =====
         let adminOpen = false;
         let adminTab = 'markers';
 
@@ -1013,6 +1024,7 @@ window.addEventListener('load', function() {
             showToast('Метка удалена');
         };
 
+        // ===== МОДАЛКА ПРОФИЛЯ ЮЗЕРА =====
         let selectedUserId = null;
         let selectedUserData = null;
 
@@ -1086,6 +1098,17 @@ window.addEventListener('load', function() {
             renderAdmin();
         };
 
+        async function updateCounters() {
+            if (isLoggedOut) return;
+            try {
+                const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+                const { count: online } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).gt('last_seen_at', fiveMinAgo);
+                const o = document.getElementById('online-count');
+                if (o && online !== null) o.textContent = online;
+            } catch (e) {}
+        }
+
+        // ===== ЗАПУСК И ИНТЕРВАЛЫ =====
         checkSession();
 
         pollInterval = setInterval(function() {
