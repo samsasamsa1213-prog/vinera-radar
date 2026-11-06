@@ -36,7 +36,6 @@
 html,body{margin:0;padding:0;height:100%;background:radial-gradient(ellipse at top,#08120f 0%,#040605 60%);overflow:hidden;color:var(--text);overscroll-behavior:none;-webkit-user-select:none;user-select:none}
 input,textarea,.leaflet-popup-content{-webkit-user-select:text;user-select:text}
 
-/* Кнопки — общий стиль */
 button,.menu-item,.marker-btn,.nav-btn{
 transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .3s,box-shadow .3s,color .3s,border-color .3s;
 cursor:pointer;border:none;outline:none;font-family:inherit;-webkit-tap-highlight-color:transparent
@@ -46,7 +45,6 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 
 .glow-green{color:var(--accent);text-shadow:0 0 12px var(--accent-glow),0 0 24px rgba(20,224,194,.25);font-weight:700}
 
-/* Скроллбар */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(20,224,194,.3);border-radius:3px}
@@ -61,7 +59,6 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 100%{transform:translateY(105vh) translateX(40px) rotate(360deg);opacity:0}
 }
 
-/* ===== УКРАШЕНИЕ ВХОДА ===== */
 .auth-snow-cap{
 position:absolute;top:-12px;left:20px;right:20px;height:30px;z-index:0;
 background:radial-gradient(ellipse at 30% 100%,rgba(216,255,248,.15),transparent 60%),radial-gradient(ellipse at 70% 100%,rgba(216,255,248,.12),transparent 60%);
@@ -98,7 +95,6 @@ box-shadow:0 25px 60px rgba(0,0,0,.8),0 0 40px rgba(20,224,194,.08),inset 0 1px 
 display:flex;flex-direction:column;gap:16px;
 }
 
-/* Шапка новогодняя */
 .auth-header{position:relative;text-align:center;margin-bottom:8px}
 .auth-title{
 font-family:'Unbounded',sans-serif;
@@ -122,7 +118,6 @@ text-transform:uppercase;letter-spacing:2px;font-weight:600;
 }
 .auth-subtitle span{color:var(--accent);text-shadow:0 0 8px var(--accent-glow)}
 
-/* Гирлянда над заголовком */
 .auth-garland{display:flex;justify-content:center;gap:6px;margin-bottom:6px}
 .auth-garland i{
 width:6px;height:6px;border-radius:50%;background:var(--accent);
@@ -137,7 +132,6 @@ animation:twinkle 1.6s infinite alternate;display:block;
 .auth-garland i:nth-child(7){background:var(--accent);animation-delay:1.2s}
 @keyframes twinkle{from{opacity:.5;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
 
-/* Инпуты */
 .auth-box input{
 padding:15px 18px;border-radius:14px;
 border:1px solid rgba(20,224,194,.2);
@@ -149,7 +143,6 @@ border-color:var(--accent);background:rgba(8,18,16,.8);
 box-shadow:0 0 0 3px rgba(20,224,194,.12),0 0 20px rgba(20,224,194,.2);
 }
 
-/* Кнопка "Войти" */
 #auth-btn{
 position:relative;padding:16px;border-radius:14px;
 background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);
@@ -164,21 +157,17 @@ transition:left .6s;
 }
 #auth-btn:active::before{left:100%}
 
-/* Кнопка "Создать аккаунт" */
 #auth-toggle{
 padding:13px;background:transparent;color:var(--text-muted);
 border:1px solid rgba(20,224,194,.15);border-radius:14px;font-size:14px;font-weight:600;
 }
 #auth-toggle:hover{border-color:var(--border-strong);color:var(--text)}
 
-/* Ошибка */
 #auth-error{
 display:none;color:var(--danger);font-size:13px;text-align:center;
 padding:10px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);
 border-radius:10px;line-height:1.4;
 }
-
-/* Turnstile */
 #turnstile-container{display:flex;justify-content:center;margin-bottom:6px;min-height:65px}
 
 /* ============================================================
@@ -212,7 +201,7 @@ box-shadow:none;
 }
 
 /* ============================================================
-   КАРТА — СВЕТЛЕЕ, НО ТЁМНАЯ + УКРАШЕНИЯ СВЕРХУ/СНИЗУ
+   КАРТА + УКРАШЕНИЯ ПО КРАЯМ
    ============================================================ */
 #map-container{
 position:absolute;inset:0;z-index:1;padding-bottom:var(--nav-h);
@@ -224,7 +213,7 @@ filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(1.05) saturate(.35)
 }
 .leaflet-control-attribution,.leaflet-control-zoom{display:none!important}
 
-/* Украшение карты сверху (под статусом города) */
+/* Снежинки сверху карты (под кнопками) */
 .map-top-deco{
 position:absolute;top:calc(70px + env(safe-area-inset-top));left:0;right:0;height:24px;
 z-index:900;pointer-events:none;
@@ -236,7 +225,7 @@ opacity:.6;
 .map-top-deco::after{content:'❅';font-size:16px;color:var(--accent);text-shadow:0 0 8px var(--accent-glow);animation:floatSnow 3s ease-in-out infinite 1.5s}
 @keyframes floatSnow{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(4px) rotate(15deg)}}
 
-/* Украшение карты снизу (над кнопкой Сообщить) */
+/* Снежинки снизу карты (над кнопкой Сообщить) */
 .map-bottom-deco{
 position:absolute;bottom:calc(var(--nav-h) + 100px);left:0;right:0;height:20px;
 z-index:900;pointer-events:none;
@@ -250,7 +239,6 @@ animation:floatSnow 3s ease-in-out infinite;
 .map-bottom-deco span:nth-child(2){animation-delay:.5s}
 .map-bottom-deco span:nth-child(3){animation-delay:1s}
 
-/* Оверлеи карты */
 #map-overlay{
 position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;right:16px;
 z-index:1000;display:flex;flex-direction:column;gap:12px;pointer-events:none;
@@ -366,12 +354,12 @@ color:var(--text-muted);font-size:11px;font-weight:700;white-space:nowrap;
 #status-toast{
 position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;
 transform:translateX(-50%) translateY(-10px);
-padding:10px 18px; /* было 14px 24px */
-border-radius:12px; /* было 16px */
+padding:10px 18px;
+border-radius:12px;
 background:rgba(10,22,20,.95);
 backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
 border:1px solid var(--border-strong);color:var(--text);
-font-weight:600;font-size:13px; /* было 14px */
+font-weight:600;font-size:13px;
 opacity:0;pointer-events:none;
 transition:opacity .3s,transform .3s,border-color .3s;
 z-index:5000;text-align:center;max-width:calc(100% - 40px);
@@ -482,7 +470,6 @@ text-transform:uppercase;letter-spacing:.3px;
 .popup-title svg{width:18px;height:18px;flex-shrink:0}
 .popup-muted{color:var(--text-muted);margin-top:4px}
 .popup-muted b{color:var(--text)}
-/* Новая темно-бирюзовая SVG галочка в попапе */
 .popup-confirm{
 display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 8px;
 background:rgba(20,224,194,.15);color:var(--accent);
@@ -567,19 +554,19 @@ font-size:15px;line-height:1.5;
 }
 
 /* ============================================================
-   ПРОФИЛЬ — С НОВОГОДНЕЙ ШАПКОЙ
+   ПРОФИЛЬ — С НОВОГОДНЕЙ ШАПКОЙ И ГИРЛЯНДОЙ НА НИКЕ
    ============================================================ */
 .profile-card{
 position:relative;
 background:linear-gradient(160deg,rgba(10,22,20,.9),rgba(8,18,16,.96));
 border:1px solid var(--border-strong);border-radius:24px;
-padding:40px 20px 30px; /* Увеличили верхний паддинг для шапки */
+padding:40px 20px 30px;
 text-align:center;margin-bottom:24px;
 backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
 box-shadow:0 10px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(20,224,194,.12);
 overflow:hidden;
 }
-/* Сама снежная шапка */
+/* Снежная шапка */
 .profile-snow-cap{
 position:absolute;top:0;left:0;right:0;height:36px;
 background:
@@ -590,15 +577,12 @@ border-bottom-left-radius:50% 20px;
 border-bottom-right-radius:50% 20px;
 z-index:0;pointer-events:none;
 }
-/* Новогодние украшения внутри шапки (снежинки) */
 .profile-snow-cap::before,.profile-snow-cap::after{
 content:'❄';position:absolute;top:8px;font-size:12px;color:#fff;opacity:.5;
 text-shadow:0 0 8px var(--accent-glow);
 }
 .profile-snow-cap::before{left:20%}
 .profile-snow-cap::after{right:20%}
-
-/* Контент профиля поверх шапки */
 .profile-card > *:not(.profile-snow-cap){position:relative;z-index:1}
 
 .profile-avatar{
@@ -609,12 +593,39 @@ font-size:32px;color:#02120f;font-weight:800;
 box-shadow:0 8px 24px -5px var(--accent-glow),0 0 40px rgba(20,224,194,.2);
 border:2px solid rgba(216,255,248,.2);
 }
+
+/* УКРАШЕНИЕ ДЛЯ НИКА: Гирлянда и свечение */
+.profile-name-wrapper{
+position:relative;display:inline-block;margin-bottom:8px;padding:0 10px;
+}
+.profile-name-wrapper::before,.profile-name-wrapper::after{
+content:'✨';position:absolute;top:50%;transform:translateY(-50%);font-size:14px;
+filter:drop-shadow(0 0 6px var(--accent-glow));animation:twinkle 2s infinite alternate;
+}
+.profile-name-wrapper::before{left:-10px}
+.profile-name-wrapper::after{right:-10px;animation-delay:.5s}
+
 .profile-name{
-font-size:22px;margin-bottom:8px;
+font-size:22px;
 font-family:'Unbounded',sans-serif;
 color:var(--accent);text-shadow:0 0 16px var(--accent-glow);
 word-break:break-all;
+position:relative;
+z-index:2;
 }
+/* Маленькая гирлянда прямо над ником */
+.profile-name-garland{
+position:absolute;top:-12px;left:0;right:0;display:flex;justify-content:center;gap:4px;
+}
+.profile-name-garland i{
+width:4px;height:4px;border-radius:50%;background:var(--accent);
+box-shadow:0 0 6px var(--accent);animation:twinkle 1.5s infinite alternate;
+}
+.profile-name-garland i:nth-child(2){background:#ffd93d;animation-delay:.2s}
+.profile-name-garland i:nth-child(3){background:#ff6b9d;animation-delay:.4s}
+.profile-name-garland i:nth-child(4){background:var(--accent);animation-delay:.6s}
+.profile-name-garland i:nth-child(5){background:#ffd93d;animation-delay:.8s}
+
 .profile-badge{
 display:inline-block;padding:6px 14px;border-radius:20px;
 font-size:12px;font-weight:800;
@@ -631,9 +642,7 @@ font-size:11px;color:var(--text-muted);margin-top:4px;
 text-transform:uppercase;letter-spacing:.5px;
 }
 
-/* ============================================================
-   МЕНЮ ПРОФИЛЯ И АДМИНКА (стили оставляем, меняем иконки в HTML)
-   ============================================================ */
+/* Меню профиля */
 .profile-menu{display:flex;flex-direction:column;gap:12px}
 .menu-item{
 background:var(--panel);border:1px solid var(--border);border-radius:16px;
@@ -646,6 +655,7 @@ background:rgba(244,63,94,.05);border-color:rgba(244,63,94,.2);color:var(--dange
 .menu-item svg{width:20px;height:20px;opacity:.8;flex-shrink:0;transition:opacity .3s}
 .menu-item:hover svg{opacity:1;filter:drop-shadow(0 0 6px var(--accent-glow))}
 
+/* Админка */
 #admin-panel-content{display:none;margin-top:24px;flex-direction:column;gap:16px}
 .admin-tabs{display:flex;gap:10px}
 .admin-tab{
@@ -692,7 +702,6 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
 .modal-btn-cancel{flex:1;background:transparent;color:var(--text-muted);border:1px solid var(--border);padding:15px;border-radius:14px;font-weight:600}
 .modal-btn-primary{flex:1;background:linear-gradient(135deg,#14e0c2,#0ea5a0);color:#02120f;padding:15px;border-radius:14px;font-weight:700;box-shadow:0 8px 20px -5px var(--accent-glow)}
 
-/* Анимация города */
 @keyframes cityGlow{0%,100%{box-shadow:0 0 20px rgba(20,224,194,.15)}50%{box-shadow:0 0 32px rgba(20,224,194,.3)}}
 #city-status{animation:cityGlow 3s ease-in-out infinite}
 </style>
@@ -798,12 +807,21 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
      ============================================================ -->
 <div id="profile-screen">
     <div class="profile-card">
-        <!-- Новогодняя снежная шапка -->
+        <!-- Снежная шапка профиля -->
         <div class="profile-snow-cap"></div>
         
         <div class="profile-avatar" id="profile-avatar-letter">U</div>
-        <div class="profile-name" id="profile-name">Загрузка...</div>
+        
+        <!-- Украшение для ника (гирлянда и звездочки) -->
+        <div class="profile-name-wrapper">
+            <div class="profile-name-garland">
+                <i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <div class="profile-name" id="profile-name">Загрузка...</div>
+        </div>
+
         <div class="profile-badge" id="profile-role-badge">ПОЛЬЗОВАТЕЛЬ</div>
+        
         <div class="profile-stats">
             <div><div class="profile-stat-value" id="profile-stat-markers">0</div><div class="profile-stat-label">Меток</div></div>
             <div><div class="profile-stat-value" id="profile-stat-role" style="color:var(--accent);">User</div><div class="profile-stat-label">Статус</div></div>
@@ -811,7 +829,7 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
     </div>
 
     <div class="profile-menu">
-        <!-- Заменены смайлики на кастомные бирюзовые SVG -->
+        <!-- Иконки заменены на бирюзовые SVG -->
         <div class="menu-item" id="profile-search-city-btn">
             <span>Выбрать регион / город</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -1000,7 +1018,7 @@ if (toastTimeout) clearTimeout(toastTimeout);
 toastTimeout = setTimeout(function () {
 toast.style.opacity = '0';
 toast.style.transform = 'translateX(-50%) translateY(-10px)';
-}, 3000); // Исчезает через 3 секунды
+}, 3000);
 }
 
 function showSpinner(show) {
@@ -1121,7 +1139,7 @@ if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
 
 async function handleMapClick(e) {
 if (!isPlacingMarker || !currentMarkerType) return;
-// Проверка номера полностью удалена!
+// Проверка телефона убрана, метки ставят все
 if (!currentCity) { showToast('Сначала выберите город в профиле!', true); return; }
 const cd = canPlaceMarker();
 if (!cd.allowed) { showToast('⏳ Подождите '+cd.wait+' сек.', true); return; }
@@ -1268,7 +1286,6 @@ const { data } = await supabaseClient.auth.getSession();
 if (!data.session) { showAuthScreen(); return; }
 const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
 
-// ИСПРАВЛЕНО: Если username пустой или сгенерирован системой, пробуем взять логин из email (который мы сами создаем как login@vinera.app)
 let displayName = profile ? profile.username : 'user';
 const email = data.session.user.email || '';
 if ((!displayName || displayName.startsWith('user_')) && email.includes('@vinera.app')) {
@@ -1370,7 +1387,18 @@ await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, coun
 const { data, error } = await supabaseClient.auth.signUp({ email: email, password: password, options: { captchaToken: window.turnstileToken } });
 if (error) throw error;
 if (data.user) {
-await supabaseClient.from('profiles').insert({ id: data.user.id, username: login, role: 'user', total_markers: 0, is_banned: false, telegram_id: tgUser ? tgUser.id : null });
+// Создаем профиль
+const { error: insertError } = await supabaseClient.from('profiles').insert({ 
+    id: data.user.id, 
+    username: login, // <--- ВОТ ТУТ ЗАПИСЫВАЕТСЯ ВВЕДЕННЫЙ ЛОГИН
+    role: 'user', 
+    total_markers: 0, 
+    is_banned: false, 
+    telegram_id: tgUser ? tgUser.id : null 
+});
+
+// И СРАЗУ ЖЕ ДУБЛИРУЕМ, ЧТОБЫ БАЗА НЕ СГЕНЕРИРОВАЛА user_123
+await supabaseClient.from('profiles').update({ username: login }).eq('id', data.user.id);
 }
 } else {
 const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password, options: { captchaToken: window.turnstileToken } });
@@ -1648,40 +1676,27 @@ else if (u.role === 'moderator') roleText = 'МОДЕРАТОР';
 document.getElementById('modal-user-role').textContent = roleText;
 document.getElementById('modal-user-markers').textContent = u.total_markers || 0;
 document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
+
 const banBtn = document.getElementById('modal-user-ban-btn');
 const roleBtn = document.getElementById('modal-user-role-btn');
+const isAdmin = (currentRole === 'admin' || currentUser === ADMIN_USERNAME);
 
-// ИСПРАВЛЕНО: Модератор не может управлять админами и другими модераторами. И не может банить сам себя.
-if (currentRole === 'moderator' && (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME)) {
-    banBtn.style.display = 'none';
+// Если это модератор — он не может менять роли
+if (!isAdmin) {
     roleBtn.style.display = 'none';
+    // И не может банить админа или других модераторов
+    if (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME) {
+        banBtn.style.display = 'none';
+    } else {
+        banBtn.style.display = 'block';
+        banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
+    }
 } else {
+    // Админ может всё
     banBtn.style.display = 'block';
     roleBtn.style.display = 'block';
-
-    if (u.is_banned) {
-        banBtn.textContent = 'Разбанить';
-        banBtn.style.color = '#14e0c2';
-        banBtn.style.borderColor = 'rgba(20,224,194,0.2)';
-        banBtn.style.background = 'rgba(20,224,194,0.1)';
-    } else {
-        banBtn.textContent = 'Забанить';
-        banBtn.style.color = 'var(--danger)';
-        banBtn.style.borderColor = 'rgba(244,63,94,0.2)';
-        banBtn.style.background = 'rgba(244,63,94,0.1)';
-    }
-
-    if (u.role === 'moderator') {
-        roleBtn.textContent = 'Снять модератора';
-        roleBtn.style.color = '#f59e0b';
-        roleBtn.style.borderColor = 'rgba(245,158,11,0.2)';
-        roleBtn.style.background = 'rgba(245,158,11,0.1)';
-    } else {
-        roleBtn.textContent = 'Сделать модератором';
-        roleBtn.style.color = 'var(--accent)';
-        roleBtn.style.borderColor = 'rgba(20,224,194,0.2)';
-        roleBtn.style.background = 'rgba(20,224,194,0.1)';
-    }
+    banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
+    roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
 }
 
 document.getElementById('user-profile-modal').classList.add('active');
