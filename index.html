@@ -12,15 +12,14 @@
 <style>
 :root { 
     --bg: #0f1115; 
-    --panel: rgba(22, 26, 32, 0.85); 
+    --panel: rgba(22, 26, 32, 0.9); 
     --accent: #10b981; 
     --accent-hover: #059669;
-    --accent-soft: rgba(16, 185, 129, 0.15);
     --text: #f3f4f6; 
     --text-muted: #9ca3af;
     --danger: #ef4444; 
     --border: rgba(255, 255, 255, 0.08); 
-    --nav-height: 72px; 
+    --nav-height: 70px; 
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', -apple-system, sans-serif; }
 html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflow: hidden; color: var(--text); }
@@ -55,15 +54,11 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #app { display: none; height: 100%; position: relative; }
 #map-overlay { position: absolute; top: calc(16px + env(safe-area-inset-top)); left: 16px; right: 16px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
 #map-overlay > * { pointer-events: auto; }
-
-/* Верхняя панель */
 #top-row { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
-#city-status { flex: 0 1 auto; min-width: 0; padding: 12px 16px; border-radius: 16px; background: var(--panel); backdrop-filter: blur(16px); border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 13px; max-width: 60%; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+#city-status { flex: 0 1 auto; min-width: 0; padding: 10px 14px; border-radius: 12px; background: var(--panel); backdrop-filter: blur(16px); border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 13px; max-width: 60%; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 #city-status.danger { border-color: rgba(239, 68, 68, 0.4); background: rgba(30, 10, 10, 0.9); }
-#city-status .city-name { color: var(--text-muted); font-size: 11px; display: block; letter-spacing: 1px; font-weight: 600; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-#city-status .city-state { font-size: 15px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* Кнопка гео сверху справа */
+#city-status .city-name { color: var(--text-muted); font-size: 10px; display: block; letter-spacing: 1px; font-weight: 600; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+#city-status .city-state { font-size: 14px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #geo-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--panel); backdrop-filter: blur(16px); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.2s; }
 #geo-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
 #geo-btn svg { width: 22px; height: 22px; }
@@ -77,6 +72,61 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 #show-markers-btn { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + 24px); z-index: 1000; padding: 14px 28px; border-radius: 30px; background: var(--accent); color: #fff; border: none; box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.4); font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
 #show-markers-btn:active { transform: translateX(-50%) scale(0.95); background: var(--accent-hover); }
 #show-markers-btn svg { width: 20px; height: 20px; stroke-width: 2.5; }
+
+/* Шторка */
+#markers-sheet-overlay { position: absolute; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: none; }
+#markers-sheet { position: absolute; bottom: var(--nav-height); left: 12px; right: 12px; background: #1a1d24; border: 1px solid var(--border); border-radius: 24px; padding: 24px 20px; transform: translateY(120%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2001; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+#markers-sheet.active { transform: translateY(-12px); }
+.sheet-handle { width: 40px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; margin: 0 auto 20px; }
+#types-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.marker-btn { width: 76px; height: 76px; border-radius: 20px; border: 1px solid var(--border); background: #232730; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--text); font-weight: 500; font-size: 11px; padding: 0; transition: 0.2s; }
+.marker-btn svg { width: 28px; height: 28px; display: block; transition: 0.2s; }
+.marker-btn.selected { border-color: var(--accent); background: rgba(16, 185, 129, 0.15); }
+.marker-btn.selected svg { transform: scale(1.1); }
+
+/* Маркеры */
+.pulse-marker { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 15px currentColor; animation: pulse 2s infinite ease-in-out; }
+.pulse-marker svg { width: 60%; height: 60%; display: block; }
+@keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+
+/* Попапы */
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #1a1d24; color: var(--text); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.leaflet-popup-content { margin: 16px; }
+.popup-title { color: var(--text); font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.popup-title svg { width: 20px; height: 20px; }
+.popup-muted { color: var(--text-muted); font-size: 13px; margin-top: 6px; }
+.popup-muted b { color: var(--text); font-weight: 600; }
+.popup-confirm { display: inline-block; margin-top: 12px; padding: 6px 12px; background: rgba(16, 185, 129, 0.1); color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; font-weight: 600; font-size: 12px; }
+
+/* Нижнее меню */
+#bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(15, 17, 21, 0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); z-index: 9999; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
+.nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: transparent; border: none; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; flex: 1; height: 100%; transition: 0.2s; }
+.nav-btn svg { width: 24px; height: 24px; transition: 0.2s; }
+.nav-btn.active { color: var(--accent); }
+.nav-btn.active svg { transform: translateY(-2px); }
+
+/* Внутренние экраны */
+#feed-screen, #profile-screen { position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 24px 20px; overflow-y: auto; }
+#feed-screen.active, #profile-screen.active { display: flex; }
+.feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 10px; }
+.feed-header h2 { margin: 0; color: var(--text); font-size: 24px; font-weight: 700; }
+.time-filter { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.feed-list { display: flex; flex-direction: column; gap: 12px; }
+.feed-item { background: #1a1d24; border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 16px; }
+.feed-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.feed-icon svg { width: 22px; height: 22px; }
+.feed-content { flex: 1; }
+.feed-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; color: var(--text); }
+.feed-meta { font-size: 12px; color: var(--text-muted); }
+.feed-empty { text-align: center; color: var(--text-muted); margin-top: 60px; font-size: 15px; }
+
+/* Модалки */
+#search-modal-overlay, #user-profile-modal { position: fixed; inset: 0; z-index: 4000; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; }
+.search-modal { background: #1a1d24; border: 1px solid var(--border); border-radius: 24px; padding: 24px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 16px; }
+.search-modal h3 { margin: 0; color: var(--text); text-align: center; font-size: 18px; font-weight: 700; }
+.search-modal input { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text); outline: none; font-size: 15px; }
+.search-modal .modal-actions { display: flex; gap: 10px; }
+.search-modal button { flex: 1; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; }
 </style>
 </head>
 <body>
@@ -128,10 +178,10 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
         </button>
 
         <!-- Шторка выбора типа -->
-        <div id="markers-sheet-overlay" onclick="toggleMarkersSheet()" style="position: absolute; inset: 0; z-index: 2000; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: none; opacity: 0; transition: opacity 0.3s;"></div>
-        <div id="markers-sheet" style="position: absolute; bottom: var(--nav-height); left: 12px; right: 12px; background: #1a1d24; border: 1px solid var(--border); border-radius: 24px; padding: 24px 20px; transform: translateY(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2001; box-shadow: 0 -10px 40px rgba(0,0,0,0.5);">
-            <div class="sheet-handle" style="width: 40px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; margin: 0 auto 20px;"></div>
-            <div id="types-row" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+        <div id="markers-sheet-overlay" onclick="toggleMarkersSheet()"></div>
+        <div id="markers-sheet">
+            <div class="sheet-handle"></div>
+            <div id="types-row">
                 <button class="marker-btn" onclick="setMarkerType('БПЛА',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>БПЛА</button>
                 <button class="marker-btn" onclick="setMarkerType('Ракета',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>Ракета</button>
                 <button class="marker-btn" onclick="setMarkerType('Истребитель',this)"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>Истребитель</button>
@@ -144,16 +194,16 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 </div>
 
 <!-- Экран событий -->
-<div id="feed-screen" style="position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 24px 20px; overflow-y: auto;">
-    <div class="feed-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 10px;">
-        <h2 style="margin: 0; color: var(--text); font-size: 24px; font-weight: 700;">События</h2>
-        <div class="time-filter" style="background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;">За 24 часа</div>
+<div id="feed-screen">
+    <div class="feed-header">
+        <h2>События</h2>
+        <div class="time-filter">За 24 часа</div>
     </div>
-    <div id="feed-list" class="feed-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    <div id="feed-list" class="feed-list"></div>
 </div>
 
 <!-- Экран профиля -->
-<div id="profile-screen" style="position: absolute; inset: 0; bottom: var(--nav-height); background: var(--bg); z-index: 1500; display: none; flex-direction: column; padding: 24px 20px; overflow-y: auto;">
+<div id="profile-screen">
     <div style="background: #1a1d24; border: 1px solid var(--border); border-radius: 24px; padding: 30px 20px; text-align: center; margin-bottom: 24px;">
         <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #047857); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; font-weight: 700;" id="profile-avatar-letter">U</div>
         <div style="font-size: 22px; font-weight: 700; margin-bottom: 8px;" id="profile-name">Загрузка...</div>
@@ -193,27 +243,27 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); overflo
 </div>
 
 <!-- Нижнее меню -->
-<div id="bottom-nav" style="position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(15, 17, 21, 0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); z-index: 9999; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom);">
-    <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
-    <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
-    <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
+<div id="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
+    <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 0 1 0 0z"/></svg><span>События</span></button>
+    <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
 </div>
 
 <!-- Модалка поиска города -->
-<div id="search-modal-overlay" style="position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px;">
-    <div class="search-modal" style="background: #1a1d24; border: 1px solid var(--border); border-radius: 24px; padding: 24px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 16px;">
-        <h3 style="margin: 0; color: var(--text); text-align: center; font-size: 18px; font-weight: 700;">Выбор региона</h3>
-        <input type="text" id="modal-city-input" placeholder="Введите город" style="padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text); outline: none; font-size: 15px;">
-        <div class="modal-actions" style="display: flex; gap: 10px;">
-            <button onclick="closeSearchModal()" style="flex: 1; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-muted);">Отмена</button>
-            <button onclick="searchCityFromModal()" style="flex: 1; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; background: var(--accent); color: #fff;">Найти</button>
+<div id="search-modal-overlay">
+    <div class="search-modal">
+        <h3>Выбор региона</h3>
+        <input type="text" id="modal-city-input" placeholder="Введите город">
+        <div class="modal-actions">
+            <button id="modal-cancel-btn" onclick="closeSearchModal()" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border);">Отмена</button>
+            <button id="modal-search-btn" onclick="searchCityFromModal()" style="background: var(--accent); color: #fff;">Найти</button>
         </div>
     </div>
 </div>
 
 <!-- Модалка профиля юзера в админке -->
-<div id="user-profile-modal" style="position: fixed; inset: 0; z-index: 4000; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px;">
-    <div class="search-modal" style="max-width: 320px; background: #1a1d24; border: 1px solid var(--border); border-radius: 24px; padding: 24px; width: 100%; display: flex; flex-direction: column; gap: 16px;">
+<div id="user-profile-modal">
+    <div class="search-modal" style="max-width: 320px;">
         <div style="text-align: center; margin-bottom: 10px;">
             <div style="width: 70px; height: 70px; border-radius: 50%; background: #374151; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700;" id="modal-user-avatar">U</div>
             <h3 id="modal-user-name" style="font-size: 20px; margin-bottom: 8px; color: var(--text);">Имя</h3>
@@ -571,13 +621,12 @@ window.addEventListener('load', function() {
                 const meta = METADATA[m.type] || METADATA['БПЛА'];
                 const item = document.createElement('div');
                 item.className = 'feed-item';
-                item.style.cssText = 'background:#1a1d24; border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; align-items:center; gap:16px;';
                 const time = new Date(m.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
                 item.innerHTML =
-                    '<div class="feed-icon" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:' + meta.color + '15; border: 1px solid ' + meta.color + '40;">' + meta.svg.replace('stroke="#fff"', 'stroke="' + meta.color + '"') + '</div>' +
-                    '<div class="feed-content" style="flex:1;">' +
-                    '<div class="feed-title" style="font-weight:600;font-size:15px;margin-bottom:4px;color:var(--text);">' + escapeHtml(m.type) + ' — ' + escapeHtml(m.city || 'Неизвестно') + '</div>' +
-                    '<div class="feed-meta" style="font-size:12px;color:var(--text-muted);">' + time + ' · ' + escapeHtml(m.author || 'Аноним') + '</div>' +
+                    '<div class="feed-icon" style="background:' + meta.color + '15; border: 1px solid ' + meta.color + '40;">' + meta.svg.replace('stroke="#fff"', 'stroke="' + meta.color + '"') + '</div>' +
+                    '<div class="feed-content">' +
+                    '<div class="feed-title">' + escapeHtml(m.type) + ' — ' + escapeHtml(m.city || 'Неизвестно') + '</div>' +
+                    '<div class="feed-meta">' + time + ' · ' + escapeHtml(m.author || 'Аноним') + '</div>' +
                     '</div>';
                 list.appendChild(item);
             });
@@ -724,11 +773,11 @@ window.addEventListener('load', function() {
         window.toggleMarkersSheet = function() {
             const sheet = document.getElementById('markers-sheet');
             const overlay = document.getElementById('markers-sheet-overlay');
-            if (sheet.style.transform === 'translateY(0px)' || sheet.style.transform === 'translateY(-12px)') {
-                sheet.style.transform = 'translateY(120%)';
+            if (sheet.classList.contains('active')) {
+                sheet.classList.remove('active');
                 overlay.style.display = 'none';
             } else {
-                sheet.style.transform = 'translateY(-12px)';
+                sheet.classList.add('active');
                 overlay.style.display = 'block';
             }
         };
