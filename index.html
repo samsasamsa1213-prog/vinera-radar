@@ -6,7 +6,6 @@
 <title>Vinera Radar</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -66,7 +65,6 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 #status-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 #status-toast.error { border-color: rgba(244, 63, 94, 0.4); color: #fda4af; }
 
-/* Спиннер */
 #loading-spinner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; display: none; width: 40px; height: 40px; border: 4px solid rgba(20, 184, 166, 0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
@@ -76,7 +74,6 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 </head>
 <body>
     <style>
-/* ===== ПРЕМИАЛЬНЫЕ ПЛАШКИ ТРЕВОГИ ===== */
 #alerts-container { position: absolute; top: calc(85px + env(safe-area-inset-top)); left: 16px; right: 16px; z-index: 4000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .alert-card { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 13px; color: var(--text); background: rgba(15, 20, 25, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; cursor: pointer; animation: slideDownAlert 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: translateY(-20px); border: 1px solid var(--border); }
 @keyframes slideDownAlert { to { opacity: 1; transform: translateY(0); } }
@@ -91,7 +88,6 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
 .alert-text span { font-weight: 700; }
 .alert-more { font-size: 11px; opacity: 0.6; font-weight: 500; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 8px; }
 
-/* Кнопка фильтра */
 #filter-btn { position: absolute; right: 16px; bottom: calc(var(--nav-height) + 24px); z-index: 1000; width: 50px; height: 50px; border-radius: 18px; background: var(--panel); backdrop-filter: blur(20px); border: 1px solid var(--border); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 #filter-btn.active { color: var(--danger); border-color: var(--danger); }
 
@@ -230,17 +226,10 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
         <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #0d9488); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; font-weight: 700; box-shadow: 0 8px 20px -5px var(--accent-glow);" id="profile-avatar-letter">U</div>
         <div style="font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--text);" id="profile-name">Загрузка...</div>
         <div style="display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border);" id="profile-role-badge">ПОЛЬЗОВАТЕЛЬ</div>
-        
         <div style="display: flex; justify-content: space-around; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
             <div style="text-align: center;"><div style="font-size: 20px; font-weight: 700; color: var(--text);" id="profile-stat-markers">0</div><div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Меток</div></div>
             <div style="text-align: center;"><div style="font-size: 20px; font-weight: 700; color: var(--text);" id="profile-stat-role">User</div><div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Статус</div></div>
         </div>
-    </div>
-
-    <!-- Блок статистики за 24 часа -->
-    <div style="background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 16px; padding: 16px; margin-bottom: 24px;">
-        <div style="font-size: 13px; font-weight: 600; color: var(--danger); margin-bottom: 8px;">Статистика за 24 часа:</div>
-        <div style="font-size: 14px; color: var(--text);" id="stats-text">Загрузка...</div>
     </div>
     
     <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -256,76 +245,7 @@ button:active, .menu-item:active, .marker-btn:active { transform: scale(0.94) !i
             <span style="display: flex; align-items: center; gap: 10px;"><span class="emoji-glow">👨‍💻</span> Связь с владельцем</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; opacity: 0.5;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
         </a>
-                <div id="admin-toggle-btn" onclick="toggleAdminPanel()" style="display: none; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; justify-content: space-between; align-items: center; color: var(--text); font-weight: 600; font-size: 15px; cursor: pointer;">
-            <span style="display: flex; align-items: center; gap: 10px;"><span class="emoji-glow">🛠</span> Админ-панель</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; opacity: 0.5;"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
-        </div>
-        <div onclick="logout()" style="background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; color: var(--danger); font-weight: 600; font-size: 15px; cursor: pointer;">
-            <span>Выйти из аккаунта</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; opacity: 0.5;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        </div>
-    </div>
-    
-    <div id="admin-panel-content" style="display: none; margin-top: 24px; flex-direction: column; gap: 16px;">
-        <div style="display: flex; gap: 10px;">
-            <button class="admin-tab active" id="tab-markers" onclick="switchAdminTab('markers')" style="flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--accent); background: rgba(20, 184, 166, 0.1); color: var(--accent); font-weight: 600; font-size: 14px; cursor: pointer;">Метки</button>
-            <button class="admin-tab" id="tab-users" onclick="switchAdminTab('users')" style="flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--text-muted); font-weight: 600; font-size: 14px; cursor: pointer;">Юзеры</button>
-        </div>
-        <button id="clear-all-btn" class="clear-all-btn" style="width: 100%; padding: 16px; background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer;">🗑 Очистить все метки</button>
-        <div id="admin-content" class="admin-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
-    </div>
-</div> <!-- Закрывается profile-screen -->
-
-<!-- Нижнее меню -->
-<div id="bottom-nav">
-    <button class="nav-btn active" onclick="switchTab('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
-    <button class="nav-btn" onclick="switchTab('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
-    <button class="nav-btn" onclick="switchTab('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
-</div>
-
-</div> <!-- Закрывается app -->
-
-<!-- Модалка поиска города -->
-<div id="search-modal-overlay">
-    <div class="search-modal">
-        <h3>Выбор региона</h3>
-        <input type="text" id="modal-city-input" placeholder="Введите город">
-        <div class="modal-actions">
-            <button id="modal-cancel-btn" onclick="closeSearchModal()" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border);">Отмена</button>
-            <button id="modal-search-btn" onclick="searchCityFromModal()" style="background: var(--accent); color: #fff;">Найти</button>
-        </div>
-    </div>
-</div>
-
-<!-- Модалка профиля юзера в админке -->
-<div id="user-profile-modal">
-    <div class="search-modal" style="max-width: 320px;">
-        <div style="text-align: center; margin-bottom: 10px;">
-            <div style="width: 70px; height: 70px; border-radius: 50%; background: #334155; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700;" id="modal-user-avatar">U</div>
-            <h3 id="modal-user-name" style="font-size: 20px; margin-bottom: 8px; color: var(--text);">Имя</h3>
-            <div id="modal-user-role" style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border);">USER</div>
-        </div>
-        
-        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; margin: 16px 0; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500;">
-                <span style="color: var(--text-muted);">Меток:</span>
-                <span id="modal-user-markers" style="color: var(--text); font-weight: 600;">0</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 500;">
-                <span style="color: var(--text-muted);">Telegram ID:</span>
-                <span id="modal-user-tg" style="color: var(--text);">Нет</span>
-            </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button id="modal-user-ban-btn" onclick="toggleBanFromModal()" style="background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;">Забанить</button>
-            <button id="modal-user-role-btn" onclick="toggleRoleFromModal()" style="background: rgba(20, 184, 166, 0.1); color: var(--accent); border: 1px solid rgba(20, 184, 166, 0.2); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;">Сделать модератором</button>
-        </div>
-
-        <button onclick="closeUserProfileModal()" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 10px;">Закрыть</button>
-    </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 window.addEventListener('load', function() {
     const tg = window.Telegram ? window.Telegram.WebApp : null;
@@ -373,8 +293,6 @@ window.addEventListener('load', function() {
         setTimeout(function() { map.invalidateSize(); }, 300);
         setTimeout(function() { map.invalidateSize(); }, 1000);
 
-        // Слой для тепловой карты
-        let heatLayer = null;
         let showOnlyThreats = false;
 
         // ===== СОСТОЯНИЕ =====
@@ -587,7 +505,7 @@ window.addEventListener('load', function() {
             drawMarkers();
             await checkSession();
         };
-                // ===== ТЕПЛОВАЯ КАРТА =====
+                // ===== ФИЛЬТР =====
         function toggleFilter() {
             showOnlyThreats = !showOnlyThreats;
             const btn = document.getElementById('filter-btn');
@@ -599,17 +517,6 @@ window.addEventListener('load', function() {
                 showToast('Показаны все метки');
             }
             drawMarkers();
-        }
-
-        function updateHeatmap() {
-            if (heatLayer) map.removeLayer(heatLayer);
-            const points = markersData.filter(m => m.type !== 'Тихо').map(m => [m.lat, m.lng, 0.5]);
-            heatLayer = L.heatLayer(points, {
-                radius: 25,
-                blur: 15,
-                maxZoom: 13,
-                gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1: 'red' }
-            }).addTo(map);
         }
 
         // ===== ИКОНКИ И ПОПАПЫ =====
@@ -647,7 +554,6 @@ window.addEventListener('load', function() {
                 marker.bindPopup(popupHtml(m));
                 markerRefs[m.id] = marker;
             });
-            updateHeatmap();
         }
 
         map.on('zoomend', function() { drawMarkers(); });
@@ -658,26 +564,30 @@ window.addEventListener('load', function() {
             const spinner = document.getElementById('loading-spinner');
             if (spinner) spinner.style.display = 'block';
 
-            const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
-            if (error) { showToast('Ошибка: ' + error.message, true); if (spinner) spinner.style.display = 'none'; return; }
+            try {
+                const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
 
-            const now = Date.now();
-            markersData = (data || []).filter(m => {
-                const isFresh = (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
-                const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
-                const justPlaced = (now - new Date(m.created_at).getTime()) < 10000;
-                return isFresh && (isMyCity || justPlaced);
-            });
+                const now = Date.now();
+                markersData = (data || []).filter(m => {
+                    const isFresh = (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
+                    const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
+                    const justPlaced = (now - new Date(m.created_at).getTime()) < 10000;
+                    return isFresh && (isMyCity || justPlaced);
+                });
 
-            const oneDayAgo = now - (24 * 60 * 60 * 1000);
-            feedData = (data || []).filter(m => new Date(m.created_at).getTime() > oneDayAgo);
+                const oneDayAgo = now - (24 * 60 * 60 * 1000);
+                feedData = (data || []).filter(m => new Date(m.created_at).getTime() > oneDayAgo);
 
-            drawMarkers();
-            updateCityStatus();
-            renderFeed();
-            checkAlerts();
-            updateStats();
-            if (spinner) spinner.style.display = 'none';
+                drawMarkers();
+                updateCityStatus();
+                renderFeed();
+                checkAlerts();
+            } catch (err) {
+                showToast('Ошибка загрузки: ' + (err.message || err), true);
+            } finally {
+                if (spinner) spinner.style.display = 'none';
+            }
         }
 
         function renderFeed() {
@@ -700,25 +610,6 @@ window.addEventListener('load', function() {
                     '</div>';
                 list.appendChild(item);
             });
-        }
-
-        // ===== СТАТИСТИКА =====
-        function updateStats() {
-            const el = document.getElementById('stats-text');
-            if (!el) return;
-            const threats = feedData.filter(m => m.city === userCity && m.type !== 'Тихо');
-            if (threats.length === 0) {
-                el.innerHTML = 'За последние 24 часа угроз не зафиксировано. Все спокойно! 🟢';
-                return;
-            }
-            const counts = {};
-            threats.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
-            let topType = '';
-            let max = 0;
-            for (const [type, count] of Object.entries(counts)) {
-                if (count > max) { max = count; topType = type; }
-            }
-            el.innerHTML = `Зафиксировано <b>${threats.length}</b> угроз. Самая частая: <b>${topType}</b> (${max} шт.).`;
         }
 
         async function resolveAddress(m) {
@@ -992,7 +883,6 @@ window.addEventListener('load', function() {
             updateCityStatus();
             resolveAddress(data);
             checkAlerts();
-            updateStats();
             
             isPlacingMarker = false;
             currentMarkerType = null;
@@ -1018,7 +908,6 @@ window.addEventListener('load', function() {
                 document.querySelectorAll('.nav-btn')[2].classList.add('active');
                 document.getElementById('map-container').style.display = 'none';
                 document.getElementById('profile-screen').classList.add('active');
-                updateStats();
             }
         };
 
@@ -1056,7 +945,7 @@ window.addEventListener('load', function() {
             if (error) { showToast('Ошибка: ' + error.message, true); }
             else {
                 markersData = []; feedData = [];
-                drawMarkers(); updateCityStatus(); renderFeed(); checkAlerts(); updateStats();
+                drawMarkers(); updateCityStatus(); renderFeed(); checkAlerts();
                 showToast('Все метки удалены');
             }
             this.textContent = '🗑 Очистить все метки';
@@ -1113,7 +1002,7 @@ window.addEventListener('load', function() {
             if (error) { showToast('Ошибка: ' + error.message, true); return; }
             markersData = markersData.filter(m => String(m.id) !== String(id));
             feedData = feedData.filter(m => String(m.id) !== String(id));
-            drawMarkers(); updateCityStatus(); renderFeed(); renderAdmin(); checkAlerts(); updateStats();
+            drawMarkers(); updateCityStatus(); renderFeed(); renderAdmin(); checkAlerts();
             showToast('Метка удалена');
         };
 
