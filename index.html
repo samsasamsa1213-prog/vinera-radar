@@ -9,732 +9,187 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
---bg:#040605;
---bg-2:#08120f;
---panel:rgba(10,22,20,.82);
---panel-2:rgba(8,18,16,.92);
---accent:#14e0c2;
---accent-2:#0ea5a0;
---accent-glow:rgba(20,224,194,.55);
---danger:#f43f5e;
---warn:#f59e0b;
---info:#3b82f6;
---violet:#8b5cf6;
---text:#fff;
---text-muted:#7c8f8b;
---border:rgba(20,224,194,.18);
---border-strong:rgba(20,224,194,.4);
---nav-h:76px;
---snow:#d8fff8;
-}
+:root{--bg:#040605;--panel:rgba(10,22,20,.82);--accent:#14e0c2;--accent-glow:rgba(20,224,194,.55);--danger:#f43f5e;--info:#3b82f6;--violet:#8b5cf6;--text:#fff;--text-muted:#7c8f8b;--border:rgba(20,224,194,.18);--border-strong:rgba(20,224,194,.4);--nav-h:76px;--snow:#d8fff8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Inter',-apple-system,sans-serif}
 html,body{margin:0;padding:0;height:100%;background:radial-gradient(ellipse at top,#08120f 0%,#040605 60%);overflow:hidden;color:var(--text);overscroll-behavior:none;-webkit-user-select:none;user-select:none}
 input,textarea,.leaflet-popup-content{-webkit-user-select:text;user-select:text}
-
-button,.menu-item,.marker-btn,.nav-btn{
-transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .3s,box-shadow .3s,color .3s,border-color .3s;
-cursor:pointer;border:none;outline:none;font-family:inherit;-webkit-tap-highlight-color:transparent
-}
+button,.menu-item,.marker-btn,.nav-btn{transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .3s,box-shadow .3s,color .3s,border-color .3s;cursor:pointer;border:none;outline:none;font-family:inherit;-webkit-tap-highlight-color:transparent}
 button:active,.menu-item:active,.marker-btn:active,.nav-btn:active{transform:scale(.93)}
 button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
-
-.glow-green{color:var(--accent);text-shadow:0 0 12px var(--accent-glow),0 0 24px rgba(20,224,194,.25);font-weight:700}
-
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(20,224,194,.3);border-radius:3px}
-
-/* ===== СНЕГОПАД ===== */
+.glow-green{color:var(--accent);text-shadow:0 0 12px var(--accent-glow);font-weight:700}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(20,224,194,.3);border-radius:3px}
 #snow-layer{position:fixed;inset:0;pointer-events:none;z-index:99997;overflow:hidden}
 .snowflake{position:absolute;top:-10px;color:var(--snow);font-size:14px;opacity:.7;animation:fall linear infinite;text-shadow:0 0 6px rgba(216,255,248,.5)}
-@keyframes fall{
-0%{transform:translateY(-10px) translateX(0) rotate(0);opacity:0}
-10%{opacity:.8}
-90%{opacity:.8}
-100%{transform:translateY(105vh) translateX(40px) rotate(360deg);opacity:0}
-}
-
-.auth-snow-cap{
-position:absolute;top:-12px;left:20px;right:20px;height:30px;z-index:0;
-background:radial-gradient(ellipse at 30% 100%,rgba(216,255,248,.15),transparent 60%),radial-gradient(ellipse at 70% 100%,rgba(216,255,248,.12),transparent 60%);
-border-radius:50% 50% 40% 40%;
-filter:blur(1px);
-}
+@keyframes fall{0%{transform:translateY(-10px) translateX(0) rotate(0);opacity:0}10%{opacity:.8}90%{opacity:.8}100%{transform:translateY(105vh) translateX(40px) rotate(360deg);opacity:0}}
 </style>
 <style>
-/* ============================================================
-   АВТОРИЗАЦИЯ
-   ============================================================ */
-#auth-screen{
-position:fixed;inset:0;z-index:9999;
-background:
-radial-gradient(ellipse at 20% 0%,rgba(20,224,194,.12) 0%,transparent 50%),
-radial-gradient(ellipse at 80% 100%,rgba(14,165,160,.08) 0%,transparent 50%),
-radial-gradient(circle at center,#08120f 0%,#040605 100%);
-display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;
-}
-#auth-screen::before{
-content:'';position:absolute;inset:0;pointer-events:none;
-background-image:radial-gradient(1px 1px at 20% 30%,rgba(216,255,248,.6),transparent),radial-gradient(1px 1px at 70% 20%,rgba(216,255,248,.5),transparent),radial-gradient(1.5px 1.5px at 40% 70%,rgba(216,255,248,.4),transparent),radial-gradient(1px 1px at 85% 60%,rgba(216,255,248,.5),transparent),radial-gradient(1px 1px at 10% 85%,rgba(216,255,248,.4),transparent),radial-gradient(1.5px 1.5px at 60% 90%,rgba(216,255,248,.3),transparent);
-animation:starsTwinkle 4s ease-in-out infinite alternate;
-}
+#auth-screen{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 20% 0%,rgba(20,224,194,.12) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(14,165,160,.08) 0%,transparent 50%),radial-gradient(circle at center,#08120f 0%,#040605 100%);display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+#auth-screen::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 20% 30%,rgba(216,255,248,.6),transparent),radial-gradient(1px 1px at 70% 20%,rgba(216,255,248,.5),transparent),radial-gradient(1.5px 1.5px at 40% 70%,rgba(216,255,248,.4),transparent),radial-gradient(1px 1px at 85% 60%,rgba(216,255,248,.5),transparent),radial-gradient(1px 1px at 10% 85%,rgba(216,255,248,.4),transparent),radial-gradient(1.5px 1.5px at 60% 90%,rgba(216,255,248,.3),transparent);animation:starsTwinkle 4s ease-in-out infinite alternate}
 @keyframes starsTwinkle{from{opacity:.4}to{opacity:.9}}
-
-.auth-box{
-position:relative;z-index:1;
-background:linear-gradient(160deg,rgba(10,22,20,.92) 0%,rgba(8,18,16,.96) 100%);
-backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
-border:1px solid var(--border-strong);
-border-radius:28px;padding:40px 26px 32px;width:100%;max-width:340px;
-box-shadow:0 25px 60px rgba(0,0,0,.8),0 0 40px rgba(20,224,194,.08),inset 0 1px 0 rgba(20,224,194,.15);
-display:flex;flex-direction:column;gap:16px;
-}
-
+.auth-box{position:relative;z-index:1;background:linear-gradient(160deg,rgba(10,22,20,.92) 0%,rgba(8,18,16,.96) 100%);backdrop-filter:blur(30px);border:1px solid var(--border-strong);border-radius:28px;padding:40px 26px 32px;width:100%;max-width:340px;box-shadow:0 25px 60px rgba(0,0,0,.8),0 0 40px rgba(20,224,194,.08);display:flex;flex-direction:column;gap:16px}
 .auth-header{position:relative;text-align:center;margin-bottom:8px}
-.auth-title{
-font-family:'Unbounded',sans-serif;
-font-size:26px;font-weight:800;letter-spacing:.5px;
-background:linear-gradient(135deg,#14e0c2 0%,#5eead4 50%,#0ea5a0 100%);
--webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-text-shadow:0 0 30px rgba(20,224,194,.3);
-position:relative;display:inline-block;
-}
-.auth-title::before,.auth-title::after{
-content:'❄';position:absolute;top:-6px;font-size:14px;color:#d8fff8;opacity:.7;
--webkit-text-fill-color:#d8fff8;animation:snowSpin 4s linear infinite;
-}
-.auth-title::before{left:-22px}
-.auth-title::after{right:-22px;animation-direction:reverse}
+.auth-title{font-family:'Unbounded',sans-serif;font-size:26px;font-weight:800;letter-spacing:.5px;background:linear-gradient(135deg,#14e0c2 0%,#5eead4 50%,#0ea5a0 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 30px rgba(20,224,194,.3);position:relative;display:inline-block}
+.auth-title::before,.auth-title::after{content:'❄';position:absolute;top:-6px;font-size:14px;color:#d8fff8;opacity:.7;-webkit-text-fill-color:#d8fff8;animation:snowSpin 4s linear infinite}
+.auth-title::before{left:-22px}.auth-title::after{right:-22px;animation-direction:reverse}
 @keyframes snowSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-
-.auth-subtitle{
-font-size:11px;color:var(--text-muted);margin-top:6px;
-text-transform:uppercase;letter-spacing:2px;font-weight:600;
-}
+.auth-subtitle{font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:2px;font-weight:600}
 .auth-subtitle span{color:var(--accent);text-shadow:0 0 8px var(--accent-glow)}
-
 .auth-garland{display:flex;justify-content:center;gap:6px;margin-bottom:6px}
-.auth-garland i{
-width:6px;height:6px;border-radius:50%;background:var(--accent);
-box-shadow:0 0 8px var(--accent),0 0 16px rgba(20,224,194,.4);
-animation:twinkle 1.6s infinite alternate;display:block;
-}
-.auth-garland i:nth-child(2){background:#ffd93d;box-shadow:0 0 8px #ffd93d,0 0 16px rgba(255,217,61,.4);animation-delay:.2s}
-.auth-garland i:nth-child(3){background:#ff6b9d;box-shadow:0 0 8px #ff6b9d,0 0 16px rgba(255,107,157,.4);animation-delay:.4s}
-.auth-garland i:nth-child(4){background:var(--accent);animation-delay:.6s}
-.auth-garland i:nth-child(5){background:#ffd93d;animation-delay:.8s}
-.auth-garland i:nth-child(6){background:#ff6b9d;animation-delay:1s}
-.auth-garland i:nth-child(7){background:var(--accent);animation-delay:1.2s}
+.auth-garland i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent),0 0 16px rgba(20,224,194,.4);animation:twinkle 1.6s infinite alternate;display:block}
+.auth-garland i:nth-child(2){background:#ffd93d;animation-delay:.2s}.auth-garland i:nth-child(3){background:#ff6b9d;animation-delay:.4s}.auth-garland i:nth-child(4){background:var(--accent);animation-delay:.6s}.auth-garland i:nth-child(5){background:#ffd93d;animation-delay:.8s}.auth-garland i:nth-child(6){background:#ff6b9d;animation-delay:1s}.auth-garland i:nth-child(7){background:var(--accent);animation-delay:1.2s}
 @keyframes twinkle{from{opacity:.5;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
-
-.auth-box input{
-padding:15px 18px;border-radius:14px;
-border:1px solid rgba(20,224,194,.2);
-background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
-transition:border-color .3s,box-shadow .3s,background .3s;
-}
-.auth-box input:focus{
-border-color:var(--accent);background:rgba(8,18,16,.8);
-box-shadow:0 0 0 3px rgba(20,224,194,.12),0 0 20px rgba(20,224,194,.2);
-}
-
-#auth-btn{
-position:relative;padding:16px;border-radius:14px;
-background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);
-color:#02120f;font-weight:800;font-size:15px;
-box-shadow:0 8px 24px -5px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.3);
-overflow:hidden;
-}
-#auth-btn::before{
-content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
-background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
-transition:left .6s;
-}
-#auth-btn:active::before{left:100%}
-
-#auth-toggle{
-padding:13px;background:transparent;color:var(--text-muted);
-border:1px solid rgba(20,224,194,.15);border-radius:14px;font-size:14px;font-weight:600;
-}
-#auth-toggle:hover{border-color:var(--border-strong);color:var(--text)}
-
-#auth-error{
-display:none;color:var(--danger);font-size:13px;text-align:center;
-padding:10px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);
-border-radius:10px;line-height:1.4;
-}
+.auth-box input{padding:15px 18px;border-radius:14px;border:1px solid rgba(20,224,194,.2);background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;transition:border-color .3s,box-shadow .3s}
+.auth-box input:focus{border-color:var(--accent);background:rgba(8,18,16,.8);box-shadow:0 0 0 3px rgba(20,224,194,.12)}
+#auth-btn{position:relative;padding:16px;border-radius:14px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;font-weight:800;font-size:15px;box-shadow:0 8px 24px -5px var(--accent-glow);overflow:hidden}
+#auth-toggle{padding:13px;background:transparent;color:var(--text-muted);border:1px solid rgba(20,224,194,.15);border-radius:14px;font-size:14px;font-weight:600}
+#auth-error{display:none;color:var(--danger);font-size:13px;text-align:center;padding:10px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:10px}
 #turnstile-container{display:flex;justify-content:center;margin-bottom:6px;min-height:65px}
-
-/* ============================================================
-   ОНБОРДИНГ
-   ============================================================ */
-#onboarding-screen{
-position:fixed;inset:0;z-index:9998;
-background:radial-gradient(ellipse at center,#08120f 0%,#040605 100%);
-display:none;flex-direction:column;align-items:center;justify-content:center;
-padding:20px;text-align:center;
-}
+#onboarding-screen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
 #onboarding-screen.active{display:flex}
-#onboarding-screen h2{
-font-family:'Unbounded',sans-serif;font-size:24px;margin:0 0 14px;
-color:var(--text);text-shadow:0 0 20px rgba(20,224,194,.2);
-}
-#onboarding-screen p{
-color:var(--text-muted);font-size:15px;line-height:1.6;
-max-width:320px;margin:0 0 30px;
-}
-.onboarding-btn{
-width:100%;max-width:300px;padding:16px;
-background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);
-color:#02120f;border-radius:16px;font-weight:800;font-size:16px;
-margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;
-box-shadow:0 8px 24px -5px var(--accent-glow);
-}
-.onboarding-btn.secondary{
-background:transparent;color:var(--text);border:1px solid rgba(20,224,194,.2);
-box-shadow:none;
-}
-
-/* ============================================================
-   КАРТА + УКРАШЕНИЯ
-   ============================================================ */
-#map-container{
-position:absolute;inset:0;z-index:1;padding-bottom:var(--nav-h);
-background:var(--bg);
-}
+#onboarding-screen h2{font-family:'Unbounded',sans-serif;font-size:24px;margin:0 0 14px;color:var(--text)}
+#onboarding-screen p{color:var(--text-muted);font-size:15px;line-height:1.6;max-width:320px;margin:0 0 30px}
+.onboarding-btn{width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;border-radius:16px;font-weight:800;font-size:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 24px -5px var(--accent-glow)}
+.onboarding-btn.secondary{background:transparent;color:var(--text);border:1px solid rgba(20,224,194,.2);box-shadow:none}
+</style>
+<style>
+#map-container{position:absolute;inset:0;z-index:1;padding-bottom:var(--nav-h);background:var(--bg)}
 #map{width:100%;height:100%;background:#0a1512}
-.dark-tiles{
-filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(1.05) saturate(.35);
-}
+.dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(1.05) saturate(.35)}
 .leaflet-control-attribution,.leaflet-control-zoom{display:none!important}
-
-.map-top-deco{
-position:absolute;top:calc(70px + env(safe-area-inset-top));left:0;right:0;height:24px;
-z-index:900;pointer-events:none;
-background:linear-gradient(180deg,rgba(20,224,194,.08) 0%,transparent 100%);
-display:flex;justify-content:space-between;align-items:flex-start;padding:0 16px;
-opacity:.6;
-}
-.map-top-deco::before{content:'❄';font-size:14px;color:var(--accent);text-shadow:0 0 8px var(--accent-glow);animation:floatSnow 3s ease-in-out infinite}
-.map-top-deco::after{content:'❅';font-size:16px;color:var(--accent);text-shadow:0 0 8px var(--accent-glow);animation:floatSnow 3s ease-in-out infinite 1.5s}
+.map-top-deco{position:absolute;top:calc(70px + env(safe-area-inset-top));left:0;right:0;height:24px;z-index:900;pointer-events:none;background:linear-gradient(180deg,rgba(20,224,194,.08) 0%,transparent 100%);display:flex;justify-content:space-between;align-items:flex-start;padding:0 16px;opacity:.6}
+.map-top-deco::before{content:'❄';font-size:14px;color:var(--accent);animation:floatSnow 3s ease-in-out infinite}
+.map-top-deco::after{content:'❅';font-size:16px;color:var(--accent);animation:floatSnow 3s ease-in-out infinite 1.5s}
 @keyframes floatSnow{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(4px) rotate(15deg)}}
-
-.map-bottom-deco{
-position:absolute;bottom:calc(var(--nav-h) + 100px);left:0;right:0;height:20px;
-z-index:900;pointer-events:none;
-display:flex;justify-content:center;gap:24px;
-opacity:.4;
-}
-.map-bottom-deco span{
-color:var(--accent);font-size:12px;text-shadow:0 0 10px var(--accent-glow);
-animation:floatSnow 3s ease-in-out infinite;
-}
-.map-bottom-deco span:nth-child(2){animation-delay:.5s}
-.map-bottom-deco span:nth-child(3){animation-delay:1s}
-
-#map-overlay{
-position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;right:16px;
-z-index:1000;display:flex;flex-direction:column;gap:12px;pointer-events:none;
-}
+.map-bottom-deco{position:absolute;bottom:calc(var(--nav-h) + 100px);left:0;right:0;height:20px;z-index:900;pointer-events:none;display:flex;justify-content:center;gap:24px;opacity:.4}
+.map-bottom-deco span{color:var(--accent);font-size:12px;animation:floatSnow 3s ease-in-out infinite}
+.map-bottom-deco span:nth-child(2){animation-delay:.5s}.map-bottom-deco span:nth-child(3){animation-delay:1s}
+#map-overlay{position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:12px;pointer-events:none}
 #map-overlay>*{pointer-events:auto}
 #top-row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
-
-#city-status{
-flex:0 1 auto;min-width:0;padding:12px 18px;border-radius:20px;
-background:var(--panel);
-backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-border:1px solid var(--border);color:var(--text);font-weight:600;font-size:14px;
-max-width:65%;overflow:hidden;
-transition:border-color .3s,background .3s,box-shadow .3s;
-position:relative;
-}
-#city-status.danger{
-border-color:rgba(244,63,94,.5);
-background:rgba(30,10,15,.92);
-box-shadow:0 0 24px rgba(244,63,94,.25);
-animation:dangerPulse 2s ease-in-out infinite;
-}
-@keyframes dangerPulse{
-0%,100%{box-shadow:0 0 24px rgba(244,63,94,.25)}
-50%{box-shadow:0 0 36px rgba(244,63,94,.45)}
-}
-#city-status .city-name{
-color:var(--accent);font-size:10px;display:block;font-weight:800;
-text-transform:uppercase;margin-bottom:2px;
-text-shadow:0 0 8px var(--accent-glow);letter-spacing:.8px;
-}
-#city-status .city-state{
-display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-
-#geo-btn{
-width:50px;height:50px;min-width:50px;border-radius:18px;
-background:var(--panel);
-backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-border:1px solid var(--border);color:var(--accent);
-display:flex;align-items:center;justify-content:center;
-box-shadow:0 0 20px rgba(20,224,194,.1);
-}
-#geo-btn:hover{box-shadow:0 0 28px rgba(20,224,194,.25)}
+#city-status{flex:0 1 auto;min-width:0;padding:12px 18px;border-radius:20px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:14px;max-width:65%;overflow:hidden;transition:border-color .3s,background .3s;animation:cityGlow 3s ease-in-out infinite}
+#city-status.danger{border-color:rgba(244,63,94,.5);background:rgba(30,10,15,.92);animation:dangerPulse 2s ease-in-out infinite}
+@keyframes dangerPulse{0%,100%{box-shadow:0 0 24px rgba(244,63,94,.25)}50%{box-shadow:0 0 36px rgba(244,63,94,.45)}}
+@keyframes cityGlow{0%,100%{box-shadow:0 0 20px rgba(20,224,194,.15)}50%{box-shadow:0 0 32px rgba(20,224,194,.3)}}
+#city-status .city-name{color:var(--accent);font-size:10px;display:block;font-weight:800;text-transform:uppercase;margin-bottom:2px;letter-spacing:.8px}
+#city-status .city-state{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#geo-btn{width:50px;height:50px;min-width:50px;border-radius:18px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center}
 #geo-btn svg{width:22px;height:22px}
-</style>
-<style>
-/* ============================================================
-   АЛЕРТЫ И ВСПЛЫВАЮЩИЕ ОКНА
-   ============================================================ */
-#alerts-container{
-position:absolute;top:calc(85px + env(safe-area-inset-top));
-left:16px;right:16px;z-index:4000;
-display:flex;flex-direction:column;gap:8px;pointer-events:none;
-}
-.alert-card{
-display:flex;align-items:center;gap:12px;padding:13px 17px;
-border-radius:14px;font-weight:600;font-size:13px;color:var(--text);
-background:rgba(10,22,20,.94);
-backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-box-shadow:0 10px 30px rgba(0,0,0,.5);
-pointer-events:auto;
-border:1px solid rgba(255,255,255,.05);
-border-left:4px solid var(--danger);
-animation:slideDownAlert .45s cubic-bezier(.34,1.56,.64,1) forwards;
-position:relative;overflow:hidden;
-}
-.alert-card::after{
-content:'';position:absolute;top:0;left:0;right:0;height:1px;
-background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
-}
+#alerts-container{position:absolute;top:calc(85px + env(safe-area-inset-top));left:16px;right:16px;z-index:4000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.alert-card{display:flex;align-items:center;gap:12px;padding:13px 17px;border-radius:14px;font-weight:600;font-size:13px;color:var(--text);background:rgba(10,22,20,.94);backdrop-filter:blur(20px);box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:auto;border:1px solid rgba(255,255,255,.05);border-left:4px solid var(--danger);animation:slideDownAlert .45s cubic-bezier(.34,1.56,.64,1) forwards;position:relative;overflow:hidden}
 .alert-card.rocket-city{border-left-color:#ff3b5c;background:linear-gradient(90deg,rgba(60,10,20,.95),rgba(10,22,20,.94))}
 .alert-card.rocket-region{border-left-color:var(--info);background:linear-gradient(90deg,rgba(10,30,60,.95),rgba(10,22,20,.94))}
 .alert-card.siren-city{border-left-color:var(--violet);background:linear-gradient(90deg,rgba(35,10,60,.95),rgba(10,22,20,.94))}
 .alert-card.info{border-left-color:var(--info)}
 .alert-card.critical{border-left-color:#ff3b5c;background:linear-gradient(90deg,rgba(70,5,15,.96),rgba(10,22,20,.94))}
-
-.alert-dot{
-width:10px;height:10px;min-width:10px;border-radius:50%;flex-shrink:0;
-background:var(--danger);box-shadow:0 0 12px var(--danger);
-animation:blink-red 1s infinite alternate;
-}
-.alert-card.info .alert-dot,.alert-card.rocket-region .alert-dot{
-background:var(--info);box-shadow:0 0 12px var(--info);
-animation:blink-blue 1s infinite alternate;
-}
-.alert-card.siren-city .alert-dot{
-background:var(--violet);box-shadow:0 0 12px var(--violet);
-animation:blink-violet 1s infinite alternate;
-}
-.alert-card.rocket-city .alert-dot,.alert-card.critical .alert-dot{
-background:#ff3b5c;box-shadow:0 0 14px #ff3b5c;
-animation:blink-red 1s infinite alternate;
-}
-.alert-text{
-display:flex;justify-content:space-between;align-items:center;
-gap:10px;flex:1;min-width:0;
-}
-.alert-text span:first-child{
-white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.alert-more{
-color:var(--text-muted);font-size:11px;font-weight:700;white-space:nowrap;
-}
+.alert-dot{width:10px;height:10px;min-width:10px;border-radius:50%;flex-shrink:0;background:var(--danger);box-shadow:0 0 12px var(--danger);animation:blink-red 1s infinite alternate}
+.alert-card.info .alert-dot,.alert-card.rocket-region .alert-dot{background:var(--info);animation:blink-blue 1s infinite alternate}
+.alert-card.siren-city .alert-dot{background:var(--violet);animation:blink-violet 1s infinite alternate}
+.alert-card.rocket-city .alert-dot,.alert-card.critical .alert-dot{background:#ff3b5c;animation:blink-red 1s infinite alternate}
+.alert-text{display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1;min-width:0}
+.alert-text span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-more{color:var(--text-muted);font-size:11px;font-weight:700;white-space:nowrap}
 @keyframes blink-red{from{opacity:.4}to{opacity:1;box-shadow:0 0 18px var(--danger)}}
 @keyframes blink-blue{from{opacity:.4}to{opacity:1;box-shadow:0 0 18px var(--info)}}
 @keyframes blink-violet{from{opacity:.4}to{opacity:1;box-shadow:0 0 18px var(--violet)}}
 @keyframes slideDownAlert{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
-
-/* ============================================================
-   ТОСТ (УВЕДОМЛЕНИЯ)
-   ============================================================ */
-#status-toast{
-position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;
-transform:translateX(-50%) translateY(-10px);
-padding:10px 18px;
-border-radius:12px;
-background:rgba(10,22,20,.95);
-backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-border:1px solid var(--border-strong);color:var(--text);
-font-weight:600;font-size:13px;
-opacity:0;pointer-events:none;
-transition:opacity .3s,transform .3s,border-color .3s;
-z-index:5000;text-align:center;max-width:calc(100% - 40px);
-word-wrap:break-word;line-height:1.3;
-box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 20px rgba(20,224,194,.15);
-}
-
-#loading-spinner{
-position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-z-index:10000;display:none;width:40px;height:40px;
-border:4px solid rgba(20,224,194,.15);border-top-color:var(--accent);
-border-radius:50%;animation:spin 1s linear infinite;
-box-shadow:0 0 20px rgba(20,224,194,.2);
-}
+#status-toast{position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-10px);padding:10px 18px;border-radius:12px;background:rgba(10,22,20,.95);backdrop-filter:blur(20px);border:1px solid var(--border-strong);color:var(--text);font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:5000;text-align:center;max-width:calc(100% - 40px);word-wrap:break-word;line-height:1.3}
+#loading-spinner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;display:none;width:40px;height:40px;border:4px solid rgba(20,224,194,.15);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-
-/* ============================================================
-   КНОПКА "СООБЩИТЬ" И ШТОРКА
-   ============================================================ */
-#show-markers-btn{
-position:absolute;left:50%;transform:translateX(-50%);
-bottom:calc(var(--nav-h) + 24px);z-index:1000;
-padding:16px 32px;border-radius:30px;
-background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);
-color:#02120f;font-weight:800;font-size:16px;
-display:flex;align-items:center;gap:10px;
-box-shadow:0 12px 30px -5px var(--accent-glow),0 0 40px rgba(20,224,194,.2),inset 0 1px 0 rgba(255,255,255,.3);
-}
+#show-markers-btn{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 24px);z-index:1000;padding:16px 32px;border-radius:30px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;font-weight:800;font-size:16px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px -5px var(--accent-glow)}
 #show-markers-btn svg{width:20px;height:20px}
-
-#markers-sheet-overlay{
-position:absolute;inset:0;z-index:2000;background:rgba(0,0,0,.72);
-backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;
-}
-#markers-sheet{
-position:absolute;bottom:var(--nav-h);left:12px;right:12px;
-background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));
-backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
-border:1px solid var(--border-strong);border-radius:32px;padding:28px 24px;
-transform:translateY(120%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);z-index:2001;
-box-shadow:0 -20px 60px rgba(0,0,0,.6),inset 0 1px 0 rgba(20,224,194,.12);
-}
+#markers-sheet-overlay{position:absolute;inset:0;z-index:2000;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:none}
+#markers-sheet{position:absolute;bottom:var(--nav-h);left:12px;right:12px;background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));backdrop-filter:blur(30px);border:1px solid var(--border-strong);border-radius:32px;padding:28px 24px;transform:translateY(120%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);z-index:2001}
 #markers-sheet.active{transform:translateY(-15px)}
-.sheet-handle{
-width:40px;height:5px;background:rgba(20,224,194,.25);border-radius:5px;
-margin:0 auto 24px;box-shadow:0 0 8px rgba(20,224,194,.3);
-}
+.sheet-handle{width:40px;height:5px;background:rgba(20,224,194,.25);border-radius:5px;margin:0 auto 24px}
 #types-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
-.marker-btn{
-width:80px;height:80px;border-radius:24px;
-border:1px solid rgba(20,224,194,.1);background:rgba(20,224,194,.03);
-display:flex;flex-direction:column;align-items:center;justify-content:center;
-gap:8px;color:var(--text-muted);font-weight:600;font-size:12px;
-}
-.marker-btn:hover{border-color:var(--border-strong);background:rgba(20,224,194,.08)}
+.marker-btn{width:80px;height:80px;border-radius:24px;border:1px solid rgba(20,224,194,.1);background:rgba(20,224,194,.03);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-weight:600;font-size:12px}
 .marker-btn svg{width:30px;height:30px}
-.marker-btn.selected{
-border-color:var(--accent);background:rgba(20,224,194,.12);color:var(--text);
-box-shadow:0 0 24px var(--accent-glow),inset 0 0 20px rgba(20,224,194,.08);
-}
-
-/* ============================================================
-   МАРКЕРЫ И ПОПАПЫ
-   ============================================================ */
-.pulse-marker{
-border-radius:50%;display:flex;align-items:center;justify-content:center;
-border:2px solid rgba(255,255,255,.9);box-shadow:0 0 18px currentColor;
-animation:pulse 2s infinite ease-in-out;position:relative;
-}
-.pulse-marker::after{
-content:'';position:absolute;inset:-4px;border-radius:50%;
-border:1px solid currentColor;opacity:.4;animation:ringPulse 2s infinite;
-}
-@keyframes ringPulse{
-0%{transform:scale(1);opacity:.4}
-100%{transform:scale(1.6);opacity:0}
-}
+.marker-btn.selected{border-color:var(--accent);background:rgba(20,224,194,.12);color:var(--text);box-shadow:0 0 24px var(--accent-glow)}
+.pulse-marker{border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 18px currentColor;animation:pulse 2s infinite ease-in-out;position:relative}
+.pulse-marker::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid currentColor;opacity:.4;animation:ringPulse 2s infinite}
+@keyframes ringPulse{0%{transform:scale(1);opacity:.4}100%{transform:scale(1.6);opacity:0}}
 .pulse-marker svg{width:60%;height:60%;display:block}
-@keyframes pulse{
-0%{transform:scale(.95);opacity:.85}
-50%{transform:scale(1.12);opacity:1}
-100%{transform:scale(.95);opacity:.85}
-}
-
-.leaflet-popup-content-wrapper{
-background:rgba(10,22,20,.97);
-backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-color:var(--text);border:1px solid var(--border-strong);border-radius:16px;
-box-shadow:0 10px 30px rgba(0,0,0,.8),0 0 24px rgba(20,224,194,.1);
-padding:0;max-width:240px;
-}
+@keyframes pulse{0%{transform:scale(.95);opacity:.85}50%{transform:scale(1.12);opacity:1}100%{transform:scale(.95);opacity:.85}}
+.leaflet-popup-content-wrapper{background:rgba(10,22,20,.97);backdrop-filter:blur(20px);color:var(--text);border:1px solid var(--border-strong);border-radius:16px;padding:0;max-width:240px}
 .leaflet-popup-tip{background:rgba(10,22,20,.97);border:1px solid var(--border-strong)}
 .leaflet-popup-content{margin:12px 14px;font-size:12px;line-height:1.4}
-.popup-title{
-color:var(--accent);font-weight:800;font-size:14px;
-display:flex;align-items:center;gap:8px;margin-bottom:6px;
-text-transform:uppercase;letter-spacing:.3px;
-}
+.popup-title{color:var(--accent);font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:6px;text-transform:uppercase}
 .popup-title svg{width:18px;height:18px;flex-shrink:0}
 .popup-muted{color:var(--text-muted);margin-top:4px}
 .popup-muted b{color:var(--text)}
-.popup-confirm{
-display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 8px;
-background:rgba(20,224,194,.15);color:var(--accent);
-border:1px solid var(--accent);border-radius:6px;
-font-weight:700;font-size:10px;box-shadow:0 0 12px rgba(20,224,194,.25);
-}
+.popup-confirm{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 8px;background:rgba(20,224,194,.15);color:var(--accent);border:1px solid var(--accent);border-radius:6px;font-weight:700;font-size:10px}
 .popup-confirm svg{width:12px;height:12px;stroke:var(--accent)}
 </style>
 <style>
-/* ============================================================
-   НИЖНЯЯ НАВИГАЦИЯ
-   ============================================================ */
-#bottom-nav{
-position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);
-background:rgba(4,10,8,.92);
-backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
-border-top:1px solid var(--border);
-z-index:2500;display:flex;justify-content:space-around;align-items:center;
-padding-bottom:env(safe-area-inset-bottom);
-box-shadow:0 -8px 30px rgba(0,0,0,.5);
-}
-.nav-btn{
-display:flex;flex-direction:column;align-items:center;justify-content:center;
-gap:6px;background:transparent;color:var(--text-muted);
-font-size:11px;font-weight:600;flex:1;height:100%;
-}
+#bottom-nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);background:rgba(4,10,8,.92);backdrop-filter:blur(30px);border-top:1px solid var(--border);z-index:2500;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;color:var(--text-muted);font-size:11px;font-weight:600;flex:1;height:100%}
 .nav-btn svg{width:24px;height:24px;transition:transform .3s,filter .3s}
 .nav-btn.active{color:var(--accent)}
-.nav-btn.active svg{
-transform:translateY(-3px);
-filter:drop-shadow(0 0 8px var(--accent-glow));
-}
-
-/* ============================================================
-   ЭКРАНЫ ЛЕНТЫ И ПРОФИЛЯ
-   ============================================================ */
-#feed-screen,#profile-screen{
-position:absolute;inset:0;bottom:var(--nav-h);background:var(--bg);
-z-index:1500;display:none;flex-direction:column;padding:24px 20px;
-overflow-y:auto;-webkit-overflow-scrolling:touch;
-}
+.nav-btn.active svg{transform:translateY(-3px);filter:drop-shadow(0 0 8px var(--accent-glow))}
+#feed-screen,#profile-screen{position:absolute;inset:0;bottom:var(--nav-h);background:var(--bg);z-index:1500;display:none;flex-direction:column;padding:24px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #feed-screen.active,#profile-screen.active{display:flex}
-
-.feed-header{
-display:flex;justify-content:space-between;align-items:center;
-margin-bottom:24px;padding-top:calc(10px + env(safe-area-inset-top));
-}
-.feed-header h2{
-margin:0;font-size:24px;font-weight:700;
-font-family:'Unbounded',sans-serif;
-background:linear-gradient(135deg,#14e0c2,#5eead4);
--webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-}
-.feed-filter-badge{
-background:rgba(20,224,194,.08);color:var(--accent);
-border:1px solid rgba(20,224,194,.25);
-padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;
-}
+.feed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-top:calc(10px + env(safe-area-inset-top))}
+.feed-header h2{margin:0;font-size:24px;font-weight:700;font-family:'Unbounded',sans-serif;background:linear-gradient(135deg,#14e0c2,#5eead4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.feed-filter-badge{background:rgba(20,224,194,.08);color:var(--accent);border:1px solid rgba(20,224,194,.25);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600}
 #feed-list{display:flex;flex-direction:column;gap:12px}
-.feed-item{
-background:var(--panel);border:1px solid var(--border);border-radius:20px;
-padding:16px;display:flex;align-items:center;gap:16px;
-animation:slideDownAlert .3s ease;
-}
-.feed-icon{
-width:48px;height:48px;min-width:48px;border-radius:14px;
-display:flex;align-items:center;justify-content:center;
-}
+.feed-item{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;align-items:center;gap:16px;animation:slideDownAlert .3s ease}
+.feed-icon{width:48px;height:48px;min-width:48px;border-radius:14px;display:flex;align-items:center;justify-content:center}
 .feed-icon svg{width:26px;height:26px}
 .feed-body{flex:1;min-width:0}
-.feed-title{
-font-weight:600;font-size:15px;margin-bottom:4px;color:var(--text);
-white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.feed-meta{
-font-size:12px;color:var(--text-muted);font-weight:500;
-white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.feed-empty{
-text-align:center;color:var(--text-muted);margin-top:60px;
-font-size:15px;line-height:1.5;
-}
-
-/* ============================================================
-   ПРОФИЛЬ
-   ============================================================ */
-.profile-card{
-position:relative;
-background:linear-gradient(160deg,rgba(10,22,20,.9),rgba(8,18,16,.96));
-border:1px solid var(--border-strong);border-radius:24px;
-padding:40px 20px 30px;
-text-align:center;margin-bottom:24px;
-backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-box-shadow:0 10px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(20,224,194,.12);
-overflow:hidden;
-}
-/* Снежная шапка */
-.profile-snow-cap{
-position:absolute;top:0;left:0;right:0;height:36px;
-background:
-radial-gradient(ellipse at 20% 0%,rgba(216,255,248,.25),transparent 50%),
-radial-gradient(ellipse at 50% 0%,rgba(20,224,194,.15),transparent 50%),
-radial-gradient(ellipse at 80% 0%,rgba(216,255,248,.25),transparent 50%);
-border-bottom-left-radius:50% 20px;
-border-bottom-right-radius:50% 20px;
-z-index:0;pointer-events:none;
-}
-.profile-snow-cap::before,.profile-snow-cap::after{
-content:'❄';position:absolute;top:8px;font-size:12px;color:#fff;opacity:.5;
-text-shadow:0 0 8px var(--accent-glow);
-}
-.profile-snow-cap::before{left:20%}
-.profile-snow-cap::after{right:20%}
-.profile-card > *:not(.profile-snow-cap){position:relative;z-index:1}
-
-.profile-avatar{
-width:80px;height:80px;border-radius:50%;
-background:linear-gradient(135deg,#14e0c2,#0ea5a0);
-margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
-font-size:32px;color:#02120f;font-weight:800;
-box-shadow:0 8px 24px -5px var(--accent-glow),0 0 40px rgba(20,224,194,.2);
-border:2px solid rgba(216,255,248,.2);
-}
-
-/* ===== АНИМИРОВАННЫЕ СНЕЖИНКИ ВОКРУГ НИКА ===== */
-.profile-name-wrapper{
-position:relative;display:block;margin-bottom:12px;padding:0 20px;
-text-align:center;
-}
-.profile-name-wrapper::before,
-.profile-name-wrapper::after{
-content:'';position:absolute;top:50%;width:20px;height:20px;
-background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314e0c2' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07'/%3E%3C/svg%3E");
-background-size:contain;background-repeat:no-repeat;
-filter:drop-shadow(0 0 8px var(--accent));
-opacity:0.8;
-}
-.profile-name-wrapper::before{
-left:0;transform:translateY(-50%);
-animation:spinLeft 4s linear infinite;
-}
-.profile-name-wrapper::after{
-right:0;transform:translateY(-50%);
-animation:spinRight 4s linear infinite;
-}
-@keyframes spinLeft{
-0%{transform:translateY(-50%) rotate(0deg) scale(1)}
-50%{transform:translateY(-50%) rotate(180deg) scale(1.2)}
-100%{transform:translateY(-50%) rotate(360deg) scale(1)}
-}
-@keyframes spinRight{
-0%{transform:translateY(-50%) rotate(0deg) scale(1.2)}
-50%{transform:translateY(-50%) rotate(-180deg) scale(1)}
-100%{transform:translateY(-50%) rotate(-360deg) scale(1.2)}
-}
-
-.profile-name{
-font-size:22px;
-font-family:'Unbounded',sans-serif;
-color:var(--accent);text-shadow:0 0 16px var(--accent-glow);
-word-break:break-all;
-position:relative;z-index:2;display:inline-block;
-}
-
-/* Маленькая гирлянда над ником */
-.profile-name-garland{
-position:absolute;top:-12px;left:50%;transform:translateX(-50%);
-display:flex;justify-content:center;gap:6px;
-}
-.profile-name-garland i{
-width:4px;height:4px;border-radius:50%;background:var(--accent);
-box-shadow:0 0 6px var(--accent);animation:twinkle 1.5s infinite alternate;
-}
-.profile-name-garland i:nth-child(2){background:#ffd93d;animation-delay:.2s}
-.profile-name-garland i:nth-child(3){background:#ff6b9d;animation-delay:.4s}
-.profile-name-garland i:nth-child(4){background:var(--accent);animation-delay:.6s}
-.profile-name-garland i:nth-child(5){background:#ffd93d;animation-delay:.8s}
-
-/* Плашка под ником */
-.profile-badge{
-display:block;
-margin: 10px auto 0 auto;
-width: max-content;
-padding:6px 14px;border-radius:20px;
-font-size:12px;font-weight:800;
-background:rgba(20,224,194,.1);border:1px solid var(--accent);
-text-transform:uppercase;color:var(--accent);
-}
-
-.profile-stats{
-display:flex;justify-content:space-around;margin-top:24px;
-padding-top:20px;border-top:1px solid var(--border);
-}
+.feed-title{font-weight:600;font-size:15px;margin-bottom:4px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-meta{font-size:12px;color:var(--text-muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-empty{text-align:center;color:var(--text-muted);margin-top:60px;font-size:15px;line-height:1.5}
+.profile-card{position:relative;background:linear-gradient(160deg,rgba(10,22,20,.9),rgba(8,18,16,.96));border:1px solid var(--border-strong);border-radius:24px;padding:40px 20px 30px;text-align:center;margin-bottom:24px;backdrop-filter:blur(20px);overflow:hidden}
+.profile-snow-cap{position:absolute;top:0;left:0;right:0;height:36px;background:radial-gradient(ellipse at 20% 0%,rgba(216,255,248,.25),transparent 50%),radial-gradient(ellipse at 50% 0%,rgba(20,224,194,.15),transparent 50%),radial-gradient(ellipse at 80% 0%,rgba(216,255,248,.25),transparent 50%);border-bottom-left-radius:50% 20px;border-bottom-right-radius:50% 20px;z-index:0;pointer-events:none}
+.profile-snow-cap::before,.profile-snow-cap::after{content:'❄';position:absolute;top:8px;font-size:12px;color:#fff;opacity:.5}
+.profile-snow-cap::before{left:20%}.profile-snow-cap::after{right:20%}
+.profile-card>*:not(.profile-snow-cap){position:relative;z-index:1}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#14e0c2,#0ea5a0);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#02120f;font-weight:800;box-shadow:0 8px 24px -5px var(--accent-glow);border:2px solid rgba(216,255,248,.2)}
+.profile-name-wrapper{position:relative;display:block;margin-bottom:12px;padding:0 20px;text-align:center}
+.profile-name-wrapper::before,.profile-name-wrapper::after{content:'';position:absolute;top:50%;width:20px;height:20px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314e0c2' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 0 8px var(--accent));opacity:0.8}
+.profile-name-wrapper::before{left:0;transform:translateY(-50%);animation:spinLeft 4s linear infinite}
+.profile-name-wrapper::after{right:0;transform:translateY(-50%);animation:spinRight 4s linear infinite}
+@keyframes spinLeft{0%{transform:translateY(-50%) rotate(0deg) scale(1)}50%{transform:translateY(-50%) rotate(180deg) scale(1.2)}100%{transform:translateY(-50%) rotate(360deg) scale(1)}}
+@keyframes spinRight{0%{transform:translateY(-50%) rotate(0deg) scale(1.2)}50%{transform:translateY(-50%) rotate(-180deg) scale(1)}100%{transform:translateY(-50%) rotate(-360deg) scale(1.2)}}
+.profile-name{font-size:22px;font-family:'Unbounded',sans-serif;color:var(--accent);text-shadow:0 0 16px var(--accent-glow);word-break:break-all;position:relative;z-index:2;display:inline-block}
+.profile-name-garland{position:absolute;top:-12px;left:50%;transform:translateX(-50%);display:flex;justify-content:center;gap:6px}
+.profile-name-garland i{width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:twinkle 1.5s infinite alternate}
+.profile-name-garland i:nth-child(2){background:#ffd93d;animation-delay:.2s}.profile-name-garland i:nth-child(3){background:#ff6b9d;animation-delay:.4s}.profile-name-garland i:nth-child(4){background:var(--accent);animation-delay:.6s}.profile-name-garland i:nth-child(5){background:#ffd93d;animation-delay:.8s}
+.profile-badge{display:block;margin:10px auto 0 auto;width:max-content;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;background:rgba(20,224,194,.1);border:1px solid var(--accent);text-transform:uppercase;color:var(--accent)}
+.profile-stats{display:flex;justify-content:space-around;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
 .profile-stat-value{font-size:20px;font-weight:700;color:var(--text)}
-.profile-stat-label{
-font-size:11px;color:var(--text-muted);margin-top:4px;
-text-transform:uppercase;letter-spacing:.5px;
-}
-
-/* Меню профиля */
+.profile-stat-label{font-size:11px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
 .profile-menu{display:flex;flex-direction:column;gap:12px}
-.menu-item{
-background:var(--panel);border:1px solid var(--border);border-radius:16px;
-padding:16px;display:flex;justify-content:space-between;align-items:center;
-color:var(--text);text-decoration:none;font-weight:600;font-size:15px;
-}
-.menu-item.danger{
-background:rgba(244,63,94,.05);border-color:rgba(244,63,94,.2);color:var(--danger);
-}
-.menu-item svg{width:20px;height:20px;opacity:.8;flex-shrink:0;transition:opacity .3s}
-.menu-item:hover svg{opacity:1;filter:drop-shadow(0 0 6px var(--accent-glow))}
-
-/* Админка */
+.menu-item{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center;color:var(--text);text-decoration:none;font-weight:600;font-size:15px}
+.menu-item.danger{background:rgba(244,63,94,.05);border-color:rgba(244,63,94,.2);color:var(--danger)}
+.menu-item svg{width:20px;height:20px;opacity:.8;flex-shrink:0}
 #admin-panel-content{display:none;margin-top:24px;flex-direction:column;gap:16px}
 .admin-tabs{display:flex;gap:10px}
-.admin-tab{
-flex:1;padding:14px;border-radius:12px;
-border:1px solid var(--border);background:var(--panel);
-color:var(--text-muted);font-weight:600;font-size:14px;
-}
-.admin-tab.active{
-border-color:var(--accent);background:rgba(20,224,194,.1);color:var(--accent);
-}
-#clear-all-btn{
-width:100%;padding:16px;background:rgba(244,63,94,.1);color:var(--danger);
-border:1px solid rgba(244,63,94,.2);border-radius:12px;font-weight:600;font-size:15px;
-}
+.admin-tab{flex:1;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text-muted);font-weight:600;font-size:14px}
+.admin-tab.active{border-color:var(--accent);background:rgba(20,224,194,.1);color:var(--accent)}
+#clear-all-btn{width:100%;padding:16px;background:rgba(244,63,94,.1);color:var(--danger);border:1px solid rgba(244,63,94,.2);border-radius:12px;font-weight:600;font-size:15px}
 #admin-content{display:flex;flex-direction:column;gap:12px}
-.admin-item{
-background:var(--panel);border:1px solid var(--border);border-radius:12px;
-padding:16px;font-size:14px;
-}
+.admin-item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:14px}
 .admin-item.banned{opacity:.6}
 .admin-item-clickable{cursor:pointer}
-
-/* Модалки */
-#search-modal-overlay,#user-profile-modal{
-position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.82);
-backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-display:none;align-items:center;justify-content:center;padding:20px;
-}
+#search-modal-overlay,#user-profile-modal{position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
 #search-modal-overlay.active,#user-profile-modal.active{display:flex}
-.search-modal{
-background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));
-border:1px solid var(--border-strong);border-radius:24px;padding:24px;
-width:100%;max-width:320px;display:flex;flex-direction:column;gap:16px;
-max-height:90vh;overflow-y:auto;
-box-shadow:0 25px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(20,224,194,.1);
-}
+.search-modal{background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));border:1px solid var(--border-strong);border-radius:24px;padding:24px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow-y:auto}
 .search-modal h3{margin:0;text-align:center;font-size:20px;color:var(--text);font-family:'Unbounded',sans-serif}
-.search-modal input{
-padding:16px;border-radius:14px;border:1px solid rgba(20,224,194,.2);
-background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
-}
-.search-modal input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(20,224,194,.1),0 0 20px rgba(20,224,194,.15)}
+.search-modal input{padding:16px;border-radius:14px;border:1px solid rgba(20,224,194,.2);background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px}
 .modal-buttons{display:flex;gap:12px}
 .modal-btn-cancel{flex:1;background:transparent;color:var(--text-muted);border:1px solid var(--border);padding:15px;border-radius:14px;font-weight:600}
-.modal-btn-primary{flex:1;background:linear-gradient(135deg,#14e0c2,#0ea5a0);color:#02120f;padding:15px;border-radius:14px;font-weight:700;box-shadow:0 8px 20px -5px var(--accent-glow)}
-
-@keyframes cityGlow{0%,100%{box-shadow:0 0 20px rgba(20,224,194,.15)}50%{box-shadow:0 0 32px rgba(20,224,194,.3)}}
-#city-status{animation:cityGlow 3s ease-in-out infinite}
+.modal-btn-primary{flex:1;background:linear-gradient(135deg,#14e0c2,#0ea5a0);color:#02120f;padding:15px;border-radius:14px;font-weight:700}
 </style>
 </head>
 <body>
-
-<!-- СНЕГОПАД -->
 <div id="snow-layer"></div>
 
-<!-- ============================================================
-     АВТОРИЗАЦИЯ
-     ============================================================ -->
 <div id="auth-screen">
     <div class="auth-box">
-        <div class="auth-garland">
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-        </div>
+        <div class="auth-garland"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <div class="auth-header">
             <div class="auth-title">Vinera</div>
             <div class="auth-subtitle">Новогодний <span>радар</span></div>
@@ -748,9 +203,6 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
     </div>
 </div>
 
-<!-- ============================================================
-     ОНБОРДИНГ
-     ============================================================ -->
 <div id="onboarding-screen">
     <h2>Добро пожаловать</h2>
     <p>Чтобы видеть события только в вашем городе и ставить метки, нам нужно знать ваше местоположение.</p>
@@ -761,13 +213,9 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
     <button class="onboarding-btn secondary" id="onboarding-manual-btn">Выбрать город вручную</button>
 </div>
 
-<!-- ============================================================
-     ПРИЛОЖЕНИЕ
-     ============================================================ -->
 <div id="app">
     <div id="map-container">
         <div id="map"></div>
-
         <div id="map-overlay">
             <div id="top-row">
                 <div id="city-status">
@@ -779,20 +227,15 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
                 </button>
             </div>
         </div>
-
-        <!-- Украшения карты (сверху и снизу) -->
         <div class="map-top-deco"></div>
         <div class="map-bottom-deco"><span>❄</span><span>❅</span><span>❆</span></div>
-
         <div id="alerts-container"></div>
         <div id="status-toast">Метки загружены</div>
         <div id="loading-spinner"></div>
-
         <button id="show-markers-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Сообщить
         </button>
-
         <div id="markers-sheet-overlay"></div>
         <div id="markers-sheet">
             <div class="sheet-handle"></div>
@@ -807,63 +250,32 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
         </div>
     </div>
 </div>
-<!-- ============================================================
-     ЛЕНТА СОБЫТИЙ
-     ============================================================ -->
 <div id="feed-screen">
-    <div class="feed-header">
-        <h2>События</h2>
-        <div class="feed-filter-badge">За 24 часа</div>
-    </div>
+    <div class="feed-header"><h2>События</h2><div class="feed-filter-badge">За 24 часа</div></div>
     <div id="feed-list"></div>
 </div>
 
-<!-- ============================================================
-     ПРОФИЛЬ
-     ============================================================ -->
 <div id="profile-screen">
     <div class="profile-card">
         <div class="profile-snow-cap"></div>
         <div class="profile-avatar" id="profile-avatar-letter">U</div>
-        
         <div class="profile-name-wrapper">
-            <div class="profile-name-garland">
-                <i></i><i></i><i></i><i></i><i></i>
-            </div>
+            <div class="profile-name-garland"><i></i><i></i><i></i><i></i><i></i></div>
             <div class="profile-name" id="profile-name">Загрузка...</div>
         </div>
-
         <div class="profile-badge" id="profile-role-badge">ПОЛЬЗОВАТЕЛЬ</div>
-        
         <div class="profile-stats">
             <div><div class="profile-stat-value" id="profile-stat-markers">0</div><div class="profile-stat-label">Меток</div></div>
             <div><div class="profile-stat-value" id="profile-stat-role" style="color:var(--accent);">User</div><div class="profile-stat-label">Статус</div></div>
         </div>
     </div>
-
     <div class="profile-menu">
-        <div class="menu-item" id="profile-search-city-btn">
-            <span>Выбрать регион / город</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        </div>
-        <div class="menu-item" id="profile-share-btn">
-            <span>Поделиться радаром</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
-        </div>
-        <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item">
-            <span>Связь с владельцем</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-        </a>
-        <div class="menu-item" id="admin-toggle-btn" style="display:none;">
-            <span>Админ-панель</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
-        <div class="menu-item danger" id="logout-btn">
-            <span>Выйти из аккаунта</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        </div>
+        <div class="menu-item" id="profile-search-city-btn"><span>Выбрать регион / город</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+        <div class="menu-item" id="profile-share-btn"><span>Поделиться радаром</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
+        <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item"><span>Связь с владельцем</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
+        <div class="menu-item" id="admin-toggle-btn" style="display:none;"><span>Админ-панель</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        <div class="menu-item danger" id="logout-btn"><span>Выйти из аккаунта</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
     </div>
-
     <div id="admin-panel-content">
         <div class="admin-tabs">
             <button class="admin-tab active" id="tab-markers">Метки</button>
@@ -874,29 +286,13 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
     </div>
 </div>
 
-<!-- ============================================================
-     НИЖНЯЯ НАВИГАЦИЯ
-     ============================================================ -->
 <div id="bottom-nav">
-    <button class="nav-btn active" data-tab="map">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span>Карта</span>
-    </button>
-    <button class="nav-btn" data-tab="feed">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>События</span>
-    </button>
-    <button class="nav-btn" data-tab="profile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Профиль</span>
-    </button>
+    <button class="nav-btn active" data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
+    <button class="nav-btn" data-tab="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
+    <button class="nav-btn" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
+</div>
 </div>
 
-</div> <!-- /#app -->
-
-<!-- ============================================================
-     МОДАЛКА ПОИСКА ГОРОДА
-     ============================================================ -->
 <div id="search-modal-overlay">
     <div class="search-modal">
         <h3>Выбор региона</h3>
@@ -908,9 +304,6 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
     </div>
 </div>
 
-<!-- ============================================================
-     МОДАЛКА ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ
-     ============================================================ -->
 <div id="user-profile-modal">
     <div class="search-modal" style="max-width:320px;">
         <div style="text-align:center;margin-bottom:10px;">
@@ -919,14 +312,8 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
             <div id="modal-user-role" style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:rgba(20,224,194,.1);color:var(--accent);border:1px solid var(--border);">USER</div>
         </div>
         <div style="background:rgba(4,10,8,.5);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--border);">
-            <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;">
-                <span style="color:var(--text-muted);">Меток на карте:</span>
-                <span id="modal-user-markers" style="color:var(--text);font-weight:600;">0</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;">
-                <span style="color:var(--text-muted);">Telegram ID:</span>
-                <span id="modal-user-tg" style="color:var(--text);">Нет</span>
-            </div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;"><span style="color:var(--text-muted);">Меток на карте:</span><span id="modal-user-markers" style="color:var(--text);font-weight:600;">0</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;"><span style="color:var(--text-muted);">Telegram ID:</span><span id="modal-user-tg" style="color:var(--text);">Нет</span></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:10px;">
             <button id="modal-user-ban-btn" style="background:rgba(244,63,94,.1);color:var(--danger);border:1px solid rgba(244,63,94,.2);padding:14px;border-radius:12px;font-weight:600;font-size:14px;">Забанить</button>
@@ -940,7 +327,6 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
 <script>
 (function () {
 'use strict';
-
 const SUPABASE_URL = 'https://hpzemwurwkuthcgmtvlw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
 const ADMIN_USERNAME = 'bihepka';
@@ -995,12 +381,10 @@ const METADATA = {
 };
 const dangerTypes = ['Взрыв','Сирена','Ракета','БПЛА','Истребитель'];
 
-/* ===== СНЕГОПАД ===== */
 function initSnow(){
 const layer = document.getElementById('snow-layer');
 if(!layer) return;
-const count = 22;
-for(let i=0;i<count;i++){
+for(let i=0;i<22;i++){
 const flake = document.createElement('div');
 flake.className = 'snowflake';
 flake.textContent = ['❄','❅','❆','✦'][Math.floor(Math.random()*4)];
@@ -1014,7 +398,7 @@ layer.appendChild(flake);
 }
 
 function escapeHtml(str) {
-if (str === null || str === undefined) return '';
+if (!str) return '';
 return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
@@ -1060,7 +444,7 @@ callback: function (token) { window.turnstileToken = token; },
 'expired-callback': function () { window.turnstileToken = null; },
 'error-callback': function () { window.turnstileToken = null; }
 });
-} catch (e) { console.warn('Turnstile init failed:', e); }
+} catch (e) {}
 }
 
 function resetTurnstile() {
@@ -1099,9 +483,8 @@ return markersData.some(function (o) { return o.id !== m.id && o.type === m.type
 function popupHtml(m) {
 const meta = METADATA[m.type] || METADATA['БПЛА'];
 const confirmed = isConfirmed(m);
-// Сделали имя автора кликабельным
 return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div>'+
-'<div class="popup-muted">Поставил: <b class="clickable-author" data-author="'+escapeHtml(m.author||'—')+'" style="cursor:pointer;color:var(--accent);text-decoration:underline;text-decoration-color:rgba(20,224,194,0.4);">'+escapeHtml(m.author||'—')+'</b></div>'+
+'<div class="popup-muted">Поставил: <b class="clickable-author" data-author="'+escapeHtml(m.author||'—')+'" style="cursor:pointer;color:var(--accent);text-decoration:underline;">'+escapeHtml(m.author||'—')+'</b></div>'+
 '<div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div>'+
 '<div class="popup-muted">Город: '+escapeHtml(m.city||'Неизвестно')+'</div>'+
 '<div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+
@@ -1120,21 +503,15 @@ markerRefs[m.id] = marker;
 });
 }
 
-// Обработчик клика по нику в поп-апе карты
 map.on('popupopen', function(e) {
     const authorEl = e.popup.getElement().querySelector('.clickable-author');
     if (authorEl) {
         authorEl.onclick = function() {
             const authorName = this.getAttribute('data-author');
             if (authorName && authorName !== '—') {
-                // Ищем юзера в уже загруженном списке профилей (если он там есть)
-                // Если нет, делаем запрос в базу
                 supabaseClient.from('profiles').select('*').eq('username', authorName).maybeSingle().then(res => {
-                    if (res.data) {
-                        openUserProfileModal(res.data);
-                    } else {
-                        showToast('Профиль автора не найден', true);
-                    }
+                    if (res.data) openUserProfileModal(res.data);
+                    else showToast('Профиль автора не найден', true);
                 });
             }
         };
@@ -1210,649 +587,636 @@ document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remo
 showToast('Метка поставлена <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:4px;filter:drop-shadow(0 0 4px var(--accent))"><path d="M20 6L9 17l-5-5"/></svg>');
 }
    async function loadMarkers() {
-if (isLoggedOut || !supabaseClient) return;
-showSpinner(true);
-try {
-const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
-if (error) throw error;
-const now = Date.now();
-markersData = (data || []).filter(function (m) {
-const age = now - new Date(m.created_at).getTime();
-const isFresh = age < LIFETIME_MS;
-const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
-const justPlaced = age < 10000;
-return isFresh && (isMyCity || justPlaced);
-});
-const oneDayAgo = now - 24*60*60*1000;
-feedData = (data || []).filter(function (m) { return new Date(m.created_at).getTime() > oneDayAgo; });
-drawMarkers();
-updateCityStatus();
-renderFeed();
-checkAlerts();
-} catch (err) {
-showToast('Ошибка загрузки: ' + (err.message || err), true);
-} finally {
-showSpinner(false);
-}
+    if (isLoggedOut || !supabaseClient) return;
+    showSpinner(true);
+    try {
+        const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        const now = Date.now();
+        markersData = (data || []).filter(function (m) {
+            const age = now - new Date(m.created_at).getTime();
+            const isFresh = age < LIFETIME_MS;
+            const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
+            const justPlaced = age < 10000;
+            return isFresh && (isMyCity || justPlaced);
+        });
+        const oneDayAgo = now - 24*60*60*1000;
+        feedData = (data || []).filter(function (m) { return new Date(m.created_at).getTime() > oneDayAgo; });
+        drawMarkers();
+        updateCityStatus();
+        renderFeed();
+        checkAlerts();
+    } catch (err) {
+        showToast('Ошибка загрузки: ' + (err.message || err), true);
+    } finally {
+        showSpinner(false);
+    }
 }
 
 function renderFeed() {
-const list = document.getElementById('feed-list');
-if (!list) return;
-list.innerHTML = '';
-if (feedData.length === 0) {
-list.innerHTML = '<div class="feed-empty">За последние 24 часа событий не было</div>';
-return;
-}
-feedData.forEach(function (m) {
-const meta = METADATA[m.type] || METADATA['БПЛА'];
-const item = document.createElement('div');
-item.className = 'feed-item';
-const time = new Date(m.created_at).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
-const coloredSvg = meta.svg.replace(/stroke="#fff"/g, 'stroke="'+meta.color+'"');
-item.innerHTML = '<div class="feed-icon" style="background:'+meta.color+'15;border:1px solid '+meta.color+'40;">'+coloredSvg+'</div><div class="feed-body"><div class="feed-title">'+escapeHtml(m.type)+' — '+escapeHtml(m.city||'Неизвестно')+'</div><div class="feed-meta">'+time+' · '+escapeHtml(m.author||'Аноним')+'</div></div>';
-list.appendChild(item);
-});
+    const list = document.getElementById('feed-list');
+    if (!list) return;
+    list.innerHTML = '';
+    if (feedData.length === 0) {
+        list.innerHTML = '<div class="feed-empty">За последние 24 часа событий не было</div>';
+        return;
+    }
+    feedData.forEach(function (m) {
+        const meta = METADATA[m.type] || METADATA['БПЛА'];
+        const item = document.createElement('div');
+        item.className = 'feed-item';
+        const time = new Date(m.created_at).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+        const coloredSvg = meta.svg.replace(/stroke="#fff"/g, 'stroke="'+meta.color+'"');
+        item.innerHTML = '<div class="feed-icon" style="background:'+meta.color+'15;border:1px solid '+meta.color+'40;">'+coloredSvg+'</div><div class="feed-body"><div class="feed-title">'+escapeHtml(m.type)+' — '+escapeHtml(m.city||'Неизвестно')+'</div><div class="feed-meta">'+time+' · '+escapeHtml(m.author||'Аноним')+'</div></div>';
+        list.appendChild(item);
+    });
 }
 
 function pluralizeStatus(types) {
-const threats = types.filter(function (t) { return t !== 'Тихо'; });
-if (threats.length === 0) return { text: types.length === 0 ? '—' : 'Тихо', danger: false };
-const counts = {};
-threats.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
-const unique = Object.keys(counts);
-const hasDanger = unique.some(function (t) { return dangerTypes.indexOf(t) !== -1; });
-const pm = { 'Взрыв':'Взрывы','Сирена':'Сирены','Ракета':'Ракеты','БПЛА':'БПЛА','Истребитель':'Истребители' };
-const labels = unique.map(function (t) { return counts[t] > 1 ? (pm[t] || t) : t; });
-return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
+    const threats = types.filter(function (t) { return t !== 'Тихо'; });
+    if (threats.length === 0) return { text: types.length === 0 ? '—' : 'Тихо', danger: false };
+    const counts = {};
+    threats.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
+    const unique = Object.keys(counts);
+    const hasDanger = unique.some(function (t) { return dangerTypes.indexOf(t) !== -1; });
+    const pm = { 'Взрыв':'Взрывы','Сирена':'Сирены','Ракета':'Ракеты','БПЛА':'БПЛА','Истребитель':'Истребители' };
+    const labels = unique.map(function (t) { return counts[t] > 1 ? (pm[t] || t) : t; });
+    return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
 }
 
 function updateCityStatus() {
-const box = document.getElementById('city-status');
-if (!box) return;
-const nameEl = box.querySelector('.city-name');
-const stateEl = box.querySelector('.city-state');
-nameEl.textContent = (currentCity || 'Город не выбран').toUpperCase();
-if (!currentCity) { stateEl.textContent = '—'; box.classList.remove('danger'); return; }
-const types = markersData.filter(function (m) { return m.city === currentCity; }).map(function (m) { return m.type; });
-const res = pluralizeStatus(types);
-stateEl.textContent = res.text;
-box.classList.toggle('danger', res.danger);
+    const box = document.getElementById('city-status');
+    if (!box) return;
+    const nameEl = box.querySelector('.city-name');
+    const stateEl = box.querySelector('.city-state');
+    nameEl.textContent = (currentCity || 'Город не выбран').toUpperCase();
+    if (!currentCity) { stateEl.textContent = '—'; box.classList.remove('danger'); return; }
+    const types = markersData.filter(function (m) { return m.city === currentCity; }).map(function (m) { return m.type; });
+    const res = pluralizeStatus(types);
+    stateEl.textContent = res.text;
+    box.classList.toggle('danger', res.danger);
 }
 
 function checkAlerts() {
-const container = document.getElementById('alerts-container');
-if (!container) return;
-container.innerHTML = '';
-if (!currentCity) return;
+    const container = document.getElementById('alerts-container');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!currentCity) return;
 
-const cityThreats = markersData.filter(function (m) { return m.city === currentCity && m.type !== 'Тихо'; });
-const cityRocket = cityThreats.filter(function (m) { return m.type === 'Ракета'; }).length;
-const citySiren  = cityThreats.filter(function (m) { return m.type === 'Сирена'; }).length;
-const cityBpla   = cityThreats.filter(function (m) { return m.type === 'БПЛА'; }).length;
-const cityExp    = cityThreats.filter(function (m) { return m.type === 'Взрыв'; }).length;
+    const cityThreats = markersData.filter(function (m) { return m.city === currentCity && m.type !== 'Тихо'; });
+    const cityRocket = cityThreats.filter(function (m) { return m.type === 'Ракета'; }).length;
+    const citySiren  = cityThreats.filter(function (m) { return m.type === 'Сирена'; }).length;
+    const cityBpla   = cityThreats.filter(function (m) { return m.type === 'БПЛА'; }).length;
+    const cityExp    = cityThreats.filter(function (m) { return m.type === 'Взрыв'; }).length;
 
-let alertsHtml = '';
+    let alertsHtml = '';
+    if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>В вашем городе ракетная опасность</span></div></div>';
+    if (citySiren >= 1) alertsHtml += '<div class="alert-card siren-city"><div class="alert-dot"></div><div class="alert-text"><span>В городе воют сирены</span></div></div>';
+    if (cityExp >= 2 && cityBpla >= 2) alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Критическая опасность</span></div></div>';
+    if (cityThreats.length >= 3 && alertsHtml === '') alertsHtml += '<div class="alert-card"><div class="alert-dot"></div><div class="alert-text"><span>Высокая опасность</span></div></div>';
 
-if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>В вашем городе ракетная опасность</span></div></div>';
-if (citySiren >= 1) alertsHtml += '<div class="alert-card siren-city"><div class="alert-dot"></div><div class="alert-text"><span>В городе воют сирены</span></div></div>';
-if (cityExp >= 2 && cityBpla >= 2) alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Критическая опасность</span></div></div>';
-if (cityThreats.length >= 3 && alertsHtml === '') alertsHtml += '<div class="alert-card"><div class="alert-dot"></div><div class="alert-text"><span>Высокая опасность</span></div></div>';
+    const currentMarker = markersData.find(function (m) { return m.city === currentCity; });
+    const currentRegion = currentMarker ? currentMarker.region : null;
 
-const currentMarker = markersData.find(function (m) { return m.city === currentCity; });
-const currentRegion = currentMarker ? currentMarker.region : null;
+    if (currentRegion) {
+        const regionThreats = markersData.filter(function (m) { return m.region === currentRegion && dangerTypes.indexOf(m.type) !== -1; });
+        const regionRocket = regionThreats.filter(function (m) { return m.type === 'Ракета'; });
+        const regionBpla   = regionThreats.filter(function (m) { return m.type === 'БПЛА'; });
 
-if (currentRegion) {
-const regionThreats = markersData.filter(function (m) { return m.region === currentRegion && dangerTypes.indexOf(m.type) !== -1; });
-const regionRocket = regionThreats.filter(function (m) { return m.type === 'Ракета'; });
-const regionBpla   = regionThreats.filter(function (m) { return m.type === 'БПЛА'; });
-
-if (regionRocket.length >= 1 && cityRocket === 0) alertsHtml += '<div class="alert-card rocket-region"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность по области</span><span class="alert-more">250 км</span></div></div>';
-if (regionBpla.length >= 1 && cityBpla === 0) alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>БПЛА по области</span><span class="alert-more">± 50 км</span></div></div>';
-}
-container.innerHTML = alertsHtml;
+        if (regionRocket.length >= 1 && cityRocket === 0) alertsHtml += '<div class="alert-card rocket-region"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность по области</span><span class="alert-more">250 км</span></div></div>';
+        if (regionBpla.length >= 1 && cityBpla === 0) alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>БПЛА по области</span><span class="alert-more">± 50 км</span></div></div>';
+    }
+    container.innerHTML = alertsHtml;
 }
 
 async function checkSession() {
-if (!supabaseClient) return;
-const { data } = await supabaseClient.auth.getSession();
-if (!data.session) { showAuthScreen(); return; }
-let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
+    if (!supabaseClient) return;
+    const { data } = await supabaseClient.auth.getSession();
+    if (!data.session) { showAuthScreen(); return; }
+    
+    let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
 
-// Если профиля нет (или он удалился) — принудительно создаем его
-if (!profile) {
+    if (!profile) {
+        const email = data.session.user.email || '';
+        const fallbackLogin = email.includes('@vinera.app') ? email.split('@')[0] : 'user_' + Math.floor(Math.random()*10000);
+        await supabaseClient.from('profiles').insert({ id: data.session.user.id, username: fallbackLogin, role: 'user', total_markers: 0, is_banned: false, telegram_id: tg ? tg.initDataUnsafe.user.id : null });
+        const { data: newProfile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
+        profile = newProfile;
+    }
+
+    let displayName = profile ? profile.username : 'user';
     const email = data.session.user.email || '';
-    const fallbackLogin = email.includes('@vinera.app') ? email.split('@')[0] : 'user_' + Math.floor(Math.random()*10000);
+    if ((!displayName || displayName.startsWith('user_')) && email.includes('@vinera.app')) {
+        displayName = email.split('@')[0];
+    }
+
+    currentUser = displayName;
+    currentRole = (profile && profile.role) ? profile.role : 'user';
+    currentBanned = profile ? !!profile.is_banned : false;
+    currentPhone = (profile && profile.phone) ? profile.phone : null;
+    currentTotalMarkers = (profile && profile.total_markers) ? profile.total_markers : 0;
+
+    if (currentUser === ADMIN_USERNAME) { currentRole = 'admin'; currentBanned = false; }
     
-    await supabaseClient.from('profiles').insert({
-        id: data.session.user.id,
-        username: fallbackLogin,
-        role: 'user',
-        total_markers: 0,
-        is_banned: false,
-        telegram_id: tg ? tg.initDataUnsafe.user.id : null
-    });
+    if (currentBanned) {
+        await supabaseClient.auth.signOut();
+        document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#040605;height:100vh;padding-top:50px;font-family:sans-serif;"><h2 style="color:#f43f5e;">Аккаунт заблокирован</h2><p style="margin-top:10px;color:#94a3b8;">По вопросам: <b>@VineraRadarr</b></p></div>';
+        return;
+    }
     
-    const { data: newProfile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
-    profile = newProfile;
-}
-
-let displayName = profile ? profile.username : 'user';
-const email = data.session.user.email || '';
-if ((!displayName || displayName.startsWith('user_')) && email.includes('@vinera.app')) {
-    displayName = email.split('@')[0];
-}
-
-currentUser = displayName;
-currentRole = (profile && profile.role) ? profile.role : 'user';
-currentBanned = profile ? !!profile.is_banned : false;
-currentPhone = (profile && profile.phone) ? profile.phone : null;
-currentTotalMarkers = (profile && profile.total_markers) ? profile.total_markers : 0;
-
-if (currentUser === ADMIN_USERNAME) { currentRole = 'admin'; currentBanned = false; }
-if (currentBanned) {
-await supabaseClient.auth.signOut();
-document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#040605;height:100vh;padding-top:50px;font-family:sans-serif;"><h2 style="color:#f43f5e;">Аккаунт заблокирован</h2><p style="margin-top:10px;color:#94a3b8;">По вопросам: <b>@VineraRadarr</b></p></div>';
-return;
-}
-renderProfile();
-document.getElementById('auth-screen').style.display = 'none';
-const savedCity = localStorage.getItem('vinera_city');
-const savedGeo = localStorage.getItem('vinera_geo');
-if (!savedCity && currentUser !== ADMIN_USERNAME) {
-document.getElementById('onboarding-screen').classList.add('active');
-} else {
-document.getElementById('app').style.display = 'block';
-userCity = savedCity;
-currentCity = savedCity;
-if (!map) initMap();
-setTimeout(function () { if (map) map.invalidateSize(); }, 200);
-if (savedGeo) {
-try {
-const g = JSON.parse(savedGeo);
-myGeo = { lat:g.lat, lon:g.lon };
-if (map) { map.setView([g.lat, g.lon], 13); showUserLocation(g.lat, g.lon); }
-} catch (e) {}
-}
-if (navigator.geolocation && !myGeo) {
-navigator.geolocation.getCurrentPosition(function (pos) {
-myGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-localStorage.setItem('vinera_geo', JSON.stringify({ lat: myGeo.lat, lon: myGeo.lon }));
-if (map) { showUserLocation(myGeo.lat, myGeo.lon); map.setView([myGeo.lat, myGeo.lon], 13); }
-}, function () {}, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
-}
-updateCityStatus();
-await loadMarkers();
-await updateCounters();
-showToast('Метки загружены');
-}
+    renderProfile();
+    document.getElementById('auth-screen').style.display = 'none';
+    const savedCity = localStorage.getItem('vinera_city');
+    const savedGeo = localStorage.getItem('vinera_geo');
+    
+    if (!savedCity && currentUser !== ADMIN_USERNAME) {
+        document.getElementById('onboarding-screen').classList.add('active');
+    } else {
+        document.getElementById('app').style.display = 'block';
+        userCity = savedCity;
+        currentCity = savedCity;
+        if (!map) initMap();
+        setTimeout(function () { if (map) map.invalidateSize(); }, 200);
+        if (savedGeo) {
+            try {
+                const g = JSON.parse(savedGeo);
+                myGeo = { lat:g.lat, lon:g.lon };
+                if (map) { map.setView([g.lat, g.lon], 13); showUserLocation(g.lat, g.lon); }
+            } catch (e) {}
+        }
+        if (navigator.geolocation && !myGeo) {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                myGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                localStorage.setItem('vinera_geo', JSON.stringify({ lat: myGeo.lat, lon: myGeo.lon }));
+                if (map) { showUserLocation(myGeo.lat, myGeo.lon); map.setView([myGeo.lat, myGeo.lon], 13); }
+            }, function () {}, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
+        }
+        updateCityStatus();
+        await loadMarkers();
+        await updateCounters();
+        showToast('Метки загружены');
+    }
 }
 
 function renderProfile() {
-document.getElementById('profile-name').textContent = currentUser || 'user';
-document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
-document.getElementById('profile-stat-markers').textContent = currentTotalMarkers;
-let roleText = 'ПОЛЬЗОВАТЕЛЬ';
-if (currentRole === 'admin') roleText = 'АДМИНИСТРАТОР';
-else if (currentRole === 'moderator') roleText = 'МОДЕРАТОР';
-document.getElementById('profile-role-badge').textContent = roleText;
-document.getElementById('profile-stat-role').textContent = currentRole;
-const adminBtn = document.getElementById('admin-toggle-btn');
-if (adminBtn) adminBtn.style.display = (currentRole === 'admin' || currentRole === 'moderator') ? 'flex' : 'none';
+    document.getElementById('profile-name').textContent = currentUser || 'user';
+    document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
+    document.getElementById('profile-stat-markers').textContent = currentTotalMarkers;
+    let roleText = 'ПОЛЬЗОВАТЕЛЬ';
+    if (currentRole === 'admin') roleText = 'АДМИНИСТРАТОР';
+    else if (currentRole === 'moderator') roleText = 'МОДЕРАТОР';
+    document.getElementById('profile-role-badge').textContent = roleText;
+    document.getElementById('profile-stat-role').textContent = currentRole;
+    const adminBtn = document.getElementById('admin-toggle-btn');
+    if (adminBtn) adminBtn.style.display = (currentRole === 'admin' || currentRole === 'moderator') ? 'flex' : 'none';
 }
 
 function showAuthScreen() {
-document.getElementById('auth-screen').style.display = 'flex';
-document.getElementById('app').style.display = 'none';
-initTurnstile();
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    initTurnstile();
 }
 
 function showAuthError(msg) {
-const el = document.getElementById('auth-error');
-el.textContent = msg;
-el.style.display = 'block';
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
 }
 
 async function handleAuth() {
-const login = document.getElementById('auth-login').value.trim().toLowerCase();
-const password = document.getElementById('auth-password').value;
-const errEl = document.getElementById('auth-error');
-if (!login || !password) { showAuthError('Введите логин и пароль'); return; }
-if (login.length < 3) { showAuthError('Логин не короче 3 символов'); return; }
-if (!/^[a-z0-9_]+$/.test(login)) { showAuthError('Только латиница, цифры, _'); return; }
-if (password.length < 6) { showAuthError('Пароль не короче 6 символов'); return; }
-const btn = document.getElementById('auth-btn');
-btn.disabled = true;
-btn.textContent = 'Подождите...';
-errEl.style.display = 'none';
-const email = login + '@vinera.app';
-try {
-if (isRegisterMode) {
-const tgUser = tg ? tg.initDataUnsafe && tg.initDataUnsafe.user : null;
-if (tgUser) {
-const { data: reg } = await supabaseClient.from('registrations').select('count').eq('telegram_id', tgUser.id).maybeSingle();
-const currentCount = reg ? reg.count : 0;
-if (currentCount >= 3) throw new Error('Лимит аккаунтов исчерпан!');
-await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
-}
-const { data, error } = await supabaseClient.auth.signUp({ email: email, password: password, options: { captchaToken: window.turnstileToken } });
-if (error) throw error;
-if (data.user) {
-// Создаем профиль
-const { error: insertError } = await supabaseClient.from('profiles').insert({ 
-    id: data.user.id, 
-    username: login, // <--- ВОТ ТУТ ЗАПИСЫВАЕТСЯ ВВЕДЕННЫЙ ЛОГИН
-    role: 'user', 
-    total_markers: 0, 
-    is_banned: false, 
-    telegram_id: tgUser ? tgUser.id : null 
-});
-
-// И СРАЗУ ЖЕ ДУБЛИРУЕМ, ЧТОБЫ БАЗА НЕ СГЕНЕРИРОВАЛА user_123
-await supabaseClient.from('profiles').update({ username: login }).eq('id', data.user.id);
-}
-} else {
-const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password, options: { captchaToken: window.turnstileToken } });
-if (error) throw error;
-}
-resetTurnstile();
-await checkSession();
-} catch (e) {
-showAuthError(e.message || 'Ошибка входа');
-resetTurnstile();
-} finally {
-btn.disabled = false;
-btn.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
-}
+    const login = document.getElementById('auth-login').value.trim().toLowerCase();
+    const password = document.getElementById('auth-password').value;
+    const errEl = document.getElementById('auth-error');
+    
+    if (!login || !password) { showAuthError('Введите логин и пароль'); return; }
+    if (login.length < 3) { showAuthError('Логин не короче 3 символов'); return; }
+    if (!/^[a-z0-9_]+$/.test(login)) { showAuthError('Только латиница, цифры, _'); return; }
+    if (password.length < 6) { showAuthError('Пароль не короче 6 символов'); return; }
+    
+    const btn = document.getElementById('auth-btn');
+    btn.disabled = true;
+    btn.textContent = 'Подождите...';
+    errEl.style.display = 'none';
+    const email = login + '@vinera.app';
+    
+    try {
+        if (isRegisterMode) {
+            const tgUser = tg ? tg.initDataUnsafe && tg.initDataUnsafe.user : null;
+            if (tgUser) {
+                const { data: reg } = await supabaseClient.from('registrations').select('count').eq('telegram_id', tgUser.id).maybeSingle();
+                const currentCount = reg ? reg.count : 0;
+                if (currentCount >= 3) throw new Error('Лимит аккаунтов исчерпан!');
+                await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
+            }
+            const { data, error } = await supabaseClient.auth.signUp({ email: email, password: password, options: { captchaToken: window.turnstileToken } });
+            if (error) throw error;
+            if (data.user) {
+                await supabaseClient.from('profiles').insert({ id: data.user.id, username: login, role: 'user', total_markers: 0, is_banned: false, telegram_id: tgUser ? tgUser.id : null });
+                await supabaseClient.from('profiles').update({ username: login }).eq('id', data.user.id);
+            }
+        } else {
+            const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password, options: { captchaToken: window.turnstileToken } });
+            if (error) throw error;
+        }
+        resetTurnstile();
+        await checkSession();
+    } catch (e) {
+        showAuthError(e.message || 'Ошибка входа');
+        resetTurnstile();
+    } finally {
+        btn.disabled = false;
+        btn.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
+    }
 }
 
 function toggleAuthMode() {
-isRegisterMode = !isRegisterMode;
-document.getElementById('auth-btn').textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
-document.getElementById('auth-toggle').textContent = isRegisterMode ? 'У меня уже есть аккаунт' : 'Создать аккаунт';
-document.getElementById('auth-error').style.display = 'none';
+    isRegisterMode = !isRegisterMode;
+    document.getElementById('auth-btn').textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
+    document.getElementById('auth-toggle').textContent = isRegisterMode ? 'У меня уже есть аккаунт' : 'Создать аккаунт';
+    document.getElementById('auth-error').style.display = 'none';
 }
 
 async function logout() {
-isLoggedOut = true;
-if (pollInterval) clearInterval(pollInterval);
-if (cleanupInterval) clearInterval(cleanupInterval);
-if (countersInterval) clearInterval(countersInterval);
-await supabaseClient.auth.signOut();
-localStorage.removeItem('vinera_city');
-localStorage.removeItem('vinera_geo');
-currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
-userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
-myGeo = null; isPlacingMarker = false; currentMarkerType = null;
-drawMarkers();
-isLoggedOut = false;
-await checkSession();
+    isLoggedOut = true;
+    if (pollInterval) clearInterval(pollInterval);
+    if (cleanupInterval) clearInterval(cleanupInterval);
+    if (countersInterval) clearInterval(countersInterval);
+    await supabaseClient.auth.signOut();
+    localStorage.removeItem('vinera_city');
+    localStorage.removeItem('vinera_geo');
+    currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
+    userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
+    myGeo = null; isPlacingMarker = false; currentMarkerType = null;
+    drawMarkers();
+    isLoggedOut = false;
+    await checkSession();
 }
 
 async function updateCounters() {
-if (isLoggedOut || !supabaseClient) return;
-try {
-const fiveMinAgo = new Date(Date.now() - 5*60*1000).toISOString();
-const { count } = await supabaseClient.from('profiles').select('*', { count:'exact', head:true }).gt('last_seen_at', fiveMinAgo);
-const o = document.getElementById('online-count');
-if (o && count !== null) o.textContent = count;
-} catch (e) {}
+    if (isLoggedOut || !supabaseClient) return;
+    try {
+        const fiveMinAgo = new Date(Date.now() - 5*60*1000).toISOString();
+        const { count } = await supabaseClient.from('profiles').select('*', { count:'exact', head:true }).gt('last_seen_at', fiveMinAgo);
+        const o = document.getElementById('online-count');
+        if (o && count !== null) o.textContent = count;
+    } catch (e) {}
 }
 
 window.requestGeoLocation = function () {
-if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
-document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
-navigator.geolocation.getCurrentPosition(
-async function (position) {
-const lat = position.coords.latitude;
-const lon = position.coords.longitude;
-myGeo = { lat:lat, lon:lon };
-localStorage.setItem('vinera_geo', JSON.stringify({ lat:lat, lon:lon }));
-const data = await reverseGeocode(lat, lon, 10);
-let city = 'Ваш город';
-if (data && data.address) {
-const a = data.address;
-city = a.city || a.town || a.village || a.municipality || a.county || 'Ваш город';
-}
-userCity = city;
-currentCity = city;
-localStorage.setItem('vinera_city', city);
-showToast('Город определен: ' + city);
-document.getElementById('onboarding-screen').classList.remove('active');
-document.getElementById('app').style.display = 'block';
-if (!map) initMap();
-setTimeout(function () { if (map) map.invalidateSize(); }, 200);
-if (map) { map.setView([lat, lon], 13); showUserLocation(lat, lon); }
-updateCityStatus();
-await loadMarkers();
-},
-function () { alert('Вы отклонили геолокацию. Выберите город вручную.'); window.showManualCitySearch(); },
-{ enableHighAccuracy:true, timeout:10000, maximumAge:0 }
-);
+    if (!navigator.geolocation) { alert('Геолокация не поддерживается'); return; }
+    document.getElementById('onboarding-screen').innerHTML = '<h2>Ищем вас...</h2><p>Пожалуйста, подождите</p>';
+    navigator.geolocation.getCurrentPosition(
+        async function (position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            myGeo = { lat:lat, lon:lon };
+            localStorage.setItem('vinera_geo', JSON.stringify({ lat:lat, lon:lon }));
+            const data = await reverseGeocode(lat, lon, 10);
+            let city = 'Ваш город';
+            if (data && data.address) {
+                const a = data.address;
+                city = a.city || a.town || a.village || a.municipality || a.county || 'Ваш город';
+            }
+            userCity = city; currentCity = city;
+            localStorage.setItem('vinera_city', city);
+            showToast('Город определен: ' + city);
+            document.getElementById('onboarding-screen').classList.remove('active');
+            document.getElementById('app').style.display = 'block';
+            if (!map) initMap();
+            setTimeout(function () { if (map) map.invalidateSize(); }, 200);
+            if (map) { map.setView([lat, lon], 13); showUserLocation(lat, lon); }
+            updateCityStatus();
+            await loadMarkers();
+        },
+        function () { alert('Вы отклонили геолокацию. Выберите город вручную.'); window.showManualCitySearch(); },
+        { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+    );
 };
 
 window.showManualCitySearch = function () {
-document.getElementById('onboarding-screen').classList.remove('active');
-document.getElementById('app').style.display = 'block';
-if (!map) initMap();
-setTimeout(function () { if (map) map.invalidateSize(); }, 200);
-window.openSearchModal();
-showToast('Выберите город в поиске');
+    document.getElementById('onboarding-screen').classList.remove('active');
+    document.getElementById('app').style.display = 'block';
+    if (!map) initMap();
+    setTimeout(function () { if (map) map.invalidateSize(); }, 200);
+    window.openSearchModal();
+    showToast('Выберите город в поиске');
 };
 
 window.backToGeo = function () {
-if (!myGeo) { showToast('Ваше гео не определено', true); return; }
-if (map) map.setView([myGeo.lat, myGeo.lon], 13);
-showToast('Вы вернулись на своё гео');
+    if (!myGeo) { showToast('Ваше гео не определено', true); return; }
+    if (map) map.setView([myGeo.lat, myGeo.lon], 13);
+    showToast('Вы вернулись на своё гео');
 };
 
 window.openSearchModal = function () {
-document.getElementById('search-modal-overlay').classList.add('active');
-document.getElementById('modal-city-input').value = userCity || '';
+    document.getElementById('search-modal-overlay').classList.add('active');
+    document.getElementById('modal-city-input').value = userCity || '';
 };
 
 window.closeSearchModal = function () {
-document.getElementById('search-modal-overlay').classList.remove('active');
+    document.getElementById('search-modal-overlay').classList.remove('active');
 };
 
 window.searchCityFromModal = async function () {
-const city = document.getElementById('modal-city-input').value.trim();
-if (!city) return;
-showToast('Поиск...');
-try {
-const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(city)+'&limit=1&accept-language=ru', { headers: { 'Accept': 'application/json' } });
-const data = await res.json();
-if (data && data.length > 0) {
-const lat = parseFloat(data[0].lat);
-const lon = parseFloat(data[0].lon);
-const cityName = data[0].display_name.split(',')[0].trim();
-if (map) map.setView([lat, lon], 12);
-showToast('Найден: ' + cityName);
-currentCity = cityName;
-userCity = cityName;
-localStorage.setItem('vinera_city', userCity);
-updateCityStatus();
-window.closeSearchModal();
-await loadMarkers();
-} else { showToast('Город не найден', true); }
-} catch (e) { showToast('Ошибка поиска', true); }
+    const city = document.getElementById('modal-city-input').value.trim();
+    if (!city) return;
+    showToast('Поиск...');
+    try {
+        const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(city)+'&limit=1&accept-language=ru', { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+        if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            const cityName = data[0].display_name.split(',')[0].trim();
+            if (map) map.setView([lat, lon], 12);
+            showToast('Найден: ' + cityName);
+            currentCity = cityName;
+            userCity = cityName;
+            localStorage.setItem('vinera_city', userCity);
+            updateCityStatus();
+            window.closeSearchModal();
+            await loadMarkers();
+        } else { showToast('Город не найден', true); }
+    } catch (e) { showToast('Ошибка поиска', true); }
 };
 
 window.shareRadar = function () {
-const url = 'https://t.me/VineraRadarr';
-if (navigator.share) {
-navigator.share({ title:'Vinera Radar', text:'Следи за воздушной обстановкой!', url:url }).catch(function () {});
-} else if (navigator.clipboard) {
-navigator.clipboard.writeText(url).then(function () { showToast('Ссылка скопирована!'); });
-}
+    const url = 'https://t.me/VineraRadarr';
+    if (navigator.share) {
+        navigator.share({ title:'Vinera Radar', text:'Следи за воздушной обстановкой!', url:url }).catch(function () {});
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function () { showToast('Ссылка скопирована!'); });
+    }
 };
 
 window.toggleMarkersSheet = function () {
-const sheet = document.getElementById('markers-sheet');
-const overlay = document.getElementById('markers-sheet-overlay');
-if (sheet.classList.contains('active')) {
-sheet.classList.remove('active');
-overlay.style.display = 'none';
-} else {
-sheet.classList.add('active');
-overlay.style.display = 'block';
-}
+    const sheet = document.getElementById('markers-sheet');
+    const overlay = document.getElementById('markers-sheet-overlay');
+    if (sheet.classList.contains('active')) {
+        sheet.classList.remove('active');
+        overlay.style.display = 'none';
+    } else {
+        sheet.classList.add('active');
+        overlay.style.display = 'block';
+    }
 };
 
 function setMarkerType(type, btn) {
-if (isPlacingMarker && currentMarkerType === type) {
-isPlacingMarker = false;
-currentMarkerType = null;
-document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
-showToast('Режим установки отменен');
-} else {
-isPlacingMarker = true;
-currentMarkerType = type;
-document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
-if (btn) btn.classList.add('selected');
-showToast('Тапните по карте, чтобы поставить: ' + type);
-}
-window.toggleMarkersSheet();
+    if (isPlacingMarker && currentMarkerType === type) {
+        isPlacingMarker = false;
+        currentMarkerType = null;
+        document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
+        showToast('Режим установки отменен');
+    } else {
+        isPlacingMarker = true;
+        currentMarkerType = type;
+        document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
+        if (btn) btn.classList.add('selected');
+        showToast('Тапните по карте, чтобы поставить: ' + type);
+    }
+    window.toggleMarkersSheet();
 }
 
 window.switchTab = function (tab) {
-document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.remove('active'); });
-document.getElementById('feed-screen').classList.remove('active');
-document.getElementById('profile-screen').classList.remove('active');
-document.getElementById('map-container').style.display = 'block';
-if (tab === 'map') {
-document.querySelector('.nav-btn[data-tab="map"]').classList.add('active');
-setTimeout(function () { if (map) map.invalidateSize(); }, 100);
-} else if (tab === 'feed') {
-document.querySelector('.nav-btn[data-tab="feed"]').classList.add('active');
-document.getElementById('map-container').style.display = 'none';
-document.getElementById('feed-screen').classList.add('active');
-loadMarkers();
-} else if (tab === 'profile') {
-document.querySelector('.nav-btn[data-tab="profile"]').classList.add('active');
-document.getElementById('map-container').style.display = 'none';
-document.getElementById('profile-screen').classList.add('active');
-}
+    document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.remove('active'); });
+    document.getElementById('feed-screen').classList.remove('active');
+    document.getElementById('profile-screen').classList.remove('active');
+    document.getElementById('map-container').style.display = 'block';
+    if (tab === 'map') {
+        document.querySelector('.nav-btn[data-tab="map"]').classList.add('active');
+        setTimeout(function () { if (map) map.invalidateSize(); }, 100);
+    } else if (tab === 'feed') {
+        document.querySelector('.nav-btn[data-tab="feed"]').classList.add('active');
+        document.getElementById('map-container').style.display = 'none';
+        document.getElementById('feed-screen').classList.add('active');
+        loadMarkers();
+    } else if (tab === 'profile') {
+        document.querySelector('.nav-btn[data-tab="profile"]').classList.add('active');
+        document.getElementById('map-container').style.display = 'none';
+        document.getElementById('profile-screen').classList.add('active');
+    }
 };
 
 function toggleAdminPanel() {
-adminOpen = !adminOpen;
-const panel = document.getElementById('admin-panel-content');
-if (panel) {
-if (adminOpen) { panel.style.display = 'flex'; renderAdmin(); }
-else { panel.style.display = 'none'; }
-}
+    adminOpen = !adminOpen;
+    const panel = document.getElementById('admin-panel-content');
+    if (panel) {
+        if (adminOpen) { panel.style.display = 'flex'; renderAdmin(); }
+        else { panel.style.display = 'none'; }
+    }
 }
 
 function switchAdminTab(tab) {
-adminTab = tab;
-const isM = tab === 'markers';
-document.getElementById('tab-markers').classList.toggle('active', isM);
-document.getElementById('tab-users').classList.toggle('active', !isM);
-document.getElementById('clear-all-btn').style.display = isM ? 'block' : 'none';
-const searchVal = document.getElementById('admin-search');
-if (searchVal) searchVal.value = '';
-renderAdmin();
+    adminTab = tab;
+    const isM = tab === 'markers';
+    document.getElementById('tab-markers').classList.toggle('active', isM);
+    document.getElementById('tab-users').classList.toggle('active', !isM);
+    document.getElementById('clear-all-btn').style.display = isM ? 'block' : 'none';
+    const searchVal = document.getElementById('admin-search');
+    if (searchVal) searchVal.value = '';
+    renderAdmin();
 }
 
 async function clearAllMarkers() {
-if (!window.confirm('Удалить ВСЕ метки?')) return;
-const btn = document.getElementById('clear-all-btn');
-btn.textContent = 'Очистка...';
-btn.disabled = true;
-const { error } = await supabaseClient.from('vinera_markers').delete().neq('id', 0);
-if (error) { showToast('Ошибка: ' + error.message, true); }
-else {
-markersData = []; feedData = [];
-drawMarkers(); updateCityStatus(); renderFeed(); checkAlerts();
-showToast('Все метки удалены');
-}
-btn.textContent = '🗑 Очистить все метки';
-btn.disabled = false;
-renderAdmin();
+    if (!window.confirm('Удалить ВСЕ метки?')) return;
+    const btn = document.getElementById('clear-all-btn');
+    btn.textContent = 'Очистка...';
+    btn.disabled = true;
+    const { error } = await supabaseClient.from('vinera_markers').delete().neq('id', 0);
+    if (error) { showToast('Ошибка: ' + error.message, true); }
+    else {
+        markersData = []; feedData = [];
+        drawMarkers(); updateCityStatus(); renderFeed(); checkAlerts();
+        showToast('Все метки удалены');
+    }
+    btn.textContent = '🗑 Очистить все метки';
+    btn.disabled = false;
+    renderAdmin();
 }
 
 async function renderAdmin() {
-const content = document.getElementById('admin-content');
-if (!content) return;
-let searchWrapper = document.getElementById('admin-search-wrapper');
-if (!searchWrapper) {
-searchWrapper = document.createElement('div');
-searchWrapper.id = 'admin-search-wrapper';
-searchWrapper.style.cssText = 'margin-bottom: 12px; position: relative;';
-searchWrapper.innerHTML = `<input type="text" id="admin-search" placeholder="Поиск по нику..." style="width:100%; padding:14px 16px 14px 40px; border-radius:12px; background:rgba(4,10,8,.6); border:1px solid var(--border); color:var(--text); font-size:15px; outline:none;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="position:absolute; left:14px; top:15px; width:18px; height:18px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`;
-content.parentNode.insertBefore(searchWrapper, content);
-document.getElementById('admin-search').addEventListener('input', function(e) {
-const term = e.target.value.toLowerCase();
-if (adminTab === 'users') {
-const items = content.querySelectorAll('.admin-item-clickable');
-items.forEach(item => {
-const name = item.querySelector('b').textContent.toLowerCase();
-item.style.display = name.includes(term) ? 'block' : 'none';
-});
-}
-});
-}
-content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Загрузка...</div>';
-if (adminTab === 'markers') {
-searchWrapper.style.display = 'none';
-if (markersData.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Активных меток нет</div>'; return; }
-content.innerHTML = '';
-markersData.forEach(function (m) {
-const item = document.createElement('div');
-item.className = 'admin-item';
-item.innerHTML = '<b>'+escapeHtml(m.type)+'</b> — '+escapeHtml(m.city||'—')+'<div style="color:var(--text-muted);font-size:12px;margin-top:6px;">'+escapeHtml(m.address||'...')+' · Автор: <b>'+escapeHtml(m.author||'—')+'</b></div><button data-del="'+m.id+'" style="margin-top:12px;padding:10px;background:rgba(244,63,94,0.1);color:var(--danger);border:1px solid rgba(244,63,94,0.2);border-radius:8px;font-weight:600;font-size:13px;width:100%;">Удалить</button>';
-content.appendChild(item);
-});
-content.querySelectorAll('button[data-del]').forEach(function (btn) {
-btn.onclick = function () { deleteMarker(btn.getAttribute('data-del')); };
-});
-} else {
-searchWrapper.style.display = 'block';
-const { data: users, error } = await supabaseClient.from('profiles').select('*').limit(5000);
-if (error) { content.innerHTML = '<div style="color:var(--danger)">Ошибка: '+escapeHtml(error.message)+'</div>'; return; }
-const usersWithStats = (users || []).map(u => {
-const realMarkerCount = markersData.filter(m => m.author === u.username).length;
-return { ...u, real_markers: realMarkerCount };
-}).sort((a, b) => b.real_markers - a.real_markers);
-if (usersWithStats.length === 0) { content.innerHTML = '<div style="color:var(--text-muted)">Нет пользователей</div>'; return; }
-content.innerHTML = '';
-usersWithStats.forEach(function (u) {
-if (u.username === ADMIN_USERNAME) return;
-const item = document.createElement('div');
-item.className = 'admin-item admin-item-clickable' + (u.is_banned ? ' banned' : '');
-item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток на карте: '+(u.real_markers||0)+' · Роль: '+escapeHtml(u.role||'user')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
-item.onclick = function () { openUserProfileModal(u); };
-content.appendChild(item);
-});
-}
+    const content = document.getElementById('admin-content');
+    if (!content) return;
+    let searchWrapper = document.getElementById('admin-search-wrapper');
+    if (!searchWrapper) {
+        searchWrapper = document.createElement('div');
+        searchWrapper.id = 'admin-search-wrapper';
+        searchWrapper.style.cssText = 'margin-bottom: 12px; position: relative;';
+        searchWrapper.innerHTML = `<input type="text" id="admin-search" placeholder="Поиск по нику..." style="width:100%; padding:14px 16px 14px 40px; border-radius:12px; background:rgba(4,10,8,.6); border:1px solid var(--border); color:var(--text); font-size:15px; outline:none;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="position:absolute; left:14px; top:15px; width:18px; height:18px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`;
+        content.parentNode.insertBefore(searchWrapper, content);
+        document.getElementById('admin-search').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            if (adminTab === 'users') {
+                const items = content.querySelectorAll('.admin-item-clickable');
+                items.forEach(item => {
+                    const name = item.querySelector('b').textContent.toLowerCase();
+                    item.style.display = name.includes(term) ? 'block' : 'none';
+                });
+            }
+        });
+    }
+    content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Загрузка...</div>';
+    if (adminTab === 'markers') {
+        searchWrapper.style.display = 'none';
+        if (markersData.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Активных меток нет</div>'; return; }
+        content.innerHTML = '';
+        markersData.forEach(function (m) {
+            const item = document.createElement('div');
+            item.className = 'admin-item';
+            item.innerHTML = '<b>'+escapeHtml(m.type)+'</b> — '+escapeHtml(m.city||'—')+'<div style="color:var(--text-muted);font-size:12px;margin-top:6px;">'+escapeHtml(m.address||'...')+' · Автор: <b>'+escapeHtml(m.author||'—')+'</b></div><button data-del="'+m.id+'" style="margin-top:12px;padding:10px;background:rgba(244,63,94,0.1);color:var(--danger);border:1px solid rgba(244,63,94,0.2);border-radius:8px;font-weight:600;font-size:13px;width:100%;">Удалить</button>';
+            content.appendChild(item);
+        });
+        content.querySelectorAll('button[data-del]').forEach(function (btn) {
+            btn.onclick = function () { deleteMarker(btn.getAttribute('data-del')); };
+        });
+    } else {
+        searchWrapper.style.display = 'block';
+        const { data: users, error } = await supabaseClient.from('profiles').select('*').limit(5000);
+        if (error) { content.innerHTML = '<div style="color:var(--danger)">Ошибка: '+escapeHtml(error.message)+'</div>'; return; }
+        const usersWithStats = (users || []).map(u => {
+            const realMarkerCount = markersData.filter(m => m.author === u.username).length;
+            return { ...u, real_markers: realMarkerCount };
+        }).sort((a, b) => b.real_markers - a.real_markers);
+        if (usersWithStats.length === 0) { content.innerHTML = '<div style="color:var(--text-muted)">Нет пользователей</div>'; return; }
+        content.innerHTML = '';
+        usersWithStats.forEach(function (u) {
+            if (u.username === ADMIN_USERNAME) return;
+            const item = document.createElement('div');
+            item.className = 'admin-item admin-item-clickable' + (u.is_banned ? ' banned' : '');
+            item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток на карте: '+(u.real_markers||0)+' · Роль: '+escapeHtml(u.role||'user')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
+            item.onclick = function () { openUserProfileModal(u); };
+            content.appendChild(item);
+        });
+    }
 }
 
 async function deleteMarker(id) {
-const reason = window.prompt('Причина удаления:');
-if (reason === null) return;
-if (!reason.trim()) { window.alert('Причина обязательна!'); return; }
-const { error } = await supabaseClient.from('vinera_markers').delete().eq('id', id);
-if (error) { showToast('Ошибка: ' + error.message, true); return; }
-markersData = markersData.filter(function (m) { return String(m.id) !== String(id); });
-feedData = feedData.filter(function (m) { return String(m.id) !== String(id); });
-drawMarkers(); updateCityStatus(); renderFeed(); renderAdmin(); checkAlerts();
-showToast('Метка удалена');
+    const reason = window.prompt('Причина удаления:');
+    if (reason === null) return;
+    if (!reason.trim()) { window.alert('Причина обязательна!'); return; }
+    const { error } = await supabaseClient.from('vinera_markers').delete().eq('id', id);
+    if (error) { showToast('Ошибка: ' + error.message, true); return; }
+    markersData = markersData.filter(function (m) { return String(m.id) !== String(id); });
+    feedData = feedData.filter(function (m) { return String(m.id) !== String(id); });
+    drawMarkers(); updateCityStatus(); renderFeed(); renderAdmin(); checkAlerts();
+    showToast('Метка удалена');
 }
 
 function openUserProfileModal(u) {
-selectedUserId = u.id;
-selectedUserData = u;
-document.getElementById('modal-user-avatar').textContent = (u.username || 'U').charAt(0).toUpperCase();
-document.getElementById('modal-user-name').textContent = u.username || 'Без имени';
-let roleText = 'ПОЛЬЗОВАТЕЛЬ';
-if (u.role === 'admin') roleText = 'АДМИНИСТРАТОР';
-else if (u.role === 'moderator') roleText = 'МОДЕРАТОР';
-document.getElementById('modal-user-role').textContent = roleText;
-// Считаем реальные метки
-const realMarkers = markersData.filter(m => m.author === u.username).length;
-document.getElementById('modal-user-markers').textContent = realMarkers;
-document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
+    selectedUserId = u.id;
+    selectedUserData = u;
+    document.getElementById('modal-user-avatar').textContent = (u.username || 'U').charAt(0).toUpperCase();
+    document.getElementById('modal-user-name').textContent = u.username || 'Без имени';
+    let roleText = 'ПОЛЬЗОВАТЕЛЬ';
+    if (u.role === 'admin') roleText = 'АДМИНИСТРАТОР';
+    else if (u.role === 'moderator') roleText = 'МОДЕРАТОР';
+    document.getElementById('modal-user-role').textContent = roleText;
+    const realMarkers = markersData.filter(m => m.author === u.username).length;
+    document.getElementById('modal-user-markers').textContent = realMarkers;
+    document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
 
-const banBtn = document.getElementById('modal-user-ban-btn');
-const roleBtn = document.getElementById('modal-user-role-btn');
-const isAdmin = (currentRole === 'admin' || currentUser === ADMIN_USERNAME);
+    const banBtn = document.getElementById('modal-user-ban-btn');
+    const roleBtn = document.getElementById('modal-user-role-btn');
+    const isAdmin = (currentRole === 'admin' || currentUser === ADMIN_USERNAME);
 
-if (!isAdmin) {
-    roleBtn.style.display = 'none';
-    if (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME) {
-        banBtn.style.display = 'none';
+    if (!isAdmin) {
+        roleBtn.style.display = 'none';
+        if (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME) {
+            banBtn.style.display = 'none';
+        } else {
+            banBtn.style.display = 'block';
+            banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
+        }
     } else {
         banBtn.style.display = 'block';
+        roleBtn.style.display = 'block';
         banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
+        roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
     }
-} else {
-    banBtn.style.display = 'block';
-    roleBtn.style.display = 'block';
-    banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
-    roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
-}
-
-document.getElementById('user-profile-modal').classList.add('active');
+    document.getElementById('user-profile-modal').classList.add('active');
 }
 
 function closeUserProfileModal() {
-document.getElementById('user-profile-modal').classList.remove('active');
-selectedUserId = null;
-selectedUserData = null;
+    document.getElementById('user-profile-modal').classList.remove('active');
+    selectedUserId = null;
+    selectedUserData = null;
 }
 
 async function toggleBanFromModal() {
-if (!selectedUserId || !selectedUserData) return;
-const newBan = !selectedUserData.is_banned;
-const { error } = await supabaseClient.from('profiles').update({ is_banned: newBan }).eq('id', selectedUserId);
-if (error) { showToast('Ошибка: ' + error.message, true); return; }
-showToast(newBan ? 'Пользователь забанен' : 'Пользователь разбанен');
-closeUserProfileModal();
-renderAdmin();
+    if (!selectedUserId || !selectedUserData) return;
+    const newBan = !selectedUserData.is_banned;
+    const { error } = await supabaseClient.from('profiles').update({ is_banned: newBan }).eq('id', selectedUserId);
+    if (error) { showToast('Ошибка: ' + error.message, true); return; }
+    showToast(newBan ? 'Пользователь забанен' : 'Пользователь разбанен');
+    closeUserProfileModal();
+    renderAdmin();
 }
 
 async function toggleRoleFromModal() {
-if (!selectedUserId || !selectedUserData) return;
-const newRole = selectedUserData.role === 'moderator' ? 'user' : 'moderator';
-const { error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', selectedUserId);
-if (error) { showToast('Ошибка: ' + error.message, true); return; }
-showToast(newRole === 'moderator' ? 'Выдан статус модератора' : 'Статус снят');
-closeUserProfileModal();
-renderAdmin();
+    if (!selectedUserId || !selectedUserData) return;
+    const newRole = selectedUserData.role === 'moderator' ? 'user' : 'moderator';
+    const { error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', selectedUserId);
+    if (error) { showToast('Ошибка: ' + error.message, true); return; }
+    showToast(newRole === 'moderator' ? 'Выдан статус модератора' : 'Статус снят');
+    closeUserProfileModal();
+    renderAdmin();
 }
 
 function bindEvents() {
-document.getElementById('auth-btn').onclick = handleAuth;
-document.getElementById('auth-toggle').onclick = toggleAuthMode;
-document.getElementById('auth-password').addEventListener('keydown', function (e) { if (e.key === 'Enter') handleAuth(); });
-document.getElementById('onboarding-geo-btn').onclick = window.requestGeoLocation;
-document.getElementById('onboarding-manual-btn').onclick = window.showManualCitySearch;
-document.getElementById('geo-btn').onclick = window.backToGeo;
-document.getElementById('show-markers-btn').onclick = window.toggleMarkersSheet;
-document.getElementById('markers-sheet-overlay').onclick = window.toggleMarkersSheet;
-document.querySelectorAll('.marker-btn').forEach(function (b) {
-b.onclick = function () { setMarkerType(b.getAttribute('data-type'), b); };
-});
-document.querySelectorAll('.nav-btn').forEach(function (b) {
-b.onclick = function () { window.switchTab(b.getAttribute('data-tab')); };
-});
-document.getElementById('profile-search-city-btn').onclick = window.openSearchModal;
-document.getElementById('profile-share-btn').onclick = window.shareRadar;
-document.getElementById('logout-btn').onclick = logout;
-document.getElementById('admin-toggle-btn').onclick = toggleAdminPanel;
-document.getElementById('tab-markers').onclick = function () { switchAdminTab('markers'); };
-document.getElementById('tab-users').onclick = function () { switchAdminTab('users'); };
-document.getElementById('clear-all-btn').onclick = clearAllMarkers;
-document.getElementById('modal-cancel-btn').onclick = window.closeSearchModal;
-document.getElementById('modal-search-btn').onclick = window.searchCityFromModal;
-document.getElementById('modal-city-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') window.searchCityFromModal(); });
-document.getElementById('modal-user-close-btn').onclick = closeUserProfileModal;
-document.getElementById('modal-user-ban-btn').onclick = toggleBanFromModal;
-document.getElementById('modal-user-role-btn').onclick = toggleRoleFromModal;
+    document.getElementById('auth-btn').onclick = handleAuth;
+    document.getElementById('auth-toggle').onclick = toggleAuthMode;
+    document.getElementById('auth-password').addEventListener('keydown', function (e) { if (e.key === 'Enter') handleAuth(); });
+    document.getElementById('onboarding-geo-btn').onclick = window.requestGeoLocation;
+    document.getElementById('onboarding-manual-btn').onclick = window.showManualCitySearch;
+    document.getElementById('geo-btn').onclick = window.backToGeo;
+    document.getElementById('show-markers-btn').onclick = window.toggleMarkersSheet;
+    document.getElementById('markers-sheet-overlay').onclick = window.toggleMarkersSheet;
+    document.querySelectorAll('.marker-btn').forEach(function (b) {
+        b.onclick = function () { setMarkerType(b.getAttribute('data-type'), b); };
+    });
+    document.querySelectorAll('.nav-btn').forEach(function (b) {
+        b.onclick = function () { window.switchTab(b.getAttribute('data-tab')); };
+    });
+    document.getElementById('profile-search-city-btn').onclick = window.openSearchModal;
+    document.getElementById('profile-share-btn').onclick = window.shareRadar;
+    document.getElementById('logout-btn').onclick = logout;
+    document.getElementById('admin-toggle-btn').onclick = toggleAdminPanel;
+    document.getElementById('tab-markers').onclick = function () { switchAdminTab('markers'); };
+    document.getElementById('tab-users').onclick = function () { switchAdminTab('users'); };
+    document.getElementById('clear-all-btn').onclick = clearAllMarkers;
+    document.getElementById('modal-cancel-btn').onclick = window.closeSearchModal;
+    document.getElementById('modal-search-btn').onclick = window.searchCityFromModal;
+    document.getElementById('modal-city-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') window.searchCityFromModal(); });
+    document.getElementById('modal-user-close-btn').onclick = closeUserProfileModal;
+    document.getElementById('modal-user-ban-btn').onclick = toggleBanFromModal;
+    document.getElementById('modal-user-role
+                                document.getElementById('modal-user-role-btn').onclick = toggleRoleFromModal;
 }
 
 async function bootstrap() {
-if (!checkTelegramAccess()) return;
-supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-initSnow();
-bindEvents();
-initMap();
-await checkSession();
-pollInterval = setInterval(function () { if (!isLoggedOut) loadMarkers(); }, POLL_MS);
-cleanupInterval = setInterval(async function () {
-if (isLoggedOut || !supabaseClient) return;
-const cutoff = new Date(Date.now() - LIFETIME_MS).toISOString();
-await supabaseClient.from('vinera_markers').delete().lt('created_at', cutoff);
-await loadMarkers();
-}, CLEANUP_MS);
-countersInterval = setInterval(function () { updateCounters(); }, 60000);
+    if (!checkTelegramAccess()) return;
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    initSnow();
+    bindEvents();
+    initMap();
+    await checkSession();
+    
+    pollInterval = setInterval(function () { if (!isLoggedOut) loadMarkers(); }, POLL_MS);
+    
+    cleanupInterval = setInterval(async function () {
+        if (isLoggedOut || !supabaseClient) return;
+        const cutoff = new Date(Date.now() - LIFETIME_MS).toISOString();
+        await supabaseClient.from('vinera_markers').delete().lt('created_at', cutoff);
+        await loadMarkers();
+    }, CLEANUP_MS);
+    
+    countersInterval = setInterval(function () { updateCounters(); }, 60000);
 }
 
 if (document.readyState === 'loading') {
-document.addEventListener('DOMContentLoaded', bootstrap);
+    document.addEventListener('DOMContentLoaded', bootstrap);
 } else {
-bootstrap();
+    bootstrap();
 }
 
 })();
