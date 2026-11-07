@@ -583,12 +583,11 @@ box-shadow:0 8px 24px -5px var(--accent-glow),0 0 40px rgba(20,224,194,.2);
 border:2px solid rgba(216,255,248,.2);
 }
 
-/* ===== НОВЫЕ АНИМИРОВАННЫЕ СНЕЖИНКИ ВОКРУГ НИКА ===== */
+/* ===== АНИМИРОВАННЫЕ СНЕЖИНКИ ВОКРУГ НИКА ===== */
 .profile-name-wrapper{
 position:relative;display:block;margin-bottom:12px;padding:0 20px;
 text-align:center;
 }
-/* Анимированные живые снежинки по бокам */
 .profile-name-wrapper::before,
 .profile-name-wrapper::after{
 content:'';position:absolute;top:50%;width:20px;height:20px;
@@ -640,8 +639,8 @@ box-shadow:0 0 6px var(--accent);animation:twinkle 1.5s infinite alternate;
 
 /* Плашка под ником */
 .profile-badge{
-display:block; /* Ставим блочный элемент */
-margin: 10px auto 0 auto; /* Центрируем и даем отступ сверху */
+display:block;
+margin: 10px auto 0 auto;
 width: max-content;
 padding:6px 14px;border-radius:20px;
 font-size:12px;font-weight:800;
@@ -824,12 +823,9 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
      ============================================================ -->
 <div id="profile-screen">
     <div class="profile-card">
-        <!-- Снежная шапка профиля -->
         <div class="profile-snow-cap"></div>
-        
         <div class="profile-avatar" id="profile-avatar-letter">U</div>
         
-        <!-- Блок с ником и анимированными снежинками по бокам -->
         <div class="profile-name-wrapper">
             <div class="profile-name-garland">
                 <i></i><i></i><i></i><i></i><i></i>
@@ -837,7 +833,6 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
             <div class="profile-name" id="profile-name">Загрузка...</div>
         </div>
 
-        <!-- Плашка теперь аккуратно под ником -->
         <div class="profile-badge" id="profile-role-badge">ПОЛЬЗОВАТЕЛЬ</div>
         
         <div class="profile-stats">
@@ -925,7 +920,7 @@ background:rgba(4,10,8,.6);color:var(--text);outline:none;font-size:15px;
         </div>
         <div style="background:rgba(4,10,8,.5);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--border);">
             <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;">
-                <span style="color:var(--text-muted);">Меток:</span>
+                <span style="color:var(--text-muted);">Меток на карте:</span>
                 <span id="modal-user-markers" style="color:var(--text);font-weight:600;">0</span>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;">
@@ -1104,8 +1099,9 @@ return markersData.some(function (o) { return o.id !== m.id && o.type === m.type
 function popupHtml(m) {
 const meta = METADATA[m.type] || METADATA['БПЛА'];
 const confirmed = isConfirmed(m);
+// Сделали имя автора кликабельным
 return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div>'+
-'<div class="popup-muted">Поставил: <b>'+escapeHtml(m.author||'—')+'</b></div>'+
+'<div class="popup-muted">Поставил: <b class="clickable-author" data-author="'+escapeHtml(m.author||'—')+'" style="cursor:pointer;color:var(--accent);text-decoration:underline;text-decoration-color:rgba(20,224,194,0.4);">'+escapeHtml(m.author||'—')+'</b></div>'+
 '<div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div>'+
 '<div class="popup-muted">Город: '+escapeHtml(m.city||'Неизвестно')+'</div>'+
 '<div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+
@@ -1123,6 +1119,27 @@ marker.bindPopup(popupHtml(m));
 markerRefs[m.id] = marker;
 });
 }
+
+// Обработчик клика по нику в поп-апе карты
+map.on('popupopen', function(e) {
+    const authorEl = e.popup.getElement().querySelector('.clickable-author');
+    if (authorEl) {
+        authorEl.onclick = function() {
+            const authorName = this.getAttribute('data-author');
+            if (authorName && authorName !== '—') {
+                // Ищем юзера в уже загруженном списке профилей (если он там есть)
+                // Если нет, делаем запрос в базу
+                supabaseClient.from('profiles').select('*').eq('username', authorName).maybeSingle().then(res => {
+                    if (res.data) {
+                        openUserProfileModal(res.data);
+                    } else {
+                        showToast('Профиль автора не найден', true);
+                    }
+                });
+            }
+        };
+    }
+});
 
 function canPlaceMarker() {
 const now = Date.now();
@@ -1156,7 +1173,6 @@ if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
 
 async function handleMapClick(e) {
 if (!isPlacingMarker || !currentMarkerType) return;
-// Проверка телефона убрана, метки ставят все
 if (!currentCity) { showToast('Сначала выберите город в профиле!', true); return; }
 const cd = canPlaceMarker();
 if (!cd.allowed) { showToast('⏳ Подождите '+cd.wait+' сек.', true); return; }
@@ -1301,7 +1317,25 @@ async function checkSession() {
 if (!supabaseClient) return;
 const { data } = await supabaseClient.auth.getSession();
 if (!data.session) { showAuthScreen(); return; }
-const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
+let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
+
+// Если профиля нет (или он удалился) — принудительно создаем его
+if (!profile) {
+    const email = data.session.user.email || '';
+    const fallbackLogin = email.includes('@vinera.app') ? email.split('@')[0] : 'user_' + Math.floor(Math.random()*10000);
+    
+    await supabaseClient.from('profiles').insert({
+        id: data.session.user.id,
+        username: fallbackLogin,
+        role: 'user',
+        total_markers: 0,
+        is_banned: false,
+        telegram_id: tg ? tg.initDataUnsafe.user.id : null
+    });
+    
+    const { data: newProfile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
+    profile = newProfile;
+}
 
 let displayName = profile ? profile.username : 'user';
 const email = data.session.user.email || '';
@@ -1613,11 +1647,11 @@ else { panel.style.display = 'none'; }
 function switchAdminTab(tab) {
 adminTab = tab;
 const isM = tab === 'markers';
-const tm = document.getElementById('tab-markers');
-const tu = document.getElementById('tab-users');
-tm.classList.toggle('active', isM);
-tu.classList.toggle('active', !isM);
+document.getElementById('tab-markers').classList.toggle('active', isM);
+document.getElementById('tab-users').classList.toggle('active', !isM);
 document.getElementById('clear-all-btn').style.display = isM ? 'block' : 'none';
+const searchVal = document.getElementById('admin-search');
+if (searchVal) searchVal.value = '';
 renderAdmin();
 }
 
@@ -1641,29 +1675,53 @@ renderAdmin();
 async function renderAdmin() {
 const content = document.getElementById('admin-content');
 if (!content) return;
+let searchWrapper = document.getElementById('admin-search-wrapper');
+if (!searchWrapper) {
+searchWrapper = document.createElement('div');
+searchWrapper.id = 'admin-search-wrapper';
+searchWrapper.style.cssText = 'margin-bottom: 12px; position: relative;';
+searchWrapper.innerHTML = `<input type="text" id="admin-search" placeholder="Поиск по нику..." style="width:100%; padding:14px 16px 14px 40px; border-radius:12px; background:rgba(4,10,8,.6); border:1px solid var(--border); color:var(--text); font-size:15px; outline:none;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="position:absolute; left:14px; top:15px; width:18px; height:18px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`;
+content.parentNode.insertBefore(searchWrapper, content);
+document.getElementById('admin-search').addEventListener('input', function(e) {
+const term = e.target.value.toLowerCase();
+if (adminTab === 'users') {
+const items = content.querySelectorAll('.admin-item-clickable');
+items.forEach(item => {
+const name = item.querySelector('b').textContent.toLowerCase();
+item.style.display = name.includes(term) ? 'block' : 'none';
+});
+}
+});
+}
 content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Загрузка...</div>';
 if (adminTab === 'markers') {
+searchWrapper.style.display = 'none';
 if (markersData.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Активных меток нет</div>'; return; }
 content.innerHTML = '';
 markersData.forEach(function (m) {
 const item = document.createElement('div');
 item.className = 'admin-item';
-item.innerHTML = '<b>'+escapeHtml(m.type)+'</b> — '+escapeHtml(m.city||'—')+'<div style="color:var(--text-muted);font-size:12px;margin-top:6px;">'+escapeHtml(m.address||'...')+' · '+escapeHtml(m.author||'—')+'</div><button data-del="'+m.id+'" style="margin-top:12px;padding:10px;background:rgba(244,63,94,0.1);color:var(--danger);border:1px solid rgba(244,63,94,0.2);border-radius:8px;font-weight:600;font-size:13px;width:100%;">Удалить</button>';
+item.innerHTML = '<b>'+escapeHtml(m.type)+'</b> — '+escapeHtml(m.city||'—')+'<div style="color:var(--text-muted);font-size:12px;margin-top:6px;">'+escapeHtml(m.address||'...')+' · Автор: <b>'+escapeHtml(m.author||'—')+'</b></div><button data-del="'+m.id+'" style="margin-top:12px;padding:10px;background:rgba(244,63,94,0.1);color:var(--danger);border:1px solid rgba(244,63,94,0.2);border-radius:8px;font-weight:600;font-size:13px;width:100%;">Удалить</button>';
 content.appendChild(item);
 });
 content.querySelectorAll('button[data-del]').forEach(function (btn) {
 btn.onclick = function () { deleteMarker(btn.getAttribute('data-del')); };
 });
 } else {
-const { data: users, error } = await supabaseClient.from('profiles').select('*').order('total_markers', { ascending: false });
+searchWrapper.style.display = 'block';
+const { data: users, error } = await supabaseClient.from('profiles').select('*').limit(5000);
 if (error) { content.innerHTML = '<div style="color:var(--danger)">Ошибка: '+escapeHtml(error.message)+'</div>'; return; }
-if (!users || users.length === 0) { content.innerHTML = '<div style="color:var(--text-muted)">Нет пользователей</div>'; return; }
+const usersWithStats = (users || []).map(u => {
+const realMarkerCount = markersData.filter(m => m.author === u.username).length;
+return { ...u, real_markers: realMarkerCount };
+}).sort((a, b) => b.real_markers - a.real_markers);
+if (usersWithStats.length === 0) { content.innerHTML = '<div style="color:var(--text-muted)">Нет пользователей</div>'; return; }
 content.innerHTML = '';
-users.forEach(function (u) {
+usersWithStats.forEach(function (u) {
 if (u.username === ADMIN_USERNAME) return;
 const item = document.createElement('div');
 item.className = 'admin-item admin-item-clickable' + (u.is_banned ? ' banned' : '');
-item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток: '+(u.total_markers||0)+' · Роль: '+escapeHtml(u.role||'user')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
+item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток на карте: '+(u.real_markers||0)+' · Роль: '+escapeHtml(u.role||'user')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
 item.onclick = function () { openUserProfileModal(u); };
 content.appendChild(item);
 });
@@ -1691,17 +1749,17 @@ let roleText = 'ПОЛЬЗОВАТЕЛЬ';
 if (u.role === 'admin') roleText = 'АДМИНИСТРАТОР';
 else if (u.role === 'moderator') roleText = 'МОДЕРАТОР';
 document.getElementById('modal-user-role').textContent = roleText;
-document.getElementById('modal-user-markers').textContent = u.total_markers || 0;
+// Считаем реальные метки
+const realMarkers = markersData.filter(m => m.author === u.username).length;
+document.getElementById('modal-user-markers').textContent = realMarkers;
 document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
 
 const banBtn = document.getElementById('modal-user-ban-btn');
 const roleBtn = document.getElementById('modal-user-role-btn');
 const isAdmin = (currentRole === 'admin' || currentUser === ADMIN_USERNAME);
 
-// Если это модератор — он не может менять роли
 if (!isAdmin) {
     roleBtn.style.display = 'none';
-    // И не может банить админа или других модераторов
     if (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME) {
         banBtn.style.display = 'none';
     } else {
@@ -1709,7 +1767,6 @@ if (!isAdmin) {
         banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
     }
 } else {
-    // Админ может всё
     banBtn.style.display = 'block';
     roleBtn.style.display = 'block';
     banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
