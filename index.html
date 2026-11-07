@@ -23,6 +23,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #snow-layer{position:fixed;inset:0;pointer-events:none;z-index:99997;overflow:hidden}
 .snowflake{position:absolute;top:-10px;color:var(--snow);font-size:14px;opacity:.7;animation:fall linear infinite;text-shadow:0 0 6px rgba(216,255,248,.5)}
 @keyframes fall{0%{transform:translateY(-10px) translateX(0) rotate(0);opacity:0}10%{opacity:.8}90%{opacity:.8}100%{transform:translateY(105vh) translateX(40px) rotate(360deg);opacity:0}}
+</style>
+<style>
 #auth-screen{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 20% 0%,rgba(20,224,194,.12) 0%,transparent 50%),radial-gradient(circle at center,#08120f 0%,#040605 100%);display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden}
 .auth-box{position:relative;z-index:1;background:linear-gradient(160deg,rgba(10,22,20,.92) 0%,rgba(8,18,16,.96) 100%);backdrop-filter:blur(30px);border:1px solid var(--border-strong);border-radius:28px;padding:40px 26px 32px;width:100%;max-width:340px;box-shadow:0 25px 60px rgba(0,0,0,.8);display:flex;flex-direction:column;gap:16px}
 .auth-header{position:relative;text-align:center;margin-bottom:8px}
@@ -99,6 +101,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .nav-btn svg{width:24px;height:24px;transition:transform .3s,filter .3s}
 .nav-btn.active{color:var(--accent)}
 .nav-btn.active svg{transform:translateY(-3px);filter:drop-shadow(0 0 8px var(--accent-glow))}
+</style>
+<style>
 #feed-screen,#profile-screen{position:absolute;inset:0;bottom:var(--nav-h);background:var(--bg);z-index:1500;display:none;flex-direction:column;padding:24px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #feed-screen.active,#profile-screen.active{display:flex}
 .feed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-top:calc(10px + env(safe-area-inset-top))}
@@ -219,7 +223,6 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         </div>
     </div>
 </div>
-
 <div id="feed-screen">
     <div class="feed-header"><h2>События</h2><div class="feed-filter-badge">За 24 часа</div></div>
     <div id="feed-list"></div>
@@ -805,7 +808,8 @@ function toggleAuthMode() {
     document.getElementById('auth-toggle').textContent = isRegisterMode ? 'У меня уже есть аккаунт' : 'Создать аккаунт';
     document.getElementById('auth-error').style.display = 'none';
 }
-    async function logout() {
+
+async function logout() {
     isLoggedOut = true;
     if (pollInterval) clearInterval(pollInterval);
     if (cleanupInterval) clearInterval(cleanupInterval);
@@ -1157,6 +1161,8 @@ function bindEvents() {
     document.getElementById('modal-search-btn').onclick = window.searchCityFromModal;
     document.getElementById('modal-city-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') window.searchCityFromModal(); });
     document.getElementById('modal-user-close-btn').onclick = closeUserProfileModal;
+    document.getElementById('
+                                document.getElementById('modal-user-close-btn').onclick = closeUserProfileModal;
     document.getElementById('modal-user-ban-btn').onclick = toggleBanFromModal;
     document.getElementById('modal-user-role-btn').onclick = toggleRoleFromModal;
 }
