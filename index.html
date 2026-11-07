@@ -18,7 +18,6 @@ input,textarea,.leaflet-popup-content{-webkit-user-select:text;user-select:text}
 button,.menu-item,.marker-btn,.nav-btn{transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .3s,box-shadow .3s,color .3s,border-color .3s;cursor:pointer;border:none;outline:none;font-family:inherit;-webkit-tap-highlight-color:transparent}
 button:active,.menu-item:active,.marker-btn:active,.nav-btn:active{transform:scale(.93)}
 button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
-.glow-green{color:var(--accent);text-shadow:0 0 12px var(--accent-glow);font-weight:700}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(20,224,194,.3);border-radius:3px}
 #snow-layer{position:fixed;inset:0;pointer-events:none;z-index:99997;overflow:hidden}
 .snowflake{position:absolute;top:-10px;color:var(--snow);font-size:14px;opacity:.7;animation:fall linear infinite;text-shadow:0 0 6px rgba(216,255,248,.5)}
@@ -44,6 +43,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #onboarding-screen p{color:var(--text-muted);font-size:15px;line-height:1.6;max-width:320px;margin:0 0 30px}
 .onboarding-btn{width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;border-radius:16px;font-weight:800;font-size:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px}
 .onboarding-btn.secondary{background:transparent;color:var(--text);border:1px solid rgba(20,224,194,.2)}
+</style>
+<style>
 #map-container{position:absolute;inset:0;z-index:1;padding-bottom:var(--nav-h);background:var(--bg)}
 #map{width:100%;height:100%;background:#0a1512}
 .dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(1.05) saturate(.35)}
@@ -57,8 +58,6 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #city-status .city-state{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #geo-btn{width:50px;height:50px;min-width:50px;border-radius:18px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center}
 #geo-btn svg{width:22px;height:22px}
-</style>
-<style>
 #alerts-container{position:absolute;top:calc(85px + env(safe-area-inset-top));left:16px;right:16px;z-index:4000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .alert-card{display:flex;align-items:center;gap:12px;padding:13px 17px;border-radius:14px;font-weight:600;font-size:13px;color:var(--text);background:rgba(10,22,20,.94);backdrop-filter:blur(20px);pointer-events:auto;border:1px solid rgba(255,255,255,.05);border-left:4px solid var(--danger)}
 .alert-card.rocket-city{border-left-color:#ff3b5c;background:rgba(60,10,20,.95)}
@@ -94,6 +93,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .popup-title svg{width:18px;height:18px;flex-shrink:0}
 .popup-muted{color:var(--text-muted);margin-top:4px}
 .popup-muted b{color:var(--text)}
+.clickable-author{cursor:pointer;color:var(--accent);text-decoration:underline;font-weight:700}
 .popup-confirm{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 8px;background:rgba(20,224,194,.15);color:var(--accent);border:1px solid var(--accent);border-radius:6px;font-weight:700;font-size:10px}
 .popup-confirm svg{width:12px;height:12px;stroke:var(--accent)}
 #bottom-nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);background:rgba(4,10,8,.92);backdrop-filter:blur(30px);border-top:1px solid var(--border);z-index:2500;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom)}
@@ -123,12 +123,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .profile-card>*:not(.profile-snow-cap){position:relative;z-index:1}
 .profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#14e0c2,#0ea5a0);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#02120f;font-weight:800;box-shadow:0 8px 24px -5px var(--accent-glow);border:2px solid rgba(216,255,248,.2)}
 .profile-name-wrapper{position:relative;display:block;margin-bottom:12px;padding:0 20px;text-align:center}
-.profile-name-wrapper::before,.profile-name-wrapper::after{content:'';position:absolute;top:50%;width:20px;height:20px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314e0c2' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 0 8px var(--accent));opacity:0.8}
-.profile-name-wrapper::before{left:0;transform:translateY(-50%);animation:spinLeft 4s linear infinite}
-.profile-name-wrapper::after{right:0;transform:translateY(-50%);animation:spinRight 4s linear infinite}
-@keyframes spinLeft{0%{transform:translateY(-50%) rotate(0deg) scale(1)}50%{transform:translateY(-50%) rotate(180deg) scale(1.2)}100%{transform:translateY(-50%) rotate(360deg) scale(1)}}
-@keyframes spinRight{0%{transform:translateY(-50%) rotate(0deg) scale(1.2)}50%{transform:translateY(-50%) rotate(-180deg) scale(1)}100%{transform:translateY(-50%) rotate(-360deg) scale(1.2)}}
-.profile-name{font-size:22px;font-family:'Unbounded',sans-serif;color:var(--accent);text-shadow:0 0 16px var(--accent-glow);word-break:break-all;position:relative;z-index:2;display:inline-block}
+.profile-name{font-size:22px;font-family:'Unbounded',sans-serif;color:var(--accent);text-shadow:0 0 16px var(--accent-glow);word-break:break-all}
 .profile-name-garland{position:absolute;top:-12px;left:50%;transform:translateX(-50%);display:flex;justify-content:center;gap:6px}
 .profile-name-garland i{width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
 .profile-name-garland i:nth-child(2){background:#ffd93d}.profile-name-garland i:nth-child(3){background:#ff6b9d}.profile-name-garland i:nth-child(4){background:var(--accent)}.profile-name-garland i:nth-child(5){background:#ffd93d}
@@ -149,6 +144,9 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .admin-item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:14px}
 .admin-item.banned{opacity:.6}
 .admin-item-clickable{cursor:pointer}
+#admin-search-wrapper{margin-bottom:12px;position:relative;display:none}
+#admin-search{width:100%;padding:14px 16px 14px 40px;border-radius:12px;background:rgba(4,10,8,.6);border:1px solid var(--border);color:var(--text);font-size:15px;outline:none}
+#admin-search-icon{position:absolute;left:14px;top:15px;width:18px;height:18px;pointer-events:none}
 #search-modal-overlay,#user-profile-modal{position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
 #search-modal-overlay.active,#user-profile-modal.active{display:flex}
 .search-modal{background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));border:1px solid var(--border-strong);border-radius:24px;padding:24px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow-y:auto}
@@ -167,7 +165,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div class="auth-garland"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <div class="auth-header">
             <div class="auth-title">Vinera</div>
-            <div class="auth-subtitle">Новогодний <span>радар</span></div>
+            <div class="auth-subtitle">Новогодний радар</div>
         </div>
         <input type="text" id="auth-login" placeholder="Логин" autocomplete="username" maxlength="32">
         <input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password" maxlength="72">
@@ -188,7 +186,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
     <button class="onboarding-btn secondary" id="onboarding-manual-btn">Выбрать город вручную</button>
 </div>
 
-<div id="app">
+<div id="app" style="display:none;">
     <div id="map-container">
         <div id="map"></div>
         <div id="map-overlay">
@@ -223,6 +221,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         </div>
     </div>
 </div>
+
 <div id="feed-screen">
     <div class="feed-header"><h2>События</h2><div class="feed-filter-badge">За 24 часа</div></div>
     <div id="feed-list"></div>
@@ -255,6 +254,10 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
             <button class="admin-tab" id="tab-users">Юзеры</button>
         </div>
         <button id="clear-all-btn">Удалить все метки</button>
+        <div id="admin-search-wrapper">
+            <svg id="admin-search-icon" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="admin-search" placeholder="Поиск по нику..." autocomplete="off">
+        </div>
         <div id="admin-content"></div>
     </div>
 </div>
@@ -263,7 +266,6 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
     <button class="nav-btn active" data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
     <button class="nav-btn" data-tab="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
     <button class="nav-btn" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
-</div>
 </div>
 
 <div id="search-modal-overlay">
@@ -324,6 +326,7 @@ let isPlacingMarker = false;
 let currentCity = null;
 let userCity = null;
 let markersData = [];
+let allMarkersCache = [];
 let feedData = [];
 let currentUser = null;
 let currentRole = 'user';
@@ -343,6 +346,9 @@ let adminOpen = false;
 let adminTab = 'markers';
 let selectedUserId = null;
 let selectedUserData = null;
+let bootstrapped = false;
+let loadMarkersBusy = false;
+let adminSearchTerm = '';
 
 const METADATA = {
 'БПЛА':{color:'#14e0c2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},
@@ -355,223 +361,221 @@ const METADATA = {
 const dangerTypes = ['Взрыв','Сирена','Ракета','БПЛА','Истребитель'];
 
 function initSnow(){
-const layer = document.getElementById('snow-layer');
-if(!layer) return;
-for(let i=0;i<22;i++){
-const flake = document.createElement('div');
-flake.className = 'snowflake';
-flake.textContent = ['❄','❅','❆','✦'][Math.floor(Math.random()*4)];
-flake.style.left = (Math.random()*100) + '%';
-flake.style.fontSize = (8 + Math.random()*10) + 'px';
-flake.style.animationDuration = (6 + Math.random()*8) + 's';
-flake.style.animationDelay = (Math.random()*6) + 's';
-flake.style.opacity = (0.3 + Math.random()*0.5);
-layer.appendChild(flake);
-}
+    const layer = document.getElementById('snow-layer');
+    if (!layer) return;
+    for (let i = 0; i < 22; i++) {
+        const flake = document.createElement('div');
+        flake.className = 'snowflake';
+        flake.textContent = ['❄','❅','❆','✦'][Math.floor(Math.random()*4)];
+        flake.style.left = (Math.random()*100) + '%';
+        flake.style.fontSize = (8 + Math.random()*10) + 'px';
+        flake.style.animationDuration = (6 + Math.random()*8) + 's';
+        flake.style.animationDelay = (Math.random()*6) + 's';
+        flake.style.opacity = (0.3 + Math.random()*0.5);
+        layer.appendChild(flake);
+    }
 }
 
 function escapeHtml(str) {
-if (!str) return '';
-return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function showToast(text, isError) {
-const toast = document.getElementById('status-toast');
-if (!toast) return;
-toast.innerHTML = text;
-toast.style.opacity = '1';
-toast.style.transform = 'translateX(-50%) translateY(0)';
-toast.style.color = isError ? '#fda4af' : '#fff';
-toast.style.borderColor = isError ? 'rgba(244,63,94,0.4)' : 'var(--border-strong)';
-if (toastTimeout) clearTimeout(toastTimeout);
-toastTimeout = setTimeout(function () {
-toast.style.opacity = '0';
-toast.style.transform = 'translateX(-50%) translateY(-10px)';
-}, 3000);
+    const toast = document.getElementById('status-toast');
+    if (!toast) return;
+    toast.innerHTML = text;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.color = isError ? '#fda4af' : '#fff';
+    toast.style.borderColor = isError ? 'rgba(244,63,94,0.4)' : 'var(--border-strong)';
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(function () {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-10px)';
+    }, 3000);
 }
 
 function showSpinner(show) {
-const s = document.getElementById('loading-spinner');
-if (s) s.style.display = show ? 'block' : 'none';
+    const s = document.getElementById('loading-spinner');
+    if (s) s.style.display = show ? 'block' : 'none';
 }
 
 function checkTelegramAccess() {
-const isDebug = new URLSearchParams(location.search).get('debug') === '1';
-if (isDebug) return true;
-if (!tg || !tg.initData) {
-document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#040605;height:100vh;font-family:sans-serif;"><h2 style="color:#14e0c2;margin-top:50px;">Доступ запрещен</h2><p style="margin-top:20px;font-size:16px;color:#94a3b8;">Откройте радар через Telegram-бота <b>@vinera_radar_bot</b></p></div>';
-return false;
-}
-return true;
+    const isDebug = new URLSearchParams(location.search).get('debug') === '1';
+    if (isDebug) return true;
+    if (!tg || !tg.initData) {
+        document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;background:#040605;height:100vh;font-family:sans-serif;"><h2 style="color:#14e0c2;margin-top:50px;">Доступ запрещен</h2><p style="margin-top:20px;font-size:16px;color:#94a3b8;">Откройте радар через Telegram-бота <b>@vinera_radar_bot</b></p></div>';
+        return false;
+    }
+    return true;
 }
 
 function initTurnstile() {
-if (!window.turnstile) { setTimeout(initTurnstile, 300); return; }
-const container = document.getElementById('turnstile-container');
-if (!container || turnstileWidgetId !== null) return;
-try {
-turnstileWidgetId = window.turnstile.render('#turnstile-container', {
-sitekey: TURNSTILE_SITEKEY,
-theme: 'dark',
-callback: function (token) { window.turnstileToken = token; },
-'expired-callback': function () { window.turnstileToken = null; },
-'error-callback': function () { window.turnstileToken = null; }
-});
-} catch (e) {}
+    if (!window.turnstile) { setTimeout(initTurnstile, 300); return; }
+    const container = document.getElementById('turnstile-container');
+    if (!container || turnstileWidgetId !== null) return;
+    try {
+        turnstileWidgetId = window.turnstile.render('#turnstile-container', {
+            sitekey: TURNSTILE_SITEKEY,
+            theme: 'dark',
+            callback: function (token) { window.turnstileToken = token; },
+            'expired-callback': function () { window.turnstileToken = null; },
+            'error-callback': function () { window.turnstileToken = null; }
+        });
+    } catch (e) {}
 }
 
 function resetTurnstile() {
-window.turnstileToken = null;
-if (window.turnstile && turnstileWidgetId !== null) {
-try { window.turnstile.reset(turnstileWidgetId); } catch (e) {}
+    window.turnstileToken = null;
+    if (window.turnstile && turnstileWidgetId !== null) {
+        try { window.turnstile.reset(turnstileWidgetId); } catch (e) {}
+    }
 }
-}
-
-function initMap() {
-map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'dark-tiles', attribution: '' }).addTo(map);
-layerGroup = L.layerGroup().addTo(map);
-setTimeout(function () { map.invalidateSize(); }, 300);
-map.on('zoomend', function () { drawMarkers(); });
-map.on('click', handleMapClick);
+    function initMap() {
+    map = L.map('map', { zoomControl: false }).setView([55.7558, 37.6173], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'dark-tiles', attribution: '' }).addTo(map);
+    layerGroup = L.layerGroup().addTo(map);
+    setTimeout(function () { map.invalidateSize(); }, 300);
+    map.on('zoomend', function () { drawMarkers(); });
+    map.on('click', handleMapClick);
+    map.on('popupopen', function (e) {
+        const authorEl = e.popup.getElement().querySelector('.clickable-author');
+        if (authorEl) {
+            authorEl.onclick = function () {
+                const authorName = this.getAttribute('data-author');
+                if (authorName && authorName !== '—') {
+                    supabaseClient.from('profiles').select('*').eq('username', authorName).maybeSingle().then(function (res) {
+                        if (res.data) openUserProfileModal(res.data);
+                        else showToast('Профиль автора не найден', true);
+                    });
+                }
+            };
+        }
+    });
 }
 
 function showUserLocation(lat, lon) {
-if (!map) return;
-if (userLocationLayer) map.removeLayer(userLocationLayer);
-userLocationLayer = L.layerGroup().addTo(map);
-L.circle([lat, lon], { color:'#14e0c2', fillColor:'#14e0c2', fillOpacity:0.15, radius:200, weight:1 }).addTo(userLocationLayer);
-L.circleMarker([lat, lon], { radius:6, fillColor:'#14e0c2', color:'#fff', weight:2, opacity:1, fillOpacity:1 }).addTo(userLocationLayer).bindPopup('Вы здесь');
+    if (!map) return;
+    if (userLocationLayer) map.removeLayer(userLocationLayer);
+    userLocationLayer = L.layerGroup().addTo(map);
+    L.circle([lat, lon], { color:'#14e0c2', fillColor:'#14e0c2', fillOpacity:0.15, radius:200, weight:1 }).addTo(userLocationLayer);
+    L.circleMarker([lat, lon], { radius:6, fillColor:'#14e0c2', color:'#fff', weight:2, opacity:1, fillOpacity:1 }).addTo(userLocationLayer).bindPopup('Вы здесь');
 }
 
 function makeIcon(type) {
-const meta = METADATA[type] || METADATA['БПЛА'];
-return L.divIcon({ className:'', html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>', iconSize:[22,22], iconAnchor:[11,11] });
+    const meta = METADATA[type] || METADATA['БПЛА'];
+    return L.divIcon({ className:'', html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>', iconSize:[22,22], iconAnchor:[11,11] });
 }
 
 function isConfirmed(m) {
-return markersData.some(function (o) { return o.id !== m.id && o.type === m.type && map.distance([o.lat,o.lng],[m.lat,m.lng]) <= 300; });
+    return markersData.some(function (o) { return o.id !== m.id && o.type === m.type && map.distance([o.lat,o.lng],[m.lat,m.lng]) <= 300; });
 }
 
 function popupHtml(m) {
-const meta = METADATA[m.type] || METADATA['БПЛА'];
-const confirmed = isConfirmed(m);
-return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div>'+
-'<div class="popup-muted">Поставил: <b class="clickable-author" data-author="'+escapeHtml(m.author||'—')+'" style="cursor:pointer;color:var(--accent);text-decoration:underline;">'+escapeHtml(m.author||'—')+'</b></div>'+
-'<div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div>'+
-'<div class="popup-muted">Город: '+escapeHtml(m.city||'Неизвестно')+'</div>'+
-'<div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+
-(confirmed ? '<div class="popup-confirm"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Подтверждено</div>' : '');
+    const meta = METADATA[m.type] || METADATA['БПЛА'];
+    const confirmed = isConfirmed(m);
+    return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div>'+
+        '<div class="popup-muted">Поставил: <b class="clickable-author" data-author="'+escapeHtml(m.author||'—')+'">'+escapeHtml(m.author||'—')+'</b></div>'+
+        '<div class="popup-muted">Район: '+escapeHtml(m.address||'определяется...')+'</div>'+
+        '<div class="popup-muted">Город: '+escapeHtml(m.city||'Неизвестно')+'</div>'+
+        '<div class="popup-muted">'+new Date(m.created_at).toLocaleString('ru-RU')+'</div>'+
+        (confirmed ? '<div class="popup-confirm"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Подтверждено</div>' : '');
 }
 
 function drawMarkers() {
-if (!layerGroup) return;
-layerGroup.clearLayers();
-Object.keys(markerRefs).forEach(function (k) { delete markerRefs[k]; });
-if (map.getZoom() < 10) return;
-markersData.forEach(function (m) {
-const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.type) }).addTo(layerGroup);
-marker.bindPopup(popupHtml(m));
-markerRefs[m.id] = marker;
-});
+    if (!layerGroup) return;
+    layerGroup.clearLayers();
+    Object.keys(markerRefs).forEach(function (k) { delete markerRefs[k]; });
+    if (map.getZoom() < 10) return;
+    markersData.forEach(function (m) {
+        const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.type) }).addTo(layerGroup);
+        marker.bindPopup(popupHtml(m));
+        markerRefs[m.id] = marker;
+    });
 }
 
-map.on('popupopen', function(e) {
-    const authorEl = e.popup.getElement().querySelector('.clickable-author');
-    if (authorEl) {
-        authorEl.onclick = function() {
-            const authorName = this.getAttribute('data-author');
-            if (authorName && authorName !== '—') {
-                supabaseClient.from('profiles').select('*').eq('username', authorName).maybeSingle().then(res => {
-                    if (res.data) openUserProfileModal(res.data);
-                    else showToast('Профиль автора не найден', true);
-                });
-            }
-        };
-    }
-});
-
 function canPlaceMarker() {
-const now = Date.now();
-recentMarkerTimes = recentMarkerTimes.filter(function (t) { return now - t < COOLDOWN_MS; });
-if (recentMarkerTimes.length < MAX_MARKERS) return { allowed:true, wait:0 };
-const oldest = Math.min.apply(null, recentMarkerTimes);
-return { allowed:false, wait: Math.ceil((COOLDOWN_MS - (now - oldest)) / 1000) };
+    const now = Date.now();
+    recentMarkerTimes = recentMarkerTimes.filter(function (t) { return now - t < COOLDOWN_MS; });
+    if (recentMarkerTimes.length < MAX_MARKERS) return { allowed:true, wait:0 };
+    const oldest = Math.min.apply(null, recentMarkerTimes);
+    return { allowed:false, wait: Math.ceil((COOLDOWN_MS - (now - oldest)) / 1000) };
 }
 
 async function reverseGeocode(lat, lon, zoom) {
-try {
-const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon+'&zoom='+(zoom||12)+'&accept-language=ru';
-const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-if (!res.ok) return null;
-return await res.json();
-} catch (e) { return null; }
+    try {
+        const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon+'&zoom='+(zoom||12)+'&accept-language=ru';
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) { return null; }
 }
 
 async function resolveAddress(m) {
-try {
-const data = await reverseGeocode(m.lat, m.lng, 14);
-if (!data) return;
-const a = data.address || {};
-const parts = [a.city||a.town||a.village||a.county, a.suburb||a.neighbourhood||a.road];
-const address = parts.filter(Boolean).join(', ') || (data.display_name || 'неизвестно');
-await supabaseClient.from('vinera_markers').update({ address: address }).eq('id', m.id);
-m.address = address;
-if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
-} catch (e) {}
+    try {
+        const data = await reverseGeocode(m.lat, m.lng, 14);
+        if (!data) return;
+        const a = data.address || {};
+        const parts = [a.city||a.town||a.village||a.county, a.suburb||a.neighbourhood||a.road];
+        const address = parts.filter(Boolean).join(', ') || (data.display_name || 'неизвестно');
+        await supabaseClient.from('vinera_markers').update({ address: address }).eq('id', m.id);
+        m.address = address;
+        if (markerRefs[m.id]) markerRefs[m.id].setPopupContent(popupHtml(m));
+    } catch (e) {}
 }
 
 async function handleMapClick(e) {
-if (!isPlacingMarker || !currentMarkerType) return;
-if (!currentCity) { showToast('Сначала выберите город в профиле!', true); return; }
-const cd = canPlaceMarker();
-if (!cd.allowed) { showToast('⏳ Подождите '+cd.wait+' сек.', true); return; }
-showToast('Сохранение...');
-let clickedCity = currentCity;
-let clickedRegion = null;
-const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: clickedCity, region: clickedRegion, author: currentUser || 'Аноним', address: 'определяется...' };
-const result = await supabaseClient.from('vinera_markers').insert([m]).select().single();
-if (result.error) { showToast('Ошибка: '+result.error.message, true); return; }
-const data = result.data;
-recentMarkerTimes.push(Date.now());
-markersData.unshift(data);
-drawMarkers();
-updateCityStatus();
-checkAlerts();
-(async function () {
-const geo = await reverseGeocode(e.latlng.lat, e.latlng.lng, 12);
-if (geo && geo.address) {
-const a = geo.address;
-const city = a.city || a.town || a.village || a.hamlet || currentCity;
-const region = a.state || a.region || null;
-if (city !== data.city || region !== data.region) {
-await supabaseClient.from('vinera_markers').update({ city: city, region: region }).eq('id', data.id);
-data.city = city;
-data.region = region;
-updateCityStatus();
-checkAlerts();
+    if (!isPlacingMarker || !currentMarkerType) return;
+    if (!currentCity) { showToast('Сначала выберите город в профиле!', true); return; }
+    const cd = canPlaceMarker();
+    if (!cd.allowed) { showToast('⏳ Подождите '+cd.wait+' сек.', true); return; }
+    showToast('Сохранение...');
+    const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: currentCity, region: null, author: currentUser || 'Аноним', address: 'определяется...' };
+    const result = await supabaseClient.from('vinera_markers').insert([m]).select().single();
+    if (result.error) { showToast('Ошибка: '+result.error.message, true); return; }
+    const data = result.data;
+    recentMarkerTimes.push(Date.now());
+    markersData.unshift(data);
+    allMarkersCache.unshift(data);
+    drawMarkers();
+    updateCityStatus();
+    checkAlerts();
+    (async function () {
+        const geo = await reverseGeocode(e.latlng.lat, e.latlng.lng, 12);
+        if (geo && geo.address) {
+            const a = geo.address;
+            const city = a.city || a.town || a.village || a.hamlet || currentCity;
+            const region = a.state || a.region || null;
+            if (city !== data.city || region !== data.region) {
+                await supabaseClient.from('vinera_markers').update({ city: city, region: region }).eq('id', data.id);
+                data.city = city; data.region = region;
+                updateCityStatus(); checkAlerts();
+            }
+        }
+        resolveAddress(data);
+    })();
+    isPlacingMarker = false;
+    currentMarkerType = null;
+    document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
+    showToast('Метка поставлена');
 }
-}
-resolveAddress(data);
-})();
-isPlacingMarker = false;
-currentMarkerType = null;
-document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
-showToast('Метка поставлена <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:4px;filter:drop-shadow(0 0 4px var(--accent))"><path d="M20 6L9 17l-5-5"/></svg>');
-}
-    async function loadMarkers() {
-    if (isLoggedOut || !supabaseClient) return;
+
+async function loadMarkers() {
+    if (isLoggedOut || !supabaseClient || loadMarkersBusy) return;
+    loadMarkersBusy = true;
     showSpinner(true);
     try {
         const { data, error } = await supabaseClient.from('vinera_markers').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         const now = Date.now();
-        markersData = (data || []).filter(function (m) {
-            const age = now - new Date(m.created_at).getTime();
-            const isFresh = age < LIFETIME_MS;
+        allMarkersCache = (data || []).filter(function (m) {
+            return (now - new Date(m.created_at).getTime()) < LIFETIME_MS;
+        });
+        markersData = allMarkersCache.filter(function (m) {
             const isMyCity = !userCity || (m.city && m.city.toLowerCase().includes(userCity.toLowerCase()));
-            const justPlaced = age < 10000;
-            return isFresh && (isMyCity || justPlaced);
+            const justPlaced = (now - new Date(m.created_at).getTime()) < 10000;
+            return isMyCity || justPlaced;
         });
         const oneDayAgo = now - 24*60*60*1000;
         feedData = (data || []).filter(function (m) { return new Date(m.created_at).getTime() > oneDayAgo; });
@@ -579,10 +583,12 @@ showToast('Метка поставлена <svg viewBox="0 0 24 24" width="14" h
         updateCityStatus();
         renderFeed();
         checkAlerts();
+        if (adminOpen && adminTab === 'users') renderAdmin();
     } catch (err) {
         showToast('Ошибка загрузки: ' + (err.message || err), true);
     } finally {
         showSpinner(false);
+        loadMarkersBusy = false;
     }
 }
 
@@ -624,7 +630,9 @@ function updateCityStatus() {
     const stateEl = box.querySelector('.city-state');
     nameEl.textContent = (currentCity || 'Город не выбран').toUpperCase();
     if (!currentCity) { stateEl.textContent = '—'; box.classList.remove('danger'); return; }
-    const types = markersData.filter(function (m) { return m.city === currentCity; }).map(function (m) { return m.type; });
+    const types = markersData.filter(function (m) {
+        return m.city && currentCity && m.city.toLowerCase().includes(currentCity.toLowerCase());
+    }).map(function (m) { return m.type; });
     const res = pluralizeStatus(types);
     stateEl.textContent = res.text;
     box.classList.toggle('danger', res.danger);
@@ -635,27 +643,26 @@ function checkAlerts() {
     if (!container) return;
     container.innerHTML = '';
     if (!currentCity) return;
-
-    const cityThreats = markersData.filter(function (m) { return m.city === currentCity && m.type !== 'Тихо'; });
+    const cityThreats = markersData.filter(function (m) {
+        return m.city && currentCity && m.city.toLowerCase().includes(currentCity.toLowerCase()) && m.type !== 'Тихо';
+    });
     const cityRocket = cityThreats.filter(function (m) { return m.type === 'Ракета'; }).length;
     const citySiren  = cityThreats.filter(function (m) { return m.type === 'Сирена'; }).length;
     const cityBpla   = cityThreats.filter(function (m) { return m.type === 'БПЛА'; }).length;
     const cityExp    = cityThreats.filter(function (m) { return m.type === 'Взрыв'; }).length;
-
     let alertsHtml = '';
     if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>В вашем городе ракетная опасность</span></div></div>';
     if (citySiren >= 1) alertsHtml += '<div class="alert-card siren-city"><div class="alert-dot"></div><div class="alert-text"><span>В городе воют сирены</span></div></div>';
     if (cityExp >= 2 && cityBpla >= 2) alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Критическая опасность</span></div></div>';
     if (cityThreats.length >= 3 && alertsHtml === '') alertsHtml += '<div class="alert-card"><div class="alert-dot"></div><div class="alert-text"><span>Высокая опасность</span></div></div>';
-
-    const currentMarker = markersData.find(function (m) { return m.city === currentCity; });
+    const currentMarker = markersData.find(function (m) {
+        return m.city && currentCity && m.city.toLowerCase().includes(currentCity.toLowerCase());
+    });
     const currentRegion = currentMarker ? currentMarker.region : null;
-
     if (currentRegion) {
         const regionThreats = markersData.filter(function (m) { return m.region === currentRegion && dangerTypes.indexOf(m.type) !== -1; });
         const regionRocket = regionThreats.filter(function (m) { return m.type === 'Ракета'; });
         const regionBpla   = regionThreats.filter(function (m) { return m.type === 'БПЛА'; });
-
         if (regionRocket.length >= 1 && cityRocket === 0) alertsHtml += '<div class="alert-card rocket-region"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность по области</span><span class="alert-more">250 км</span></div></div>';
         if (regionBpla.length >= 1 && cityBpla === 0) alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>БПЛА по области</span><span class="alert-more">± 50 км</span></div></div>';
     }
@@ -666,48 +673,36 @@ async function checkSession() {
     if (!supabaseClient) return;
     const { data } = await supabaseClient.auth.getSession();
     if (!data.session) { showAuthScreen(); return; }
-    
     let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
-
     if (!profile) {
         const email = data.session.user.email || '';
         const fallbackLogin = email.includes('@vinera.app') ? email.split('@')[0] : 'user_' + Math.floor(Math.random()*10000);
-        await supabaseClient.from('profiles').insert({ id: data.session.user.id, username: fallbackLogin, role: 'user', total_markers: 0, is_banned: false, telegram_id: tg ? tg.initDataUnsafe.user.id : null });
+        await supabaseClient.from('profiles').insert({ id: data.session.user.id, username: fallbackLogin, role: 'user', total_markers: 0, is_banned: false, telegram_id: tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null });
         const { data: newProfile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
         profile = newProfile;
     }
-
     let displayName = profile ? profile.username : 'user';
     const email = data.session.user.email || '';
-    if ((!displayName || displayName.startsWith('user_')) && email.includes('@vinera.app')) {
-        displayName = email.split('@')[0];
-    }
-
+    if ((!displayName || displayName.startsWith('user_')) && email.includes('@vinera.app')) displayName = email.split('@')[0];
     currentUser = displayName;
     currentRole = (profile && profile.role) ? profile.role : 'user';
     currentBanned = profile ? !!profile.is_banned : false;
     currentPhone = (profile && profile.phone) ? profile.phone : null;
-    currentTotalMarkers = (profile && profile.total_markers) ? profile.total_markers : 0;
-
     if (currentUser === ADMIN_USERNAME) { currentRole = 'admin'; currentBanned = false; }
-    
     if (currentBanned) {
         await supabaseClient.auth.signOut();
         document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#040605;height:100vh;padding-top:50px;font-family:sans-serif;"><h2 style="color:#f43f5e;">Аккаунт заблокирован</h2><p style="margin-top:10px;color:#94a3b8;">По вопросам: <b>@VineraRadarr</b></p></div>';
         return;
     }
-    
-    renderProfile();
-    document.getElementById('auth-screen').style.display = 'none';
     const savedCity = localStorage.getItem('vinera_city');
     const savedGeo = localStorage.getItem('vinera_geo');
-    
     if (!savedCity && currentUser !== ADMIN_USERNAME) {
+        document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('onboarding-screen').classList.add('active');
     } else {
+        document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
-        userCity = savedCity;
-        currentCity = savedCity;
+        userCity = savedCity; currentCity = savedCity;
         if (!map) initMap();
         setTimeout(function () { if (map) map.invalidateSize(); }, 200);
         if (savedGeo) {
@@ -726,14 +721,15 @@ async function checkSession() {
         }
         updateCityStatus();
         await loadMarkers();
-        await updateCounters();
-        showToast('Метки загружены');
     }
+    await renderProfile();
 }
 
 function renderProfile() {
     document.getElementById('profile-name').textContent = currentUser || 'user';
     document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
+    const realMarkers = allMarkersCache.filter(function (m) { return m.author === currentUser; }).length;
+    currentTotalMarkers = realMarkers;
     document.getElementById('profile-stat-markers').textContent = currentTotalMarkers;
     let roleText = 'ПОЛЬЗОВАТЕЛЬ';
     if (currentRole === 'admin') roleText = 'АДМИНИСТРАТОР';
@@ -760,21 +756,18 @@ async function handleAuth() {
     const login = document.getElementById('auth-login').value.trim().toLowerCase();
     const password = document.getElementById('auth-password').value;
     const errEl = document.getElementById('auth-error');
-    
     if (!login || !password) { showAuthError('Введите логин и пароль'); return; }
     if (login.length < 3) { showAuthError('Логин не короче 3 символов'); return; }
     if (!/^[a-z0-9_]+$/.test(login)) { showAuthError('Только латиница, цифры, _'); return; }
     if (password.length < 6) { showAuthError('Пароль не короче 6 символов'); return; }
-    
     const btn = document.getElementById('auth-btn');
     btn.disabled = true;
     btn.textContent = 'Подождите...';
     errEl.style.display = 'none';
     const email = login + '@vinera.app';
-    
     try {
         if (isRegisterMode) {
-            const tgUser = tg ? tg.initDataUnsafe && tg.initDataUnsafe.user : null;
+            const tgUser = tg ? (tg.initDataUnsafe && tg.initDataUnsafe.user) : null;
             if (tgUser) {
                 const { data: reg } = await supabaseClient.from('registrations').select('count').eq('telegram_id', tgUser.id).maybeSingle();
                 const currentCount = reg ? reg.count : 0;
@@ -808,8 +801,7 @@ function toggleAuthMode() {
     document.getElementById('auth-toggle').textContent = isRegisterMode ? 'У меня уже есть аккаунт' : 'Создать аккаунт';
     document.getElementById('auth-error').style.display = 'none';
 }
-
-async function logout() {
+    async function logout() {
     isLoggedOut = true;
     if (pollInterval) clearInterval(pollInterval);
     if (cleanupInterval) clearInterval(cleanupInterval);
@@ -818,11 +810,13 @@ async function logout() {
     localStorage.removeItem('vinera_city');
     localStorage.removeItem('vinera_geo');
     currentUser = null; currentRole = 'user'; currentBanned = false; currentPhone = null;
-    userCity = null; markersData = []; feedData = []; recentMarkerTimes = [];
+    userCity = null; currentCity = null; markersData = []; allMarkersCache = []; feedData = []; recentMarkerTimes = [];
     myGeo = null; isPlacingMarker = false; currentMarkerType = null;
     drawMarkers();
     isLoggedOut = false;
     await checkSession();
+    bootstrapped = false;
+    bootstrap();
 }
 
 async function updateCounters() {
@@ -860,6 +854,7 @@ window.requestGeoLocation = function () {
             if (map) { map.setView([lat, lon], 13); showUserLocation(lat, lon); }
             updateCityStatus();
             await loadMarkers();
+            await renderProfile();
         },
         function () { alert('Вы отклонили геолокацию. Выберите город вручную.'); window.showManualCitySearch(); },
         { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
@@ -903,8 +898,7 @@ window.searchCityFromModal = async function () {
             const cityName = data[0].display_name.split(',')[0].trim();
             if (map) map.setView([lat, lon], 12);
             showToast('Найден: ' + cityName);
-            currentCity = cityName;
-            userCity = cityName;
+            currentCity = cityName; userCity = cityName;
             localStorage.setItem('vinera_city', userCity);
             updateCityStatus();
             window.closeSearchModal();
@@ -936,13 +930,11 @@ window.toggleMarkersSheet = function () {
 
 function setMarkerType(type, btn) {
     if (isPlacingMarker && currentMarkerType === type) {
-        isPlacingMarker = false;
-        currentMarkerType = null;
+        isPlacingMarker = false; currentMarkerType = null;
         document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
         showToast('Режим установки отменен');
     } else {
-        isPlacingMarker = true;
-        currentMarkerType = type;
+        isPlacingMarker = true; currentMarkerType = type;
         document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
         if (btn) btn.classList.add('selected');
         showToast('Тапните по карте, чтобы поставить: ' + type);
@@ -967,6 +959,7 @@ window.switchTab = function (tab) {
         document.querySelector('.nav-btn[data-tab="profile"]').classList.add('active');
         document.getElementById('map-container').style.display = 'none';
         document.getElementById('profile-screen').classList.add('active');
+        renderProfile();
     }
 };
 
@@ -985,8 +978,10 @@ function switchAdminTab(tab) {
     document.getElementById('tab-markers').classList.toggle('active', isM);
     document.getElementById('tab-users').classList.toggle('active', !isM);
     document.getElementById('clear-all-btn').style.display = isM ? 'block' : 'none';
-    const searchVal = document.getElementById('admin-search');
-    if (searchVal) searchVal.value = '';
+    document.getElementById('admin-search-wrapper').style.display = isM ? 'none' : 'block';
+    adminSearchTerm = '';
+    const si = document.getElementById('admin-search');
+    if (si) si.value = '';
     renderAdmin();
 }
 
@@ -998,11 +993,11 @@ async function clearAllMarkers() {
     const { error } = await supabaseClient.from('vinera_markers').delete().neq('id', 0);
     if (error) { showToast('Ошибка: ' + error.message, true); }
     else {
-        markersData = []; feedData = [];
+        markersData = []; feedData = []; allMarkersCache = [];
         drawMarkers(); updateCityStatus(); renderFeed(); checkAlerts();
         showToast('Все метки удалены');
     }
-    btn.textContent = '🗑 Очистить все метки';
+    btn.textContent = 'Удалить все метки';
     btn.disabled = false;
     renderAdmin();
 }
@@ -1010,27 +1005,8 @@ async function clearAllMarkers() {
 async function renderAdmin() {
     const content = document.getElementById('admin-content');
     if (!content) return;
-    let searchWrapper = document.getElementById('admin-search-wrapper');
-    if (!searchWrapper) {
-        searchWrapper = document.createElement('div');
-        searchWrapper.id = 'admin-search-wrapper';
-        searchWrapper.style.cssText = 'margin-bottom: 12px; position: relative;';
-        searchWrapper.innerHTML = `<input type="text" id="admin-search" placeholder="Поиск по нику..." style="width:100%; padding:14px 16px 14px 40px; border-radius:12px; background:rgba(4,10,8,.6); border:1px solid var(--border); color:var(--text); font-size:15px; outline:none;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="position:absolute; left:14px; top:15px; width:18px; height:18px;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`;
-        content.parentNode.insertBefore(searchWrapper, content);
-        document.getElementById('admin-search').addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            if (adminTab === 'users') {
-                const items = content.querySelectorAll('.admin-item-clickable');
-                items.forEach(item => {
-                    const name = item.querySelector('b').textContent.toLowerCase();
-                    item.style.display = name.includes(term) ? 'block' : 'none';
-                });
-            }
-        });
-    }
     content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Загрузка...</div>';
     if (adminTab === 'markers') {
-        searchWrapper.style.display = 'none';
         if (markersData.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Активных меток нет</div>'; return; }
         content.innerHTML = '';
         markersData.forEach(function (m) {
@@ -1043,23 +1019,27 @@ async function renderAdmin() {
             btn.onclick = function () { deleteMarker(btn.getAttribute('data-del')); };
         });
     } else {
-        searchWrapper.style.display = 'block';
         const { data: users, error } = await supabaseClient.from('profiles').select('*').limit(5000);
         if (error) { content.innerHTML = '<div style="color:var(--danger)">Ошибка: '+escapeHtml(error.message)+'</div>'; return; }
-        const usersWithStats = (users || []).map(u => {
-            const realMarkerCount = markersData.filter(m => m.author === u.username).length;
-            return { ...u, real_markers: realMarkerCount };
-        }).sort((a, b) => b.real_markers - a.real_markers);
-        if (usersWithStats.length === 0) { content.innerHTML = '<div style="color:var(--text-muted)">Нет пользователей</div>'; return; }
+        const usersWithStats = (users || []).map(function (u) {
+            const realCount = allMarkersCache.filter(function (m) { return m.author === u.username; }).length;
+            return { profile: u, real_markers: realCount };
+        }).sort(function (a, b) { return b.real_markers - a.real_markers; });
+        if (usersWithStats.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Нет пользователей</div>'; return; }
         content.innerHTML = '';
-        usersWithStats.forEach(function (u) {
+        usersWithStats.forEach(function (w) {
+            const u = w.profile;
             if (u.username === ADMIN_USERNAME) return;
+            if (adminSearchTerm && !(u.username || '').toLowerCase().includes(adminSearchTerm)) return;
             const item = document.createElement('div');
             item.className = 'admin-item admin-item-clickable' + (u.is_banned ? ' banned' : '');
-            item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток на карте: '+(u.real_markers||0)+' · Роль: '+escapeHtml(u.role||'user')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
+            item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток: '+(w.real_markers||0)+' · Роль: '+escapeHtml(u.role||'user')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
             item.onclick = function () { openUserProfileModal(u); };
             content.appendChild(item);
         });
+        if (content.children.length === 0) {
+            content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Ничего не найдено</div>';
+        }
     }
 }
 
@@ -1071,6 +1051,7 @@ async function deleteMarker(id) {
     if (error) { showToast('Ошибка: ' + error.message, true); return; }
     markersData = markersData.filter(function (m) { return String(m.id) !== String(id); });
     feedData = feedData.filter(function (m) { return String(m.id) !== String(id); });
+    allMarkersCache = allMarkersCache.filter(function (m) { return String(m.id) !== String(id); });
     drawMarkers(); updateCityStatus(); renderFeed(); renderAdmin(); checkAlerts();
     showToast('Метка удалена');
 }
@@ -1084,25 +1065,18 @@ function openUserProfileModal(u) {
     if (u.role === 'admin') roleText = 'АДМИНИСТРАТОР';
     else if (u.role === 'moderator') roleText = 'МОДЕРАТОР';
     document.getElementById('modal-user-role').textContent = roleText;
-    const realMarkers = markersData.filter(m => m.author === u.username).length;
+    const realMarkers = allMarkersCache.filter(function (m) { return m.author === u.username; }).length;
     document.getElementById('modal-user-markers').textContent = realMarkers;
     document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
-
     const banBtn = document.getElementById('modal-user-ban-btn');
     const roleBtn = document.getElementById('modal-user-role-btn');
     const isAdmin = (currentRole === 'admin' || currentUser === ADMIN_USERNAME);
-
     if (!isAdmin) {
         roleBtn.style.display = 'none';
-        if (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME) {
-            banBtn.style.display = 'none';
-        } else {
-            banBtn.style.display = 'block';
-            banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
-        }
+        if (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME) banBtn.style.display = 'none';
+        else { banBtn.style.display = 'block'; banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить'; }
     } else {
-        banBtn.style.display = 'block';
-        roleBtn.style.display = 'block';
+        banBtn.style.display = 'block'; roleBtn.style.display = 'block';
         banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
         roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
     }
@@ -1161,29 +1135,35 @@ function bindEvents() {
     document.getElementById('modal-search-btn').onclick = window.searchCityFromModal;
     document.getElementById('modal-city-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') window.searchCityFromModal(); });
     document.getElementById('modal-user-close-btn').onclick = closeUserProfileModal;
-    document.getElementById('
-                                document.getElementById('modal-user-close-btn').onclick = closeUserProfileModal;
     document.getElementById('modal-user-ban-btn').onclick = toggleBanFromModal;
     document.getElementById('modal-user-role-btn').onclick = toggleRoleFromModal;
+    document.getElementById('admin-search').addEventListener('input', function (e) {
+        adminSearchTerm = e.target.value.trim().toLowerCase();
+        renderAdmin();
+    });
 }
 
 async function bootstrap() {
+    if (bootstrapped) return;
+    bootstrapped = true;
     if (!checkTelegramAccess()) return;
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     initSnow();
     bindEvents();
     initMap();
     await checkSession();
-    
+    if (pollInterval) clearInterval(pollInterval);
+    if (cleanupInterval) clearInterval(cleanupInterval);
+    if (countersInterval) clearInterval(countersInterval);
     pollInterval = setInterval(function () { if (!isLoggedOut) loadMarkers(); }, POLL_MS);
-    
     cleanupInterval = setInterval(async function () {
         if (isLoggedOut || !supabaseClient) return;
-        const cutoff = new Date(Date.now() - LIFETIME_MS).toISOString();
-        await supabaseClient.from('vinera_markers').delete().lt('created_at', cutoff);
-        await loadMarkers();
+        try {
+            const cutoff = new Date(Date.now() - LIFETIME_MS).toISOString();
+            await supabaseClient.from('vinera_markers').delete().lt('created_at', cutoff);
+            await loadMarkers();
+        } catch (e) { console.warn('Cleanup failed:', e); }
     }, CLEANUP_MS);
-    
     countersInterval = setInterval(function () { updateCounters(); }, 60000);
 }
 
