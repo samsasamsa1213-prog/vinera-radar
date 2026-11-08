@@ -36,7 +36,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #auth-btn{position:relative;padding:16px;border-radius:14px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;font-weight:800;font-size:15px;box-shadow:0 8px 24px -5px var(--accent-glow)}
 #auth-toggle{padding:13px;background:transparent;color:var(--text-muted);border:1px solid rgba(20,224,194,.15);border-radius:14px;font-size:14px;font-weight:600}
 #auth-error{display:none;color:var(--danger);font-size:13px;text-align:center;padding:10px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:10px}
-#turnstile-container{display:flex;justify-content:center;margin-bottom:6px;min-height:65px}
+#turnstile-container{display:flex;justify-content:center;margin-bottom:6px;min-height:65px;position:relative;z-index:9999 !important;pointer-events:auto !important}
 #onboarding-screen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
 #onboarding-screen.active{display:flex}
 #onboarding-screen h2{font-family:'Unbounded',sans-serif;font-size:24px;margin:0 0 14px}
@@ -303,7 +303,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 <div id="request-modal">
     <div class="search-modal" style="max-width:340px;">
         <h3>Заявка на метку</h3>
-        <p style="text-align:center;color:var(--text-muted);font-size:13px;margin:0;">Заполните данные, чтобы получить доступ к меткам</p>
+        <p style="text-align:center;color:var(--text-muted);font-size:13px;margin:0;">Заполните данные для доступа к меткам</p>
         
         <div>
             <label style="font-size:12px;color:var(--text-muted);margin-bottom:4px;display:block;">1. Ваш Username / Telegram:</label>
@@ -316,7 +316,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         </div>
         
         <div style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);padding:12px;border-radius:12px;font-size:12px;color:#fda4af;line-height:1.4;">
-            <b>Внимание!</b> За ложные метки начисляются выговоры. 3 выговора — перманентный бан без права восстановления.
+            <b>Внимание!</b> За ложные метки начисляются выговоры. 3 выговора — перманентный бан.
         </div>
 
         <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);cursor:pointer;">
@@ -338,8 +338,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 const SUPABASE_URL = 'https://hpzemwurwkuthcgmtvlw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
 
-// 👇 ТВОЙ АДМИНСКИЙ НИК
-const ADMIN_USERNAME = 'mollu'; 
+// 👇 ТВОЙ АДМИНСКИЙ НИК (С большой буквы, как ты просил)
+const ADMIN_USERNAME = 'Mollu'; 
 
 const MAX_MARKERS = 2;
 const COOLDOWN_MS = 30000;
@@ -448,7 +448,15 @@ function checkTelegramAccess() {
 function initTurnstile() {
     if (!window.turnstile) { setTimeout(initTurnstile, 300); return; }
     const container = document.getElementById('turnstile-container');
-    if (!container || turnstileWidgetId !== null) return;
+    if (!container) { setTimeout(initTurnstile, 300); return; }
+    
+    container.style.display = 'flex';
+    
+    if (turnstileWidgetId !== null) {
+        try { window.turnstile.remove(turnstileWidgetId); } catch(e){}
+        turnstileWidgetId = null;
+    }
+    
     try {
         turnstileWidgetId = window.turnstile.render('#turnstile-container', {
             sitekey: TURNSTILE_SITEKEY,
@@ -457,7 +465,10 @@ function initTurnstile() {
             'expired-callback': function () { window.turnstileToken = null; },
             'error-callback': function () { window.turnstileToken = null; }
         });
-    } catch (e) { console.error('Turnstile error:', e); }
+    } catch (e) { 
+        console.error('Turnstile error:', e); 
+        setTimeout(initTurnstile, 1000); 
+    }
 }
 
 function resetTurnstile() {
@@ -742,6 +753,8 @@ function checkAlerts() {
 async function checkSession() {
     if (!supabaseClient) return;
     const { data, error } = await supabaseClient.auth.getSession();
+    
+    // 🛡️ АВТОХОД: Если сессия есть, идем дальше. Если нет — показываем экран входа.
     if (!data || !data.session) { showAuthScreen(); return; }
     
     let profile = null;
@@ -771,7 +784,7 @@ async function checkSession() {
     currentBanned = !!profile.is_banned;
     
     // 🛡️ ЖЕСТКАЯ ФИКСАЦИЯ РОЛЕЙ
-    if (currentUser === mollu) {
+    if (currentUser === ADMIN_USERNAME) {
         currentRole = 'admin';
         currentBanned = false;
     } else if (profile.role === 'moderator') {
@@ -1272,7 +1285,7 @@ async function toggleRoleFromModal() {
     renderAdmin();
 }
 
-// 🛡️ Одобрение заявки (выдает доступ к меткам)
+// 🛡️ Одобрение заявки
 window.approveReq = async function(id) {
     const { data: req } = await supabaseClient.from('marker_requests').select('*').eq('id', id).single();
     if (!req) return;
@@ -1390,6 +1403,8 @@ async function bootstrap() {
     initSnow();
     bindEvents();
     initMap();
+    
+    // 🛡️ Сначала проверяем сессию (автоход)
     await checkSession();
     
     if (pollInterval) clearInterval(pollInterval);
