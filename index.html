@@ -44,13 +44,32 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #map-overlay{position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:12px;pointer-events:none}
 #map-overlay>*{pointer-events:auto}
 #top-row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
-#city-status{flex:0 1 auto;min-width:0;padding:12px 18px;border-radius:20px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:14px;max-width:65%;overflow:hidden;transition:all .3s}
+#city-status{position:relative;flex:0 1 auto;min-width:0;padding:12px 18px;border-radius:20px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:14px;max-width:65%;overflow:visible;transition:all .3s}
 #city-status.danger{border-color:rgba(244,63,94,.5);background:rgba(30,10,15,.92);animation: alertPulse 1.5s infinite}
 @keyframes alertPulse {0%{box-shadow:0 0 0 0 rgba(244,63,94,.4)}70%{box-shadow:0 0 0 10px rgba(244,63,94,0)}100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}}
 #city-status .city-name{color:var(--accent);font-size:10px;display:block;font-weight:800;text-transform:uppercase;margin-bottom:2px}
 #city-status .city-state{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #geo-btn{width:50px;height:50px;min-width:50px;border-radius:18px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center}
 #geo-btn svg{width:22px;height:22px}
+
+/* НОВОГОДНЯЯ ШАПКА (Анимация) */
+.santa-hat {
+    position: absolute;
+    top: -18px;
+    right: -10px;
+    width: 32px;
+    height: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z' fill='%23f43f5e'/%3E%3Cpath d='M12 2c-5.5 0-10 4.5-10 10 0 2.5 1 4.8 2.5 6.5L12 2z' fill='%23e11d48'/%3E%3Ccircle cx='14' cy='14' r='3' fill='%23fff'/%3E%3Cpath d='M16 8c0-2-2-2-2-2s-2 0-2 2c0 3 4 3 4 0z' fill='%23fff'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    animation: hatBounce 2s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 10;
+}
+@keyframes hatBounce {
+    0%, 100% { transform: rotate(15deg) translateY(0); }
+    50% { transform: rotate(25deg) translateY(-5px); }
+}
 </style>
 <style>
 #alerts-container{position:absolute;top:calc(85px + env(safe-area-inset-top));left:16px;right:16px;z-index:4000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
@@ -120,7 +139,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .profile-card>*:not(.profile-snow-cap){position:relative;z-index:1}
 .profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#14e0c2,#0ea5a0);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#02120f;font-weight:800;box-shadow:0 8px 24px -5px var(--accent-glow);border:2px solid rgba(216,255,248,.2)}
 .profile-name-wrapper{position:relative;display:block;margin-bottom:12px;padding:0 20px;text-align:center;width:100%}
-.profile-name{font-size:22px;font-family:'Unbounded',sans-serif;color:var(--accent);text-shadow:0 0 16px var(--accent-glow);word-break:break-all;white-space:normal}
+.profile-name{font-size:22px;font-family:'Unbounded',sans-serif;color:var(--accent);text-shadow:0 0 16px var(--accent-glow);word-break:break-all;white-space:normal;position:relative;display:inline-block}
 .profile-name-garland{position:absolute;top:-12px;left:50%;transform:translateX(-50%);display:flex;justify-content:center;gap:6px}
 .profile-name-garland i{width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
 .profile-name-garland i:nth-child(2){background:#ffd93d}.profile-name-garland i:nth-child(3){background:#ff6b9d}.profile-name-garland i:nth-child(4){background:var(--accent)}.profile-name-garland i:nth-child(5){background:#ffd93d}
@@ -154,7 +173,12 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .btn-role{background:rgba(20,224,194,.1);color:var(--accent);border:1px solid rgba(20,224,194,.2)}
 .btn-warn{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
 
-/* Модалки */
+#clear-all-btn{width:100%;padding:16px;background:rgba(244,63,94,.1);color:var(--danger);border:1px solid rgba(244,63,94,.2);border-radius:12px;font-weight:600;font-size:15px;margin-top:10px;margin-bottom:16px}
+
+#admin-search-wrapper{margin-bottom:12px;position:relative;display:none}
+#admin-search{width:100%;padding:14px 16px 14px 40px;border-radius:12px;background:rgba(4,10,8,.6);border:1px solid var(--border);color:var(--text);font-size:15px;outline:none}
+#admin-search-icon{position:absolute;left:14px;top:15px;width:18px;height:18px;pointer-events:none;z-index:2}
+
 #search-modal-overlay,#user-profile-modal,#request-modal{position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
 #search-modal-overlay.active,#user-profile-modal.active,#request-modal.active{display:flex}
 .search-modal{background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));border:1px solid var(--border-strong);border-radius:24px;padding:24px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow-y:auto}
@@ -202,6 +226,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
                 <div id="city-status">
                     <span class="city-name">Город не выбран</span>
                     <span class="city-state">—</span>
+                    <div class="santa-hat"></div>
                 </div>
                 <button id="geo-btn" title="Моё местоположение">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -241,7 +266,10 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div class="profile-avatar" id="profile-avatar-letter">U</div>
         <div class="profile-name-wrapper">
             <div class="profile-name-garland"><i></i><i></i><i></i><i></i><i></i></div>
-            <div class="profile-name" id="profile-name">Загрузка...</div>
+            <div class="profile-name" id="profile-name">
+                Загрузка...
+                <div class="santa-hat" style="top:-15px; right:-25px; width:28px; height:28px;"></div>
+            </div>
         </div>
         <div class="profile-badge" id="profile-role-badge">ПОЛЬЗОВАТЕЛЬ</div>
         <div class="profile-stats">
@@ -607,7 +635,7 @@ async function resolveAddress(m) {
     } catch (e) {}
 }
 
-// 🛡️ ЗАЩИТА: Проверка границ, допуска, бана и ID из токена
+// 🛡️ ЗАЩИТА: Проверка границ, допуска, бана и ID
 async function handleMapClick(e) {
     if (!isPlacingMarker || !currentMarkerType) return;
     if (!currentCity) { showToast('Сначала выберите город!', true); return; }
@@ -933,7 +961,7 @@ async function checkSession() {
 }
 
 async function renderProfile() {
-    document.getElementById('profile-name').textContent = currentUser || 'user';
+    document.getElementById('profile-name').innerHTML = (currentUser || 'user') + '<div class="santa-hat" style="top:-15px; right:-25px; width:28px; height:28px;"></div>';
     document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
     
     let totalMyMarkers = 0;
@@ -1223,7 +1251,7 @@ function toggleAdminPanel() {
     adminOpen = !adminOpen;
     const panel = document.getElementById('admin-panel-content');
     if (panel) {
-        if (adminOpen) { panel.style.display = 'flex'; renderAdmin(); }
+        if (adminOpen) { panel.style.display = 'flex'; switchAdminTab('markers'); }
         else { panel.style.display = 'none'; }
     }
 }
