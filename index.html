@@ -11,11 +11,11 @@
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#040605;--panel:rgba(10,22,20,.82);--accent:#14e0c2;--accent-glow:rgba(20,224,194,.55);--danger:#f43f5e;--info:#3b82f6;--violet:#8b5cf6;--text:#fff;--text-muted:#7c8f8b;--border:rgba(20,224,194,.18);--border-strong:rgba(20,224,194,.4);--nav-h:76px;--snow:#d8fff8}
+:root{--bg:#040605;--panel:rgba(10,22,20,.82);--accent:#14e0c2;--accent-glow:rgba(20,224,194,.55);--danger:#f43f5e;--info:#3b82f6;--violet:#8b5cf6;--drone:#6366f1;--text:#fff;--text-muted:#7c8f8b;--border:rgba(20,224,194,.18);--border-strong:rgba(20,224,194,.4);--nav-h:76px;--snow:#d8fff8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Inter',-apple-system,sans-serif}
 html,body{margin:0;padding:0;height:100%;background:radial-gradient(ellipse at top,#08120f 0%,#040605 60%);overflow:hidden;color:var(--text);overscroll-behavior:none;-webkit-user-select:none;user-select:none}
 input,textarea,.leaflet-popup-content{-webkit-user-select:text;user-select:text}
-button,.menu-item,.marker-btn,.nav-btn{transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .3s,box-shadow .3s,color .3s,border-color .3s;cursor:pointer;border:none;outline:none;font-family:inherit;-webkit-tap-highlight-color:transparent}
+button,.menu-item,.marker-btn,.nav-btn{transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .3s,box-shadow .3s,color .3s,border-color .3s;cursor:pointer;border:none;outline:none;font-family:inherit;-webkit-tap-highlight-color:transparent;position:relative}
 button:active,.menu-item:active,.marker-btn:active,.nav-btn:active{transform:scale(.93)}
 button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(20,224,194,.3);border-radius:3px}
@@ -52,40 +52,33 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #geo-btn{width:50px;height:50px;min-width:50px;border-radius:18px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center}
 #geo-btn svg{width:22px;height:22px}
 
-/* НОВОГОДНЯЯ ШАПКА */
-.santa-hat {
-    position: absolute;
-    top: -18px;
-    right: -10px;
-    width: 32px;
-    height: 32px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z' fill='%23f43f5e'/%3E%3Cpath d='M12 2c-5.5 0-10 4.5-10 10 0 2.5 1 4.8 2.5 6.5L12 2z' fill='%23e11d48'/%3E%3Ccircle cx='14' cy='14' r='3' fill='%23fff'/%3E%3Cpath d='M16 8c0-2-2-2-2-2s-2 0-2 2c0 3 4 3 4 0z' fill='%23fff'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    animation: hatBounce 2s infinite ease-in-out;
-    pointer-events: none;
-    z-index: 10;
-}
-@keyframes hatBounce {
-    0%, 100% { transform: rotate(15deg) translateY(0); }
-    50% { transform: rotate(25deg) translateY(-5px); }
-}
+/* ШАПКА */
+.santa-hat{position:absolute;top:-18px;right:-10px;width:32px;height:32px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z' fill='%23f43f5e'/%3E%3Cpath d='M12 2c-5.5 0-10 4.5-10 10 0 2.5 1 4.8 2.5 6.5L12 2z' fill='%23e11d48'/%3E%3Ccircle cx='14' cy='14' r='3' fill='%23fff'/%3E%3Cpath d='M16 8c0-2-2-2-2-2s-2 0-2 2c0 3 4 3 4 0z' fill='%23fff'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;animation:hatBounce 2s infinite ease-in-out;pointer-events:none;z-index:10}
+@keyframes hatBounce{0%,100%{transform:rotate(15deg) translateY(0)}50%{transform:rotate(25deg) translateY(-5px)}}
 
 /* СНЕГОВИК */
-.snowman {
+.snowman{position:absolute;width:30px;height:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='16' r='6' fill='%23fff'/%3E%3Ccircle cx='12' cy='8' r='4' fill='%23fff'/%3E%3Ccircle cx='10.5' cy='7.5' r='0.8' fill='%23000'/%3E%3Ccircle cx='13.5' cy='7.5' r='0.8' fill='%23000'/%3E%3Cpath d='M11 9h2' stroke='%23f59e0b' stroke-width='1'/%3E%3Cpath d='M9 14h6' stroke='%23f43f5e' stroke-width='1'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;z-index:500;animation:snowmanBounce 3s infinite ease-in-out}
+@keyframes snowmanBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* 🎄 3D ГИРЛЯНДА НА КНОПКАХ */
+.garland-border { position: relative; }
+.garland-border::before {
+    content: '';
     position: absolute;
-    width: 30px;
-    height: 30px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='16' r='6' fill='%23fff'/%3E%3Ccircle cx='12' cy='8' r='4' fill='%23fff'/%3E%3Ccircle cx='10.5' cy='7.5' r='0.8' fill='%23000'/%3E%3Ccircle cx='13.5' cy='7.5' r='0.8' fill='%23000'/%3E%3Cpath d='M11 9h2' stroke='%23f59e0b' stroke-width='1'/%3E%3Cpath d='M9 14h6' stroke='%23f43f5e' stroke-width='1'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    z-index: 500;
-    animation: snowmanBounce 3s infinite ease-in-out;
+    bottom: -2px; left: 5%; right: 5%; height: 4px;
+    background-image: radial-gradient(circle, #ff3b5c 2px, transparent 2.5px), radial-gradient(circle, #ffd93d 2px, transparent 2.5px), radial-gradient(circle, #14e0c2 2px, transparent 2.5px);
+    background-size: 12px 12px;
+    background-position: 0 0, 4px 2px, 8px 0;
+    background-repeat: repeat-x;
+    border-radius: 4px;
+    animation: twinkle 1s infinite alternate;
 }
-@keyframes snowmanBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
+@keyframes twinkle { from{opacity:.6} to{opacity:1;filter:drop-shadow(0 0 4px #ffd93d)} }
+
+/* ЭФФЕКТЫ ПВО */
+.tracer-line { stroke-dasharray: 10, 10; animation: dash 0.5s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -20; } }
+.explosion-particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; pointer-events: none; z-index: 9999; }
 </style>
 <style>
 #alerts-container{position:absolute;top:calc(85px + env(safe-area-inset-top));left:16px;right:16px;z-index:4000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
@@ -239,12 +232,12 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div id="map"></div>
         <div id="map-overlay">
             <div id="top-row">
-                <div id="city-status">
+                <div id="city-status" class="garland-border">
                     <span class="city-name">Город не выбран</span>
                     <span class="city-state">—</span>
                     <div class="santa-hat"></div>
                 </div>
-                <button id="geo-btn" title="Моё местоположение">
+                <button id="geo-btn" title="Моё местоположение" class="garland-border">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 </button>
             </div>
@@ -252,7 +245,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div id="alerts-container"></div>
         <div id="status-toast">Метки загружены</div>
         <div id="loading-spinner"></div>
-        <button id="show-markers-btn">
+        <button id="show-markers-btn" class="garland-border">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Сообщить
         </button>
@@ -260,7 +253,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div id="markers-sheet">
             <div class="sheet-handle"></div>
             <div id="types-row">
-                <button class="marker-btn" data-type="БПЛА"><svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>БПЛА</button>
+                <button class="marker-btn" data-type="Гул БПЛА"><svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>Гул БПЛА</button>
                 <button class="marker-btn" data-type="Ракета"><svg viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>Ракета</button>
                 <button class="marker-btn" data-type="Истребитель"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>Истребитель</button>
                 <button class="marker-btn" data-type="Сирена"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>Сирена</button>
@@ -294,25 +287,25 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         </div>
     </div>
     <div class="profile-menu">
-        <div class="menu-item" id="profile-request-btn"><span>Оставить заявку на метку</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
-        <div class="menu-item" id="profile-sound-btn"><span>Включить звук сирены</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
-        <div class="menu-item" id="profile-share-geo-btn"><span>Поделиться геолокацией</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-        <div class="menu-item" id="profile-search-city-btn"><span>Выбрать регион / город</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
-        <div class="menu-item" id="profile-share-btn"><span>Поделиться радаром</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
-        <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item"><span>Связь с владельцем</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
-        <div class="menu-item" id="admin-toggle-btn" style="display:none;"><span>Админ-панель</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-        <div class="menu-item danger" id="logout-btn" style="margin-top:40px;"><span>Выйти из аккаунта</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
+        <div class="menu-item garland-border" id="profile-request-btn"><span>Оставить заявку на метку</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div class="menu-item garland-border" id="profile-sound-btn"><span>Включить звук сирены</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+        <div class="menu-item garland-border" id="profile-share-geo-btn"><span>Поделиться геолокацией</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="menu-item garland-border" id="profile-search-city-btn"><span>Выбрать регион / город</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+        <div class="menu-item garland-border" id="profile-share-btn"><span>Поделиться радаром</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
+        <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item garland-border"><span>Связь с владельцем</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
+        <div class="menu-item garland-border" id="admin-toggle-btn" style="display:none;"><span>Админ-панель</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        <div class="menu-item danger garland-border" id="logout-btn" style="margin-top:40px;"><span>Выйти из аккаунта</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
     </div>
     <div id="admin-panel-content">
         <!-- НОВОЕ МЕНЮ АДМИНКИ -->
         <div class="admin-menu">
-            <button class="admin-menu-btn active" data-admin-tab="markers">Метки <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg></button>
-            <button class="admin-menu-btn" data-admin-tab="users">Пользователи <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
-            <button class="admin-menu-btn" data-admin-tab="requests">Заявки <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></button>
-            <button class="admin-menu-btn" data-admin-tab="mods">Модераторы <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></button>
+            <button class="admin-menu-btn active garland-border" data-admin-tab="markers">Метки <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg></button>
+            <button class="admin-menu-btn garland-border" data-admin-tab="users">Пользователи <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
+            <button class="admin-menu-btn garland-border" data-admin-tab="requests">Заявки <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></button>
+            <button class="admin-menu-btn garland-border" data-admin-tab="mods">Модераторы <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></button>
         </div>
 
-        <button id="clear-all-btn">Удалить все метки</button>
+        <button id="clear-all-btn" class="garland-border">Удалить все метки</button>
         
         <div id="admin-search-wrapper">
             <svg id="admin-search-icon" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -324,9 +317,9 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 </div>
 
 <div id="bottom-nav">
-    <button class="nav-btn active" data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
-    <button class="nav-btn" data-tab="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
-    <button class="nav-btn" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
+    <button class="nav-btn active garland-border" data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Карта</span></button>
+    <button class="nav-btn garland-border" data-tab="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>События</span></button>
+    <button class="nav-btn garland-border" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Профиль</span></button>
 </div>
 
 <div id="search-modal-overlay">
@@ -447,21 +440,20 @@ let bootstrapped = false;
 let loadMarkersBusy = false;
 let adminSearchTerm = '';
 
-// 🔔 ПЕРЕМЕННЫЕ ДЛЯ ЗВУКА
+// 🔔 ЗВУК
 let soundEnabled = false;
 let audioCtx = null;
 let lastSirenPlayedAt = 0;
-let sirenQueue = [];
 
 const METADATA = {
-'БПЛА':{color:'#14e0c2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},
+'Гул БПЛА':{color:'#6366f1',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},
 'Ракета':{color:'#f43f5e',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>'},
 'Истребитель':{color:'#3b82f6',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 7h6l-2 3h-4l1 6-3-2-3 2 1-6H6l-2-3h6l2-7z"/></svg>'},
 'Сирена':{color:'#8b5cf6',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0v4H4v-4z"/><path d="M12 2v2M3 8l2 2M21 8l-2 2M2 14h2M20 14h2M8 18v2M16 18v2"/></svg>'},
 'Взрыв':{color:'#f59e0b',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z"/></svg>'},
-'Тихо':{color:'#14e0c2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}
+'Тихо':{color:'#10b981',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}
 };
-const dangerTypes = ['Взрыв','Сирена','Ракета','БПЛА','Истребитель'];
+const dangerTypes = ['Взрыв','Сирена','Ракета','Гул БПЛА','Истребитель'];
 
 // Координаты для проверки РФ
 const RF_BOUNDS = { minLat: 41.0, maxLat: 82.0, minLng: 19.0, maxLng: 180.0 };
@@ -532,16 +524,10 @@ function checkTelegramAccess() {
     return true;
 }
 
-// ==========================================
-// 🔊 СИСТЕМА ЗВУКОВОГО ОПОВЕЩЕНИЯ
-// ==========================================
+// 🔊 ЗВУК
 function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 function playSirenSound() {
@@ -580,33 +566,22 @@ function speakAlert() {
 function triggerCityAlarm() {
     if (!soundEnabled) return;
     const now = Date.now();
-    // Если прошло меньше 30 минут с последнего оповещения, молчим
     if (now - lastSirenPlayedAt < 30 * 60 * 1000) return;
-    
     lastSirenPlayedAt = now;
     playSirenSound();
-    
-    // Голос говорим через 2.5 секунды после сирены (когда сирена закончится)
-    setTimeout(function() {
-        speakAlert();
-    }, 2500);
+    setTimeout(function() { speakAlert(); }, 2500);
 }
 
-// ==========================================
 // 📱 TURNSTILE
-// ==========================================
 function initTurnstile() {
     if (!window.turnstile) { setTimeout(initTurnstile, 300); return; }
     const container = document.getElementById('turnstile-container');
     if (!container) { setTimeout(initTurnstile, 300); return; }
-    
     container.style.display = 'flex';
-    
     if (turnstileWidgetId !== null) {
         try { window.turnstile.remove(turnstileWidgetId); } catch(e){}
         turnstileWidgetId = null;
     }
-    
     try {
         turnstileWidgetId = window.turnstile.render('#turnstile-container', {
             sitekey: TURNSTILE_SITEKEY,
@@ -615,10 +590,7 @@ function initTurnstile() {
             'expired-callback': function () { window.turnstileToken = null; },
             'error-callback': function () { window.turnstileToken = null; }
         });
-    } catch (e) { 
-        console.error('Turnstile error:', e); 
-        setTimeout(initTurnstile, 1000); 
-    }
+    } catch (e) { setTimeout(initTurnstile, 1000); }
 }
 
 function resetTurnstile() {
@@ -661,7 +633,7 @@ function showUserLocation(lat, lon) {
 }
 
 function makeIcon(type) {
-    const meta = METADATA[type] || METADATA['БПЛА'];
+    const meta = METADATA[type] || METADATA['Гул БПЛА'];
     return L.divIcon({ className:'', html:'<div class="pulse-marker" style="width:22px;height:22px;background:'+meta.color+';color:'+meta.color+';">'+meta.svg+'</div>', iconSize:[22,22], iconAnchor:[11,11] });
 }
 
@@ -670,7 +642,7 @@ function isConfirmed(m) {
 }
 
 function popupHtml(m) {
-    const meta = METADATA[m.type] || METADATA['БПЛА'];
+    const meta = METADATA[m.type] || METADATA['Гул БПЛА'];
     const confirmed = isConfirmed(m);
     return '<div class="popup-title">'+meta.svg+' '+escapeHtml(m.type)+'</div>'+
         '<div class="popup-muted">Поставил: <b class="clickable-author" data-author="'+escapeHtml(m.author||'—')+'">'+escapeHtml(m.author||'—')+'</b></div>'+
@@ -722,7 +694,81 @@ async function resolveAddress(m) {
     } catch (e) {}
 }
 
-// 🛡️ ЗАЩИТА: Проверка границ, допуска, бана и ID
+// 🚀 ПВО АНИМАЦИЯ
+function triggerAirDefense(explosionMarker) {
+    // Ищем ближайший "Гул БПЛА" в радиусе 1.5 км
+    let targetDrone = null;
+    let minDist = Infinity;
+    
+    markersData.forEach(function(m) {
+        if (m.type === 'Гул БПЛА') {
+            const dist = map.distance([explosionMarker.lat, explosionMarker.lng], [m.lat, m.lng]);
+            if (dist < 1500 && dist < minDist) {
+                minDist = dist;
+                targetDrone = m;
+            }
+        }
+    });
+
+    if (!targetDrone) return; // Если рядом нет дрона, ничего не делаем
+
+    showToast('🎯 ПВО перехватывает цель!', false);
+
+    // 1. Рисуем трассер (линию) от взрыва к дрону
+    const tracer = L.polyline([
+        [explosionMarker.lat, explosionMarker.lng],
+        [targetDrone.lat, targetDrone.lng]
+    ], { color: '#f59e0b', weight: 3, className: 'tracer-line' }).addTo(map);
+
+    // 2. Через 0.8 сек удаляем линию и взрываем дрон
+    setTimeout(function() {
+        map.removeLayer(tracer);
+        
+        // Взрыв на месте дрона
+        const droneLatLng = [targetDrone.lat, targetDrone.lng];
+        const explosionDiv = document.createElement('div');
+        explosionDiv.style.position = 'absolute';
+        explosionDiv.style.width = '60px';
+        explosionDiv.style.height = '60px';
+        explosionDiv.style.background = 'radial-gradient(circle, #ffd93d 0%, #f59e0b 50%, transparent 70%)';
+        explosionDiv.style.borderRadius = '50%';
+        explosionDiv.style.pointerEvents = 'none';
+        explosionDiv.style.transform = 'translate(-50%, -50%)';
+        explosionDiv.style.transition = 'all 0.5s ease-out';
+        explosionDiv.style.opacity = '1';
+        explosionDiv.style.zIndex = '9999';
+
+        const point = map.latLngToContainerPoint(droneLatLng);
+        explosionDiv.style.left = point.x + 'px';
+        explosionDiv.style.top = point.y + 'px';
+        document.getElementById('map-container').appendChild(explosionDiv);
+
+        // Анимация расширения взрыва
+        setTimeout(function() {
+            explosionDiv.style.width = '200px';
+            explosionDiv.style.height = '200px';
+            explosionDiv.style.opacity = '0';
+            explosionDiv.style.transform = 'translate(-50%, -50%) scale(2)';
+        }, 50);
+
+        setTimeout(function() {
+            if (explosionDiv.parentNode) explosionDiv.parentNode.removeChild(explosionDiv);
+        }, 600);
+
+        // 3. Удаляем дрон с карты и из базы (но счетчик меток у автора не трогаем)
+        if (markerRefs[targetDrone.id]) {
+            map.removeLayer(markerRefs[targetDrone.id]);
+        }
+        supabaseClient.from('vinera_markers').delete().eq('id', targetDrone.id);
+        
+        // Обновляем локальный кэш
+        markersData = markersData.filter(function(m) { return m.id !== targetDrone.id; });
+        allMarkersCache = allMarkersCache.filter(function(m) { return m.id !== targetDrone.id; });
+        
+        showToast('💥 БПЛА уничтожен!', false);
+    }, 800);
+}
+
 async function handleMapClick(e) {
     if (!isPlacingMarker || !currentMarkerType) return;
     if (!currentCity) { showToast('Сначала выберите город!', true); return; }
@@ -750,15 +796,8 @@ async function handleMapClick(e) {
         return;
     }
 
-    if (userIsBanned) {
-        showToast('Ваш аккаунт заблокирован!', true);
-        return;
-    }
-
-    if (userBanUntil && new Date(userBanUntil) > new Date()) {
-        showToast('Вы забанены! Причина: фейк метки', true);
-        return;
-    }
+    if (userIsBanned) { showToast('Ваш аккаунт заблокирован!', true); return; }
+    if (userBanUntil && new Date(userBanUntil) > new Date()) { showToast('Вы забанены! Причина: фейк метки', true); return; }
 
     if (!dbApproved && currentUser !== ADMIN_USERNAME) {
         showToast('Вы не одобрены! Подайте заявку в профиле.', true);
@@ -785,6 +824,11 @@ async function handleMapClick(e) {
     drawMarkers();
     updateCityStatus();
     checkAlerts();
+
+    // 🚀 ЗАПУСК ПВО, если это Взрыв
+    if (data.type === 'Взрыв') {
+        triggerAirDefense(data);
+    }
     
     (async function () {
         const geo = await reverseGeocode(e.latlng.lat, e.latlng.lng, 12);
@@ -852,7 +896,7 @@ function renderFeed() {
         return;
     }
     feedData.forEach(function (m) {
-        const meta = METADATA[m.type] || METADATA['БПЛА'];
+        const meta = METADATA[m.type] || METADATA['Гул БПЛА'];
         const item = document.createElement('div');
         item.className = 'feed-item';
         const time = new Date(m.created_at).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
@@ -869,7 +913,7 @@ function pluralizeStatus(types) {
     threats.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
     const unique = Object.keys(counts);
     const hasDanger = unique.some(function (t) { return dangerTypes.indexOf(t) !== -1; });
-    const pm = { 'Взрыв':'Взрывы','Сирена':'Сирены','Ракета':'Ракеты','БПЛА':'БПЛА','Истребитель':'Истребители' };
+    const pm = { 'Взрыв':'Взрывы','Сирена':'Сирены','Ракета':'Ракеты','Гул БПЛА':'Гул БПЛА','Истребитель':'Истребители' };
     const labels = unique.map(function (t) { return counts[t] > 1 ? (pm[t] || t) : t; });
     return { text: '⚠ ' + labels.join(' · '), danger: hasDanger };
 }
@@ -903,7 +947,7 @@ function checkAlerts() {
     
     const cityRocket = cityThreats.filter(function (m) { return m.type === 'Ракета'; }).length;
     const citySiren  = cityThreats.filter(function (m) { return m.type === 'Сирена'; }).length;
-    const cityBpla   = cityThreats.filter(function (m) { return m.type === 'БПЛА'; }).length;
+    const cityBpla   = cityThreats.filter(function (m) { return m.type === 'Гул БПЛА'; }).length;
     const cityExp    = cityThreats.filter(function (m) { return m.type === 'Взрыв'; }).length;
     
     let alertsHtml = '';
@@ -924,13 +968,12 @@ function checkAlerts() {
     if (currentRegion) {
         const regionThreats = markersData.filter(function (m) { return m.region === currentRegion && dangerTypes.indexOf(m.type) !== -1; });
         const regionRocket = regionThreats.filter(function (m) { return m.type === 'Ракета'; });
-        const regionBpla   = regionThreats.filter(function (m) { return m.type === 'БПЛА'; });
+        const regionBpla   = regionThreats.filter(function (m) { return m.type === 'Гул БПЛА'; });
         if (regionRocket.length >= 1 && cityRocket === 0) alertsHtml += '<div class="alert-card rocket-region"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность по области</span><span class="alert-more">250 км</span></div></div>';
         if (regionBpla.length >= 1 && cityBpla === 0) alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>БПЛА по области</span><span class="alert-more">± 50 км</span></div></div>';
     }
     container.innerHTML = alertsHtml;
 
-    // 🔊 ЗАПУСК СИРЕНЫ, ЕСЛИ В ГОРОДЕ ЕСТЬ СИРЕНА/РАКЕТА
     if (citySiren >= 1 || cityRocket >= 1) {
         triggerCityAlarm();
     }
@@ -1358,7 +1401,6 @@ function switchAdminTab(tab) {
         btn.classList.toggle('active', btn.getAttribute('data-admin-tab') === tab);
     });
 
-    // Кнопка "Удалить все" только для админа
     const isAdmin = (currentUser === ADMIN_USERNAME);
     document.getElementById('clear-all-btn').style.display = (tab === 'markers' && isAdmin) ? 'block' : 'none';
     document.getElementById('admin-search-wrapper').style.display = tab === 'users' ? 'block' : 'none';
@@ -1397,7 +1439,6 @@ async function renderAdmin() {
 
     if (!isMod) { content.innerHTML = 'Нет прав'; return; }
 
-    // Вкладка МОДЕРАТОРЫ
     if (adminTab === 'mods') {
         const { data: mods, error } = await supabaseClient.from('profiles').select('*').eq('role', 'moderator').order('username');
         if (error) { content.innerHTML = 'Ошибка: ' + error.message; return; }
@@ -1413,7 +1454,6 @@ async function renderAdmin() {
         return;
     }
 
-    // Вкладка ЗАЯВКИ
     if (adminTab === 'requests') {
         const { data: reqs, error } = await supabaseClient.from('marker_requests').select('*').eq('status', 'pending').order('created_at', { ascending: true });
         if (error) { content.innerHTML = 'Ошибка: ' + error.message; return; }
@@ -1429,7 +1469,6 @@ async function renderAdmin() {
         return;
     }
     
-    // Вкладка МЕТКИ
     if (adminTab === 'markers') {
         if (markersData.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Активных меток нет</div>'; return; }
         content.innerHTML = '';
@@ -1443,7 +1482,6 @@ async function renderAdmin() {
             btn.onclick = function () { deleteMarker(btn.getAttribute('data-del')); };
         });
     } else {
-        // Вкладка ЮЗЕРЫ
         const { data: users, error: userErr } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false }).limit(5000);
         if (userErr) { content.innerHTML = '<div style="color:var(--danger)">Ошибка: '+escapeHtml(userErr.message)+'</div>'; return; }
         
@@ -1463,7 +1501,6 @@ async function renderAdmin() {
             return;
         }
 
-        // 🛡️ СОРТИРОВКА: Банные в конец, потом по количеству меток
         filteredUsers.sort(function(a, b) {
             if (a.is_banned && !b.is_banned) return 1;
             if (!a.is_banned && b.is_banned) return -1;
@@ -1524,7 +1561,6 @@ function openUserProfileModal(u) {
     const isMod = isAdmin || currentRole === 'moderator';
 
     if (isMod) {
-        // Модераторы видят кнопку бана, админ — тоже
         banBtn.style.display = 'block';
         banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
     } else {
@@ -1532,7 +1568,6 @@ function openUserProfileModal(u) {
     }
 
     if (isAdmin) {
-        // Только админ видит роль и выговор
         roleBtn.style.display = 'block';
         warnBtn.style.display = 'block';
         roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
@@ -1664,7 +1699,6 @@ function bindEvents() {
     document.getElementById('logout-btn').onclick = logout;
     document.getElementById('admin-toggle-btn').onclick = toggleAdminPanel;
     
-    // Кнопка включения звука
     document.getElementById('profile-sound-btn').onclick = function() {
         if (!soundEnabled) {
             soundEnabled = true;
