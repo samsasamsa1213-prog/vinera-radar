@@ -242,6 +242,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         </div>
     </div>
     <div class="profile-menu">
+        <div class="menu-item" id="profile-request-btn"><span>Оставить заявку на метку</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
         <div class="menu-item" id="profile-search-city-btn"><span>Выбрать регион / город</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
         <div class="menu-item" id="profile-share-btn"><span>Поделиться радаром</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
         <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item"><span>Связь с владельцем</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
@@ -252,6 +253,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div class="admin-tabs">
             <button class="admin-tab active" id="tab-markers">Метки</button>
             <button class="admin-tab" id="tab-users">Юзеры</button>
+            <button class="admin-tab" id="tab-requests">Заявки</button>
         </div>
         <button id="clear-all-btn">Удалить все метки</button>
         <div id="admin-search-wrapper">
@@ -298,6 +300,25 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
     </div>
 </div>
 
+<div id="request-modal" style="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px;">
+    <div class="search-modal" style="max-width:340px;">
+        <h3>Заявка на метку</h3>
+        <input type="text" id="req-type" placeholder="Тип (БПЛА, Ракета, Взрыв...)" required>
+        <input type="text" id="req-address" placeholder="Адрес (г. Москва, ул. Ленина)" required>
+        <div style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);padding:12px;border-radius:12px;font-size:12px;color:#fda4af;line-height:1.4;">
+            <b>Внимание!</b> За ложные метки начисляются выговоры. 3 выговора — перманентный бан.
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);cursor:pointer;">
+            <input type="checkbox" id="req-rules" style="width:18px;height:18px;accent-color:var(--accent);">
+            Я ознакомлен с правилами
+        </label>
+        <div class="modal-buttons">
+            <button class="modal-btn-cancel" id="req-cancel-btn">Отмена</button>
+            <button class="modal-btn-primary" id="req-submit-btn">Отправить</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function () {
@@ -305,8 +326,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 const SUPABASE_URL = 'https://hpzemwurwkuthcgmtvlw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
 
-// 👇 ТВОЙ АДМИНСКИЙ НИК
-const ADMIN_USERNAME = 'vineraradar'; 
+// 👇 ТВОЙ АДМИНСКИЙ НИК (должен совпадать с базой)
+const ADMIN_USERNAME = 'Vinera'; 
 
 const MAX_MARKERS = 2;
 const COOLDOWN_MS = 30000;
@@ -452,8 +473,6 @@ function resetTurnstile() {
                         if (res.data) openUserProfileModal(res.data);
                         else showToast('Профиль автора не найден', true);
                     });
-                } else {
-                    showToast('Этот профиль скрыт или удален', true);
                 }
             };
         }
@@ -530,16 +549,24 @@ async function resolveAddress(m) {
     } catch (e) {}
 }
 
+// 🛡️ ГЛАВНАЯ ЗАЩИТА: Проверяем is_approved перед постановкой
 async function handleMapClick(e) {
     if (!isPlacingMarker || !currentMarkerType) return;
-    if (!currentCity) { showToast('Сначала выберите город в профиле!', true); return; }
+    if (!currentCity) { showToast('Сначала выберите город!', true); return; }
     
-    // 🛡️ ЗАЩИТА ОТ АНОНИМОВ И БОТОВ
-    if (!currentUser || /^\d+$/.test(currentUser)) {
-        showToast('Ошибка: Войдите в аккаунт, чтобы ставить метки!', true);
+    // Проверяем, одобрен ли пользователь в базе
+    let isApproved = false;
+    try {
+        const { data } = await supabaseClient.from('profiles').select('is_approved').eq('username', currentUser).single();
+        isApproved = data && data.is_approved;
+    } catch(err) {}
+
+    if (!isApproved && currentUser !== ADMIN_USERNAME) {
+        showToast('Вы не одобрены! Подайте заявку в профиле.', true);
         isPlacingMarker = false;
         currentMarkerType = null;
         document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
+        window.switchTab('profile'); // Отправляем в профиль
         return;
     }
 
@@ -550,7 +577,7 @@ async function handleMapClick(e) {
     const m = { type: currentMarkerType, lat: e.latlng.lat, lng: e.latlng.lng, city: currentCity, region: null, author: currentUser, address: 'определяется...' };
     const result = await supabaseClient.from('vinera_markers').insert([m]).select().single();
     
-    if (result.error) { showToast('Ошибка: '+result.error.message, true); return; }
+    if (result.error) { showToast('Ошибка: ' + result.error.message, true); return; }
     
     const data = result.data;
     recentMarkerTimes.push(Date.now());
@@ -719,6 +746,7 @@ async function checkSession() {
             username: loginFromEmail, 
             role: 'user', 
             is_banned: false, 
+            is_approved: false, // По умолчанию не одобрен
             telegram_id: tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null 
         });
         const { data: newProfile } = await supabaseClient.from('profiles').select('*').eq('id', data.session.user.id).maybeSingle();
@@ -782,12 +810,12 @@ async function renderProfile() {
     document.getElementById('profile-name').textContent = currentUser || 'user';
     document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
     
-    // 🛡️ СЧЕТЧИК МЕТОК
+    // Счетчик меток
     let totalMyMarkers = 0;
     try {
         const { count } = await supabaseClient.from('vinera_markers').select('*', { count:'exact', head:true }).eq('author', currentUser);
         totalMyMarkers = count || 0;
-    } catch(e) { console.error('Ошибка счетчика:', e); }
+    } catch(e) {}
     
     document.getElementById('profile-stat-markers').textContent = totalMyMarkers;
     
@@ -835,7 +863,6 @@ async function handleAuth() {
         if (isRegisterMode) {
             const tgUser = tg ? (tg.initDataUnsafe && tg.initDataUnsafe.user) : null;
             
-            // 🛡️ ЛИМИТ 3 АККАУНТА НА 1 ТГ
             if (tgUser) {
                 const { count, error: countErr } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('telegram_id', tgUser.id);
                 if (countErr) throw countErr;
@@ -859,6 +886,7 @@ async function handleAuth() {
                     username: login, 
                     role: 'user', 
                     is_banned: false, 
+                    is_approved: false,
                     telegram_id: tgUser ? tgUser.id : null 
                 });
             }
@@ -1023,7 +1051,7 @@ function setMarkerType(type, btn) {
         isPlacingMarker = true; currentMarkerType = type;
         document.querySelectorAll('.marker-btn').forEach(function (b) { b.classList.remove('selected'); });
         if (btn) btn.classList.add('selected');
-        showToast('Тапните по карте, чтобы поставить: ' + type);
+        showToast('Тапните по карте: ' + type);
     }
     window.toggleMarkersSheet();
 }
@@ -1060,11 +1088,13 @@ function toggleAdminPanel() {
 
 function switchAdminTab(tab) {
     adminTab = tab;
-    const isM = tab === 'markers';
-    document.getElementById('tab-markers').classList.toggle('active', isM);
-    document.getElementById('tab-users').classList.toggle('active', !isM);
-    document.getElementById('clear-all-btn').style.display = isM ? 'block' : 'none';
-    document.getElementById('admin-search-wrapper').style.display = isM ? 'none' : 'block';
+    document.getElementById('tab-markers').classList.toggle('active', tab === 'markers');
+    document.getElementById('tab-users').classList.toggle('active', tab === 'users');
+    document.getElementById('tab-requests').classList.toggle('active', tab === 'requests');
+    
+    document.getElementById('clear-all-btn').style.display = tab === 'markers' ? 'block' : 'none';
+    document.getElementById('admin-search-wrapper').style.display = tab === 'users' ? 'block' : 'none';
+    
     adminSearchTerm = '';
     const si = document.getElementById('admin-search');
     if (si) si.value = '';
@@ -1093,6 +1123,21 @@ async function renderAdmin() {
     if (!content) return;
     content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Загрузка...</div>';
     
+    if (adminTab === 'requests') {
+        const { data: reqs, error } = await supabaseClient.from('marker_requests').select('*').eq('status', 'pending').order('created_at', { ascending: true });
+        if (error) { content.innerHTML = 'Ошибка: ' + error.message; return; }
+        if (!reqs || reqs.length === 0) { content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Нет новых заявок</div>'; return; }
+        
+        content.innerHTML = '';
+        reqs.forEach(function (r) {
+            const item = document.createElement('div');
+            item.className = 'admin-item';
+            item.innerHTML = '<b>'+escapeHtml(r.type)+'</b> — '+escapeHtml(r.city||'—')+'<div style="font-size:12px;color:var(--text-muted);margin:6px 0;">От: <b>'+escapeHtml(r.author)+'</b><br>Адрес: '+escapeHtml(r.address)+'</div><div style="display:flex;gap:8px;"><button onclick="window.approveReq(\''+r.id+'\')" style="flex:1;padding:10px;background:rgba(20,224,194,0.1);color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-weight:600;">Одобрить</button><button onclick="window.rejectReq(\''+r.id+'\')" style="flex:1;padding:10px;background:rgba(244,63,94,0.1);color:var(--danger);border:1px solid var(--danger);border-radius:8px;font-weight:600;">Отклонить</button></div>';
+            content.appendChild(item);
+        });
+        return;
+    }
+    
     if (adminTab === 'markers') {
         if (markersData.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Активных меток нет</div>'; return; }
         content.innerHTML = '';
@@ -1115,7 +1160,6 @@ async function renderAdmin() {
         const filteredUsers = (users || []).filter(function(u) {
             if (u.username === ADMIN_USERNAME) return false;
             if (!adminSearchTerm) return true;
-            
             const uname = (u.username || '').toLowerCase();
             const tgId = String(u.telegram_id || '');
             return uname.includes(adminSearchTerm) || tgId.includes(adminSearchTerm);
@@ -1131,7 +1175,7 @@ async function renderAdmin() {
             const realMarkers = (allMarkers || []).filter(function (m) { return m.author === u.username; }).length;
             const item = document.createElement('div');
             item.className = 'admin-item admin-item-clickable' + (u.is_banned ? ' banned' : '');
-            item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток в базе: '+realMarkers+' · Роль: '+escapeHtml(u.role||'user')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
+            item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток: '+realMarkers+' · Роль: '+escapeHtml(u.role||'user')+' · '+(u.is_approved ? '✅ Допущен' : '⏳ Заявка')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
             item.onclick = function () { openUserProfileModal(u); };
             content.appendChild(item);
         });
@@ -1211,6 +1255,51 @@ async function toggleRoleFromModal() {
     renderAdmin();
 }
 
+// Заявки
+window.openRequestModal = function(prefillType) {
+    if (!currentUser) { showToast('Войдите в аккаунт', true); return; }
+    document.getElementById('req-type').value = prefillType || '';
+    document.getElementById('request-modal').style.display = 'flex';
+};
+
+window.approveReq = async function(id) {
+    const { data: req } = await supabaseClient.from('marker_requests').select('*').eq('id', id).single();
+    if (!req) return;
+    
+    // 1. Выдаем статус "Одобрен" пользователю
+    await supabaseClient.from('profiles').update({ is_approved: true }).eq('username', req.author);
+    
+    // 2. Ставим первую метку за него
+    await supabaseClient.from('vinera_markers').insert({
+        type: req.type, lat: req.lat, lng: req.lng, city: req.city, author: req.author, address: req.address
+    });
+    
+    // 3. Помечаем заявку выполненной
+    await supabaseClient.from('marker_requests').update({ status: 'approved' }).eq('id', id);
+    
+    showToast('Пользователь допущен, метка добавлена!');
+    renderAdmin(); loadMarkers();
+};
+
+window.rejectReq = async function(id) {
+    const { data: req } = await supabaseClient.from('marker_requests').select('*').eq('id', id).single();
+    
+    if (req) {
+        const { data: profile } = await supabaseClient.from('profiles').select('warnings').eq('username', req.author).single();
+        const currentWarns = profile ? (profile.warnings || 0) : 0;
+        const newWarns = currentWarns + 1;
+        
+        await supabaseClient.from('profiles').update({ 
+            warnings: newWarns, 
+            is_banned: newWarns >= 3
+        }).eq('username', req.author);
+        
+        showToast('Отклонено. Выговор (' + newWarns + '/3)');
+    }
+    await supabaseClient.from('marker_requests').update({ status: 'rejected' }).eq('id', id);
+    renderAdmin();
+};
+
 function bindEvents() {
     document.getElementById('auth-btn').onclick = handleAuth;
     document.getElementById('auth-toggle').onclick = toggleAuthMode;
@@ -1230,10 +1319,13 @@ function bindEvents() {
     
     document.getElementById('profile-search-city-btn').onclick = window.openSearchModal;
     document.getElementById('profile-share-btn').onclick = window.shareRadar;
+    document.getElementById('profile-request-btn').onclick = function() { window.openRequestModal(); };
     document.getElementById('logout-btn').onclick = logout;
     document.getElementById('admin-toggle-btn').onclick = toggleAdminPanel;
+    
     document.getElementById('tab-markers').onclick = function () { switchAdminTab('markers'); };
     document.getElementById('tab-users').onclick = function () { switchAdminTab('users'); };
+    document.getElementById('tab-requests').onclick = function () { switchAdminTab('requests'); };
     document.getElementById('clear-all-btn').onclick = clearAllMarkers;
     
     document.getElementById('modal-cancel-btn').onclick = window.closeSearchModal;
@@ -1248,6 +1340,42 @@ function bindEvents() {
         adminSearchTerm = e.target.value.trim().toLowerCase();
         renderAdmin();
     });
+
+    // Обработчики модалки заявок
+    document.getElementById('req-cancel-btn').onclick = function() { document.getElementById('request-modal').style.display = 'none'; };
+    document.getElementById('req-submit-btn').onclick = async function() {
+        const type = document.getElementById('req-type').value.trim();
+        const address = document.getElementById('req-address').value.trim();
+        const rules = document.getElementById('req-rules').checked;
+        
+        if (!type || !address) { showToast('Заполните все поля', true); return; }
+        if (!rules) { showToast('Подтвердите правила', true); return; }
+        
+        this.textContent = 'Отправка...';
+        this.disabled = true;
+
+        try {
+            const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(address)+'&limit=1&accept-language=ru');
+            const geo = await res.json();
+            if (!geo || geo.length === 0) throw new Error('Адрес не найден');
+            
+            const lat = parseFloat(geo[0].lat);
+            const lng = parseFloat(geo[0].lon);
+            const cityName = geo[0].display_name.split(',')[0].trim();
+
+            await supabaseClient.from('marker_requests').insert({
+                type: type, lat: lat, lng: lng, city: cityName, address: address, author: currentUser
+            });
+
+            showToast('Заявка отправлена!');
+            document.getElementById('request-modal').style.display = 'none';
+        } catch(err) {
+            showToast('Ошибка: ' + err.message, true);
+        } finally {
+            this.textContent = 'Отправить';
+            this.disabled = false;
+        }
+    };
 }
 
 async function bootstrap() {
