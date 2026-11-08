@@ -50,8 +50,9 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #map-overlay{position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:12px;pointer-events:none}
 #map-overlay>*{pointer-events:auto}
 #top-row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
-#city-status{flex:0 1 auto;min-width:0;padding:12px 18px;border-radius:20px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:14px;max-width:65%;overflow:hidden}
-#city-status.danger{border-color:rgba(244,63,94,.5);background:rgba(30,10,15,.92)}
+#city-status{flex:0 1 auto;min-width:0;padding:12px 18px;border-radius:20px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:14px;max-width:65%;overflow:hidden;transition:all .3s}
+#city-status.danger{border-color:rgba(244,63,94,.5);background:rgba(30,10,15,.92);animation: alertPulse 1.5s infinite}
+@keyframes alertPulse {0%{box-shadow:0 0 0 0 rgba(244,63,94,.4)}70%{box-shadow:0 0 0 10px rgba(244,63,94,0)}100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}}
 #city-status .city-name{color:var(--accent);font-size:10px;display:block;font-weight:800;text-transform:uppercase;margin-bottom:2px}
 #city-status .city-state{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #geo-btn{width:50px;height:50px;min-width:50px;border-radius:18px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center}
@@ -59,7 +60,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 </style>
 <style>
 #alerts-container{position:absolute;top:calc(85px + env(safe-area-inset-top));left:16px;right:16px;z-index:4000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.alert-card{display:flex;align-items:center;gap:12px;padding:13px 17px;border-radius:14px;font-weight:600;font-size:13px;color:var(--text);background:rgba(10,22,20,.94);backdrop-filter:blur(20px);pointer-events:auto;border:1px solid rgba(255,255,255,.05);border-left:4px solid var(--danger)}
+.alert-card{display:flex;align-items:center;gap:12px;padding:13px 17px;border-radius:14px;font-weight:600;font-size:13px;color:var(--text);background:rgba(10,22,20,.94);backdrop-filter:blur(20px);pointer-events:auto;border:1px solid rgba(255,255,255,.05);border-left:4px solid var(--danger);animation: slideDown .3s ease-out}
+@keyframes slideDown {from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
 .alert-card.rocket-city{border-left-color:#ff3b5c;background:rgba(60,10,20,.95)}
 .alert-card.rocket-region{border-left-color:var(--info);background:rgba(10,30,60,.95)}
 .alert-card.siren-city{border-left-color:var(--violet);background:rgba(35,10,60,.95)}
@@ -71,7 +73,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #status-toast{position:fixed;top:calc(70px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-10px);padding:10px 18px;border-radius:12px;background:rgba(10,22,20,.95);border:1px solid var(--border-strong);color:var(--text);font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:5000;text-align:center;max-width:calc(100% - 40px)}
 #loading-spinner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;display:none;width:40px;height:40px;border:4px solid rgba(20,224,194,.15);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-#show-markers-btn{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 24px);z-index:1000;padding:16px 32px;border-radius:30px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;font-weight:800;font-size:16px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px -5px var(--accent-glow)}
+#show-markers-btn{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 24px);z-index:1000;padding:16px 32px;border-radius:30px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;font-weight:800;font-size:16px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px -5px var(--accent-glow);transition:transform .2s, box-shadow .2s}
+#show-markers-btn:active{transform:translateX(-50%) scale(.95);box-shadow:0 5px 15px -5px var(--accent-glow)}
 #show-markers-btn svg{width:20px;height:20px}
 #markers-sheet-overlay{position:absolute;inset:0;z-index:2000;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:none}
 #markers-sheet{position:absolute;bottom:var(--nav-h);left:12px;right:12px;background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));backdrop-filter:blur(30px);border:1px solid var(--border-strong);border-radius:32px;padding:28px 24px;transform:translateY(120%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);z-index:2001}
@@ -80,7 +83,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #types-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 .marker-btn{width:80px;height:80px;border-radius:24px;border:1px solid rgba(20,224,194,.1);background:rgba(20,224,194,.03);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-weight:600;font-size:12px}
 .marker-btn svg{width:30px;height:30px}
-.marker-btn.selected{border-color:var(--accent);background:rgba(20,224,194,.12);color:var(--text);box-shadow:0 0 24px var(--accent-glow)}
+.marker-btn.selected{border-color:var(--accent);background:rgba(20,224,194,.12);color:var(--text);box-shadow:0 0 24px var(--accent-glow);transform:scale(1.05)}
 .pulse-marker{border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 18px currentColor;animation:pulse 2s infinite ease-in-out;position:relative}
 .pulse-marker::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid currentColor;opacity:.4;animation:ringPulse 2s infinite}
 @keyframes ringPulse{0%{transform:scale(1);opacity:.4}100%{transform:scale(1.6);opacity:0}}
@@ -96,20 +99,16 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .clickable-author{cursor:pointer;color:var(--accent);text-decoration:underline;font-weight:700}
 .popup-confirm{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 8px;background:rgba(20,224,194,.15);color:var(--accent);border:1px solid var(--accent);border-radius:6px;font-weight:700;font-size:10px}
 .popup-confirm svg{width:12px;height:12px;stroke:var(--accent)}
-#bottom-nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);background:rgba(4,10,8,.92);backdrop-filter:blur(30px);border-top:1px solid var(--border);z-index:2500;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom)}
-.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;color:var(--text-muted);font-size:11px;font-weight:600;flex:1;height:100%}
-.nav-btn svg{width:24px;height:24px;transition:transform .3s,filter .3s}
-.nav-btn.active{color:var(--accent)}
-.nav-btn.active svg{transform:translateY(-3px);filter:drop-shadow(0 0 8px var(--accent-glow))}
 </style>
 <style>
-#feed-screen,#profile-screen{position:absolute;inset:0;bottom:var(--nav-h);background:var(--bg);z-index:1500;display:none;flex-direction:column;padding:24px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#feed-screen,#profile-screen{position:absolute;inset:0;bottom:var(--nav-h);background:var(--bg);z-index:1500;display:none;flex-direction:column;padding:24px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 #feed-screen.active,#profile-screen.active{display:flex}
 .feed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-top:calc(10px + env(safe-area-inset-top))}
 .feed-header h2{margin:0;font-size:24px;font-weight:700;font-family:'Unbounded',sans-serif;background:linear-gradient(135deg,#14e0c2,#5eead4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .feed-filter-badge{background:rgba(20,224,194,.08);color:var(--accent);border:1px solid rgba(20,224,194,.25);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600}
 #feed-list{display:flex;flex-direction:column;gap:12px}
-.feed-item{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;align-items:center;gap:16px}
+.feed-item{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;align-items:center;gap:16px;animation:fadeIn .3s ease}
+@keyframes fadeIn {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .feed-icon{width:48px;height:48px;min-width:48px;border-radius:14px;display:flex;align-items:center;justify-content:center}
 .feed-icon svg{width:26px;height:26px}
 .feed-body{flex:1;min-width:0}
@@ -132,21 +131,29 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .profile-stat-value{font-size:20px;font-weight:700;color:var(--text)}
 .profile-stat-label{font-size:11px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
 .profile-menu{display:flex;flex-direction:column;gap:12px}
-.menu-item{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center;color:var(--text);text-decoration:none;font-weight:600;font-size:15px}
+.menu-item{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center;color:var(--text);text-decoration:none;font-weight:600;font-size:15px;position:relative;overflow:hidden}
+.menu-item::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);transition:left .4s}
+.menu-item:active::after{left:100%}
 .menu-item.danger{background:rgba(244,63,94,.05);border-color:rgba(244,63,94,.2);color:var(--danger)}
 .menu-item svg{width:20px;height:20px;opacity:.8;flex-shrink:0}
-#admin-panel-content{display:none;margin-top:24px;flex-direction:column;gap:16px}
-.admin-tabs{display:flex;gap:10px}
-.admin-tab{flex:1;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text-muted);font-weight:600;font-size:14px}
-.admin-tab.active{border-color:var(--accent);background:rgba(20,224,194,.1);color:var(--accent)}
+#admin-panel-content{display:none;margin-top:24px;flex-direction:column;gap:16px;animation: fadeIn .4s ease}
+.admin-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.admin-tab{flex:0 0 auto;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text-muted);font-weight:600;font-size:14px;transition:all .2s}
+.admin-tab.active{border-color:var(--accent);background:rgba(20,224,194,.1);color:var(--accent);box-shadow:0 0 15px rgba(20,224,194,.2)}
 #clear-all-btn{width:100%;padding:16px;background:rgba(244,63,94,.1);color:var(--danger);border:1px solid rgba(244,63,94,.2);border-radius:12px;font-weight:600;font-size:15px}
 #admin-content{display:flex;flex-direction:column;gap:12px}
-.admin-item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:14px}
-.admin-item.banned{opacity:.6}
+.admin-item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:14px;animation:fadeIn .3s ease}
+.admin-item.banned{opacity:.6;border-color:rgba(244,63,94,.3)}
 .admin-item-clickable{cursor:pointer}
 #admin-search-wrapper{margin-bottom:12px;position:relative;display:none}
 #admin-search{width:100%;padding:14px 16px 14px 40px;border-radius:12px;background:rgba(4,10,8,.6);border:1px solid var(--border);color:var(--text);font-size:15px;outline:none}
 #admin-search-icon{position:absolute;left:14px;top:15px;width:18px;height:18px;pointer-events:none}
+.admin-actions{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.admin-actions button{padding:14px;border-radius:12px;font-weight:600;font-size:14px;transition:transform .2s,opacity .2s;width:100%}
+.admin-actions button:active{transform:scale(.97)}
+.btn-ban{background:rgba(244,63,94,.1);color:var(--danger);border:1px solid rgba(244,63,94,.2)}
+.btn-role{background:rgba(20,224,194,.1);color:var(--accent);border:1px solid rgba(20,224,194,.2)}
+.btn-warn{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
 #search-modal-overlay,#user-profile-modal,#request-modal{position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
 #search-modal-overlay.active,#user-profile-modal.active,#request-modal.active{display:flex}
 .search-modal{background:linear-gradient(160deg,rgba(10,22,20,.96),rgba(8,18,16,.98));border:1px solid var(--border-strong);border-radius:24px;padding:24px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow-y:auto}
@@ -247,13 +254,14 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div class="menu-item" id="profile-share-btn"><span>Поделиться радаром</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
         <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item"><span>Связь с владельцем</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
         <div class="menu-item" id="admin-toggle-btn" style="display:none;"><span>Админ-панель</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-        <div class="menu-item danger" id="logout-btn"><span>Выйти из аккаунта</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
+        <div class="menu-item danger" id="logout-btn" style="margin-top:40px;"><span>Выйти из аккаунта</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
     </div>
     <div id="admin-panel-content">
         <div class="admin-tabs">
             <button class="admin-tab active" id="tab-markers">Метки</button>
             <button class="admin-tab" id="tab-users">Юзеры</button>
             <button class="admin-tab" id="tab-requests">Заявки</button>
+            <button class="admin-tab" id="tab-mods">Модераторы</button>
         </div>
         <button id="clear-all-btn">Удалить все метки</button>
         <div id="admin-search-wrapper">
@@ -291,10 +299,12 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         <div style="background:rgba(4,10,8,.5);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--border);">
             <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;"><span style="color:var(--text-muted);">Меток на карте:</span><span id="modal-user-markers" style="color:var(--text);font-weight:600;">0</span></div>
             <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;"><span style="color:var(--text-muted);">Telegram ID:</span><span id="modal-user-tg" style="color:var(--text);">Нет</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;"><span style="color:var(--text-muted);">Выговоры:</span><span id="modal-user-warns" style="color:var(--text);font-weight:600;">0/3</span></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <button id="modal-user-ban-btn" style="background:rgba(244,63,94,.1);color:var(--danger);border:1px solid rgba(244,63,94,.2);padding:14px;border-radius:12px;font-weight:600;font-size:14px;">Забанить</button>
-            <button id="modal-user-role-btn" style="background:rgba(20,224,194,.1);color:var(--accent);border:1px solid rgba(20,224,194,.2);padding:14px;border-radius:12px;font-weight:600;font-size:14px;">Сделать модератором</button>
+        <div class="admin-actions">
+            <button class="btn-ban" id="modal-user-ban-btn">Забанить</button>
+            <button class="btn-role" id="modal-user-role-btn">Сделать модератором</button>
+            <button class="btn-warn" id="modal-user-warn-btn">Выдать выговор</button>
         </div>
         <button id="modal-user-close-btn" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:14px;border-radius:12px;font-weight:600;font-size:14px;margin-top:10px;">Закрыть</button>
     </div>
@@ -316,7 +326,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
         </div>
         
         <div style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);padding:12px;border-radius:12px;font-size:12px;color:#fda4af;line-height:1.4;">
-            <b>Внимание!</b> За ложные метки начисляются выговоры. 3 выговора — перманентный бан.
+            <b>Внимание!</b> За ложные метки начисляются выговоры. 3 выговора — бан на 7 дней.
         </div>
 
         <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);cursor:pointer;">
@@ -367,6 +377,7 @@ let feedData = [];
 let currentUser = null;
 let currentRole = 'user';
 let currentBanned = false;
+let banUntil = null;
 let isLoggedOut = false;
 let myGeo = null;
 let recentMarkerTimes = [];
@@ -393,6 +404,25 @@ const METADATA = {
 'Тихо':{color:'#14e0c2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>'}
 };
 const dangerTypes = ['Взрыв','Сирена','Ракета','БПЛА','Истребитель'];
+
+// Координаты для проверки РФ (приблизительные границы)
+const RF_BOUNDS = { minLat: 41.0, maxLat: 82.0, minLng: 19.0, maxLng: 180.0 };
+
+function isInRussia(lat, lng) {
+    // Крым, ДНР, ЛНР, Запорожская и Херсонская области (разрешенные зоны)
+    const allowedRegions = [
+        { minLat: 44.0, maxLat: 46.5, minLng: 32.0, maxLng: 36.6 }, // Крым
+        { minLat: 47.0, maxLat: 49.5, minLng: 36.0, maxLng: 40.5 }, // ДНР/ЛНР
+        { minLat: 46.0, maxLat: 48.0, minLng: 32.0, maxLng: 36.0 }  // Запорожье/Херсон
+    ];
+
+    if (lat >= RF_BOUNDS.minLat && lat <= RF_BOUNDS.maxLat && lng >= RF_BOUNDS.minLng && lng <= RF_BOUNDS.maxLng) {
+        return true;
+    }
+    return allowedRegions.some(function (r) {
+        return lat >= r.minLat && lat <= r.maxLat && lng >= r.minLng && lng <= r.maxLng;
+    });
+}
 
 function initSnow(){
     const layer = document.getElementById('snow-layer');
@@ -572,16 +602,30 @@ async function resolveAddress(m) {
     } catch (e) {}
 }
 
-// 🛡️ ЗАЩИТА: Проверяем статус одобрения перед постановкой метки
+// 🛡️ ЗАЩИТА: Проверяем допуск, бан и границы РФ
 async function handleMapClick(e) {
     if (!isPlacingMarker || !currentMarkerType) return;
     if (!currentCity) { showToast('Сначала выберите город!', true); return; }
+
+    // 1. Проверка границ РФ
+    if (!isInRussia(e.latlng.lat, e.latlng.lng)) {
+        showToast('Ставить метки можно только на территории РФ!', true);
+        return;
+    }
     
+    // 2. Проверка одобрения и бана из базы
     let isApproved = false;
+    let userBanUntil = null;
     try {
-        const { data } = await supabaseClient.from('profiles').select('is_approved').eq('username', currentUser).single();
+        const { data } = await supabaseClient.from('profiles').select('is_approved, ban_until').eq('username', currentUser).single();
         isApproved = data && data.is_approved;
+        userBanUntil = data ? data.ban_until : null;
     } catch(err) {}
+
+    if (userBanUntil && new Date(userBanUntil) > new Date()) {
+        showToast('Вы забанены! Причина: фейк метки', true);
+        return;
+    }
 
     if (!isApproved && currentUser !== ADMIN_USERNAME) {
         showToast('Вы не одобрены! Подайте заявку в профиле.', true);
@@ -607,7 +651,7 @@ async function handleMapClick(e) {
     allMarkersCache.unshift(data);
     drawMarkers();
     updateCityStatus();
-    checkAlerts();
+    checkAlerts(); // Вызовет анимацию плашки, если надо
     
     (async function () {
         const geo = await reverseGeocode(e.latlng.lat, e.latlng.lng, 12);
@@ -730,10 +774,18 @@ function checkAlerts() {
     const cityExp    = cityThreats.filter(function (m) { return m.type === 'Взрыв'; }).length;
     
     let alertsHtml = '';
-    if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>В вашем городе ракетная опасность</span></div></div>';
+    // 🚀 Анимация плашек при появлении
+    if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность</span></div></div>';
     if (citySiren >= 1) alertsHtml += '<div class="alert-card siren-city"><div class="alert-dot"></div><div class="alert-text"><span>В городе воют сирены</span></div></div>';
+    
+    // Новые плашки для БПЛА
+    if (cityBpla >= 5) {
+        alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Тревога по БПЛА! Срочно в укрытие!</span></div></div>';
+    } else if (cityBpla >= 1) {
+        alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>В городе беспилотная опасность</span></div></div>';
+    }
+
     if (cityExp >= 2 && cityBpla >= 2) alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Критическая опасность</span></div></div>';
-    if (cityThreats.length >= 3 && alertsHtml === '') alertsHtml += '<div class="alert-card"><div class="alert-dot"></div><div class="alert-text"><span>Высокая опасность</span></div></div>';
     
     const currentMarker = markersData.find(function (m) {
         return m.city && currentCity && m.city.toLowerCase().includes(currentCity.toLowerCase());
@@ -754,7 +806,7 @@ async function checkSession() {
     if (!supabaseClient) return;
     const { data, error } = await supabaseClient.auth.getSession();
     
-    // 🛡️ АВТОХОД: Если сессия есть, идем дальше. Если нет — показываем экран входа.
+    // 🛡️ АВТОХОД
     if (!data || !data.session) { showAuthScreen(); return; }
     
     let profile = null;
@@ -782,6 +834,7 @@ async function checkSession() {
     
     currentUser = profile.username || 'user';
     currentBanned = !!profile.is_banned;
+    banUntil = profile.ban_until || null;
     
     // 🛡️ ЖЕСТКАЯ ФИКСАЦИЯ РОЛЕЙ
     if (currentUser === ADMIN_USERNAME) {
@@ -793,10 +846,31 @@ async function checkSession() {
         currentRole = 'user'; 
     }
     
+    // Проверка временного бана (показываем карту, но блокируем действия)
+    if (banUntil && new Date(banUntil) > new Date()) {
+        currentBanned = true;
+    } else if (banUntil && new Date(banUntil) <= new Date()) {
+        // Бан истек
+        await supabaseClient.from('profiles').update({ ban_until: null, is_banned: false, warnings: 0 }).eq('id', profile.id);
+        currentBanned = false;
+        banUntil = null;
+    }
+
     if (currentBanned) {
-        await supabaseClient.auth.signOut();
-        document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#040605;height:100vh;padding-top:50px;font-family:sans-serif;"><h2 style="color:#f43f5e;">Аккаунт заблокирован</h2><p style="margin-top:10px;color:#94a3b8;">По вопросам: <b>@VineraRadarr</b></p></div>';
-        return;
+        if (!banUntil) {
+            // Полный перманентный бан
+            await supabaseClient.auth.signOut();
+            document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#040605;height:100vh;padding-top:50px;font-family:sans-serif;"><h2 style="color:#f43f5e;">Аккаунт заблокирован</h2><p style="margin-top:10px;color:#94a3b8;">По вопросам: <b>@VineraRadarr</b></p></div>';
+            return;
+        } else {
+            // Временный бан - показываем карту, но с плашкой
+            showToast('Вы заблокированы на 7 дней. Причина: фейк метки', true);
+            // Отключаем возможность ставить метки (визуально)
+            setTimeout(function() {
+                const markerBtns = document.getElementById('show-markers-btn');
+                if (markerBtns) markerBtns.style.display = 'none';
+            }, 500);
+        }
     }
     
     const savedCity = localStorage.getItem('vinera_city');
@@ -837,6 +911,7 @@ async function renderProfile() {
     document.getElementById('profile-name').textContent = currentUser || 'user';
     document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
     
+    // 🛡️ Счетчик меток (за все время)
     let totalMyMarkers = 0;
     try {
         const { count } = await supabaseClient.from('vinera_markers').select('*', { count:'exact', head:true }).eq('author', currentUser);
@@ -953,7 +1028,7 @@ function toggleAuthMode() {
     await supabaseClient.auth.signOut();
     localStorage.removeItem('vinera_city');
     localStorage.removeItem('vinera_geo');
-    currentUser = null; currentRole = 'user'; currentBanned = false;
+    currentUser = null; currentRole = 'user'; currentBanned = false; banUntil = null;
     userCity = null; currentCity = null; markersData = []; allMarkersCache = []; feedData = []; recentMarkerTimes = [];
     myGeo = null; isPlacingMarker = false; currentMarkerType = null;
     drawMarkers();
@@ -1121,6 +1196,7 @@ function switchAdminTab(tab) {
     document.getElementById('tab-markers').classList.toggle('active', tab === 'markers');
     document.getElementById('tab-users').classList.toggle('active', tab === 'users');
     document.getElementById('tab-requests').classList.toggle('active', tab === 'requests');
+    document.getElementById('tab-mods').classList.toggle('active', tab === 'mods');
     
     document.getElementById('clear-all-btn').style.display = tab === 'markers' ? 'block' : 'none';
     document.getElementById('admin-search-wrapper').style.display = tab === 'users' ? 'block' : 'none';
@@ -1132,7 +1208,7 @@ function switchAdminTab(tab) {
 }
 
 async function clearAllMarkers() {
-    if (!window.confirm('Удалить ВСЕ метки?')) return;
+    if (!window.confirm('Удалить ВСЕ метки с карты?')) return;
     const btn = document.getElementById('clear-all-btn');
     btn.textContent = 'Очистка...';
     btn.disabled = true;
@@ -1141,7 +1217,7 @@ async function clearAllMarkers() {
     else {
         markersData = []; feedData = []; allMarkersCache = [];
         drawMarkers(); updateCityStatus(); renderFeed(); checkAlerts();
-        showToast('Все метки удалены');
+        showToast('Все метки удалены с карты');
     }
     btn.textContent = 'Удалить все метки';
     btn.disabled = false;
@@ -1153,6 +1229,23 @@ async function renderAdmin() {
     if (!content) return;
     content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Загрузка...</div>';
     
+    // Вкладка МОДЕРАТОРЫ
+    if (adminTab === 'mods') {
+        const { data: mods, error } = await supabaseClient.from('profiles').select('*').eq('role', 'moderator').order('username');
+        if (error) { content.innerHTML = 'Ошибка: ' + error.message; return; }
+        if (!mods || mods.length === 0) { content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Модераторов нет</div>'; return; }
+        content.innerHTML = '';
+        mods.forEach(function (m) {
+            const item = document.createElement('div');
+            item.className = 'admin-item admin-item-clickable';
+            item.innerHTML = '<div style="display:flex;justify-content:space-between;"><b>'+escapeHtml(m.username)+'</b><span style="color:var(--accent);font-size:12px;">MOD</span></div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
+            item.onclick = function () { openUserProfileModal(m); };
+            content.appendChild(item);
+        });
+        return;
+    }
+
+    // Вкладка ЗАЯВКИ
     if (adminTab === 'requests') {
         const { data: reqs, error } = await supabaseClient.from('marker_requests').select('*').eq('status', 'pending').order('created_at', { ascending: true });
         if (error) { content.innerHTML = 'Ошибка: ' + error.message; return; }
@@ -1168,24 +1261,26 @@ async function renderAdmin() {
         return;
     }
     
+    // Вкладка МЕТКИ
     if (adminTab === 'markers') {
         if (markersData.length === 0) { content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Активных меток нет</div>'; return; }
         content.innerHTML = '';
         markersData.forEach(function (m) {
             const item = document.createElement('div');
             item.className = 'admin-item';
-            item.innerHTML = '<b>'+escapeHtml(m.type)+'</b> — '+escapeHtml(m.city||'—')+'<div style="color:var(--text-muted);font-size:12px;margin-top:6px;">'+escapeHtml(m.address||'...')+' · Автор: <b>'+escapeHtml(m.author||'—')+'</b></div><button data-del="'+m.id+'" style="margin-top:12px;padding:10px;background:rgba(244,63,94,0.1);color:var(--danger);border:1px solid rgba(244,63,94,0.2);border-radius:8px;font-weight:600;font-size:13px;width:100%;">Удалить</button>';
+            item.innerHTML = '<b>'+escapeHtml(m.type)+'</b> — '+escapeHtml(m.city||'—')+'<div style="color:var(--text-muted);font-size:12px;margin-top:6px;">'+escapeHtml(m.address||'...')+' · Автор: <b>'+escapeHtml(m.author||'—')+'</b></div><button data-del="'+m.id+'" class="btn-ban" style="margin-top:12px;width:100%;">Удалить</button>';
             content.appendChild(item);
         });
         content.querySelectorAll('button[data-del]').forEach(function (btn) {
             btn.onclick = function () { deleteMarker(btn.getAttribute('data-del')); };
         });
     } else {
+        // Вкладка ЮЗЕРЫ
         const { data: users, error: userErr } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false }).limit(5000);
-        if (userErr) { content.innerHTML = '<div style="color:var(--danger)">Ошибка профилей: '+escapeHtml(userErr.message)+'</div>'; return; }
+        if (userErr) { content.innerHTML = '<div style="color:var(--danger)">Ошибка: '+escapeHtml(userErr.message)+'</div>'; return; }
         
         const { data: allMarkers, error: markErr } = await supabaseClient.from('vinera_markers').select('author');
-        if (markErr) { content.innerHTML = '<div style="color:var(--danger)">Ошибка меток: '+escapeHtml(markErr.message)+'</div>'; return; }
+        if (markErr) { content.innerHTML = '<div style="color:var(--danger)">Ошибка: '+escapeHtml(markErr.message)+'</div>'; return; }
         
         const filteredUsers = (users || []).filter(function(u) {
             if (u.username === ADMIN_USERNAME) return false;
@@ -1196,7 +1291,7 @@ async function renderAdmin() {
         });
 
         if (filteredUsers.length === 0) {
-            content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Пользователи не найдены</div>';
+            content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Не найдено</div>';
             return;
         }
 
@@ -1205,7 +1300,7 @@ async function renderAdmin() {
             const realMarkers = (allMarkers || []).filter(function (m) { return m.author === u.username; }).length;
             const item = document.createElement('div');
             item.className = 'admin-item admin-item-clickable' + (u.is_banned ? ' banned' : '');
-            item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;margin-left:8px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток: '+realMarkers+' · Роль: '+escapeHtml(u.role||'user')+' · '+(u.is_approved ? '✅ Допущен' : '⏳ Заявка')+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
+            item.innerHTML = '<div style="display:flex;justify-content:space-between;"><b>'+escapeHtml(u.username||'без имени')+'</b>'+(u.is_banned ? '<span style="color:var(--danger);font-size:10px;border:1px solid var(--danger);padding:2px 6px;border-radius:6px;">[БАН]</span>' : '')+'</div><div style="color:var(--text-muted);font-size:12px;margin-top:6px;">Меток: '+realMarkers+' · Роль: '+escapeHtml(u.role||'user')+' · '+(u.is_approved ? '✅' : '⏳')+' · Выг: '+(u.warnings||0)+'</div><div style="font-size:11px;color:#666;margin-top:8px;text-align:right;">Нажмите для управления →</div>';
             item.onclick = function () { openUserProfileModal(u); };
             content.appendChild(item);
         });
@@ -1222,7 +1317,7 @@ async function deleteMarker(id) {
     feedData = feedData.filter(function (m) { return String(m.id) !== String(id); });
     allMarkersCache = allMarkersCache.filter(function (m) { return String(m.id) !== String(id); });
     drawMarkers(); updateCityStatus(); renderFeed(); renderAdmin(); checkAlerts();
-    showToast('Метка удалена');
+    showToast('Метка удалена с карты');
 }
 
 function openUserProfileModal(u) {
@@ -1238,6 +1333,7 @@ function openUserProfileModal(u) {
     
     document.getElementById('modal-user-markers').textContent = '...';
     document.getElementById('modal-user-tg').textContent = u.telegram_id || 'Нет';
+    document.getElementById('modal-user-warns').textContent = (u.warnings || 0) + '/3';
 
     supabaseClient.from('vinera_markers').select('*', { count:'exact', head:true }).eq('author', u.username).then(function(res) {
         document.getElementById('modal-user-markers').textContent = res.count || 0;
@@ -1245,17 +1341,15 @@ function openUserProfileModal(u) {
 
     const banBtn = document.getElementById('modal-user-ban-btn');
     const roleBtn = document.getElementById('modal-user-role-btn');
-    const isAdmin = (currentRole === 'admin' || currentUser === ADMIN_USERNAME);
+    const warnBtn = document.getElementById('modal-user-warn-btn');
+    
+    banBtn.style.display = 'block';
+    roleBtn.style.display = 'block';
+    warnBtn.style.display = 'block';
+    
+    banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
+    roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
 
-    if (!isAdmin) {
-        roleBtn.style.display = 'none';
-        if (u.role === 'admin' || u.role === 'moderator' || u.username === ADMIN_USERNAME) banBtn.style.display = 'none';
-        else { banBtn.style.display = 'block'; banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить'; }
-    } else {
-        banBtn.style.display = 'block'; roleBtn.style.display = 'block';
-        banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
-        roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
-    }
     document.getElementById('user-profile-modal').classList.add('active');
 }
 
@@ -1268,9 +1362,9 @@ function closeUserProfileModal() {
 async function toggleBanFromModal() {
     if (!selectedUserId || !selectedUserData) return;
     const newBan = !selectedUserData.is_banned;
-    const { error } = await supabaseClient.from('profiles').update({ is_banned: newBan }).eq('id', selectedUserId);
+    const { error } = await supabaseClient.from('profiles').update({ is_banned: newBan, ban_until: null }).eq('id', selectedUserId);
     if (error) { showToast('Ошибка: ' + error.message, true); return; }
-    showToast(newBan ? 'Пользователь забанен' : 'Пользователь разбанен');
+    showToast(newBan ? 'Забанен' : 'Разбанен');
     closeUserProfileModal();
     renderAdmin();
 }
@@ -1285,20 +1379,39 @@ async function toggleRoleFromModal() {
     renderAdmin();
 }
 
-// 🛡️ Одобрение заявки (выдает доступ к меткам)
+// 🛡️ Выдача выговора (3 выговора = бан на 7 дней)
+async function warnUserFromModal() {
+    if (!selectedUserId || !selectedUserData) return;
+    const currentWarns = selectedUserData.warnings || 0;
+    const newWarns = currentWarns + 1;
+    
+    let banUntilDate = null;
+    let isBanned = false;
+    
+    if (newWarns >= 3) {
+        banUntilDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // +7 дней
+        isBanned = true;
+        showToast('Выдан 3-й выговор! Бан на 7 дней.');
+    } else {
+        showToast('Выдан выговор (' + newWarns + '/3)');
+    }
+    
+    const { error } = await supabaseClient.from('profiles').update({ 
+        warnings: newWarns, 
+        is_banned: isBanned,
+        ban_until: banUntilDate
+    }).eq('id', selectedUserId);
+    
+    if (error) { showToast('Ошибка: ' + error.message, true); return; }
+    closeUserProfileModal();
+    renderAdmin();
+}
+
+// 🛡️ Одобрение заявки
 window.approveReq = async function(id) {
     const { data: req } = await supabaseClient.from('marker_requests').select('*').eq('id', id).single();
     if (!req) return;
     
-    // Проверяем, есть ли юзер в базе
-    const { data: userExists } = await supabaseClient.from('profiles').select('id').eq('username', req.author).maybeSingle();
-    if (!userExists) {
-        showToast('Ошибка: Автор заявки не найден в базе!', true);
-        await supabaseClient.from('marker_requests').update({ status: 'rejected' }).eq('id', id);
-        renderAdmin();
-        return;
-    }
-
     await supabaseClient.from('profiles').update({ is_approved: true }).eq('username', req.author);
     await supabaseClient.from('marker_requests').update({ status: 'approved' }).eq('id', id);
     
@@ -1314,9 +1427,17 @@ window.rejectReq = async function(id) {
         const currentWarns = profile ? (profile.warnings || 0) : 0;
         const newWarns = currentWarns + 1;
         
+        let isBanned = false;
+        let banUntilDate = null;
+        if (newWarns >= 3) {
+            isBanned = true;
+            banUntilDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        }
+
         await supabaseClient.from('profiles').update({ 
             warnings: newWarns, 
-            is_banned: newWarns >= 3
+            is_banned: isBanned,
+            ban_until: banUntilDate
         }).eq('username', req.author);
         
         showToast('Отклонено. Выговор (' + newWarns + '/3)');
@@ -1351,6 +1472,7 @@ function bindEvents() {
     document.getElementById('tab-markers').onclick = function () { switchAdminTab('markers'); };
     document.getElementById('tab-users').onclick = function () { switchAdminTab('users'); };
     document.getElementById('tab-requests').onclick = function () { switchAdminTab('requests'); };
+    document.getElementById('tab-mods').onclick = function () { switchAdminTab('mods'); };
     document.getElementById('clear-all-btn').onclick = clearAllMarkers;
     
     document.getElementById('modal-cancel-btn').onclick = window.closeSearchModal;
@@ -1360,6 +1482,7 @@ function bindEvents() {
     document.getElementById('modal-user-close-btn').onclick = closeUserProfileModal;
     document.getElementById('modal-user-ban-btn').onclick = toggleBanFromModal;
     document.getElementById('modal-user-role-btn').onclick = toggleRoleFromModal;
+    document.getElementById('modal-user-warn-btn').onclick = warnUserFromModal;
     
     document.getElementById('admin-search').addEventListener('input', function (e) {
         adminSearchTerm = e.target.value.trim().toLowerCase();
@@ -1376,7 +1499,6 @@ function bindEvents() {
         if (!username || !city) { showToast('Заполните все поля', true); return; }
         if (!rules) { showToast('Подтвердите правила', true); return; }
         
-        // 🛡️ ПРОВЕРКА: Есть ли такой юзер в базе?
         const { data: userExists } = await supabaseClient.from('profiles').select('id').eq('username', currentUser).maybeSingle();
         if (!userExists) {
             showToast('Ошибка: Ваш аккаунт не найден в базе!', true);
@@ -1420,7 +1542,6 @@ async function bootstrap() {
     bindEvents();
     initMap();
     
-    // 🛡️ Сначала проверяем сессию (автоход)
     await checkSession();
     
     if (pollInterval) clearInterval(pollInterval);
