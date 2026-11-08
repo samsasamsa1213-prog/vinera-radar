@@ -305,7 +305,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 const SUPABASE_URL = 'https://hpzemwurwkuthcgmtvlw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
 
-// 👇 ТУТ ТВОЙ НОВЫЙ АДМИНСКИЙ НИК
+// 👇 ТВОЙ АДМИНСКИЙ НИК
 const ADMIN_USERNAME = 'vineraradar'; 
 
 const MAX_MARKERS = 2;
@@ -712,10 +712,7 @@ async function checkSession() {
         const email = data.session.user.email || '';
         let loginFromEmail = email.includes('@vinera.app') ? email.split('@')[0] : 'user_' + Math.floor(Math.random()*10000);
         
-        // Защита: если логин из одних цифр, делаем нормальный
-        if (/^\d+$/.test(loginFromEmail)) {
-            loginFromEmail = 'user_' + loginFromEmail.substring(0, 4);
-        }
+        if (/^\d+$/.test(loginFromEmail)) loginFromEmail = 'user_' + loginFromEmail.substring(0, 4);
 
         await supabaseClient.from('profiles').insert({ 
             id: data.session.user.id, 
@@ -729,10 +726,17 @@ async function checkSession() {
     }
     
     currentUser = profile.username || 'user';
-    currentRole = profile.role || 'user';
     currentBanned = !!profile.is_banned;
     
-    if (currentUser === ADMIN_USERNAME) { currentRole = 'admin'; currentBanned = false; }
+    // 🛡️ ЖЕСТКАЯ ФИКСАЦИЯ РОЛЕЙ
+    if (currentUser === ADMIN_USERNAME) {
+        currentRole = 'admin';
+        currentBanned = false;
+    } else if (profile.role === 'moderator') {
+        currentRole = 'moderator';
+    } else {
+        currentRole = 'user'; 
+    }
     
     if (currentBanned) {
         await supabaseClient.auth.signOut();
@@ -778,7 +782,7 @@ async function renderProfile() {
     document.getElementById('profile-name').textContent = currentUser || 'user';
     document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
     
-    // 🛡️ СЧЕТЧИК МЕТОК: Запрашиваем точное количество напрямую из базы!
+    // 🛡️ СЧЕТЧИК МЕТОК
     let totalMyMarkers = 0;
     try {
         const { count } = await supabaseClient.from('vinera_markers').select('*', { count:'exact', head:true }).eq('author', currentUser);
@@ -830,11 +834,12 @@ async function handleAuth() {
     try {
         if (isRegisterMode) {
             const tgUser = tg ? (tg.initDataUnsafe && tg.initDataUnsafe.user) : null;
+            
+            // 🛡️ ЛИМИТ 3 АККАУНТА НА 1 ТГ
             if (tgUser) {
-                const { data: reg } = await supabaseClient.from('registrations').select('count').eq('telegram_id', tgUser.id).maybeSingle();
-                const currentCount = reg ? reg.count : 0;
-                if (currentCount >= 3) throw new Error('Лимит аккаунтов исчерпан!');
-                await supabaseClient.from('registrations').upsert({ telegram_id: tgUser.id, count: currentCount + 1 });
+                const { count, error: countErr } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('telegram_id', tgUser.id);
+                if (countErr) throw countErr;
+                if (count >= 3) throw new Error('Лимит аккаунтов исчерпан (макс. 3 на 1 Telegram).');
             }
             
             const { data, error } = await supabaseClient.auth.signUp({ 
