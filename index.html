@@ -128,7 +128,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .profile-name-garland i{width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
 .profile-name-garland i:nth-child(2){background:#ffd93d}.profile-name-garland i:nth-child(3){background:#ff6b9d}.profile-name-garland i:nth-child(4){background:var(--accent)}.profile-name-garland i:nth-child(5){background:#ffd93d}
 .profile-badge{display:block;margin:10px auto 0 auto;width:max-content;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;background:rgba(20,224,194,.1);border:1px solid var(--accent);text-transform:uppercase;color:var(--accent)}
-.profile-stats{display:flex;justify-content:space-around;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.profile-stats{display:flex;justify-content:space-around;margin-top:24px;padding-top:20px;padding-bottom:24px;border-top:1px solid var(--border)}
 .profile-stat-value{font-size:20px;font-weight:700;color:var(--text)}
 .profile-stat-label{font-size:11px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
 .profile-menu{display:flex;flex-direction:column;gap:12px}
@@ -338,7 +338,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 const SUPABASE_URL = 'https://hpzemwurwkuthcgmtvlw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H5gZUb84H06cxMb1OfH5Mg_eIWaikbz';
 
-// 👇 ТВОЙ АДМИНСКИЙ НИК (С большой буквы, как ты просил)
+// 👇 ТВОЙ АДМИНСКИЙ НИК
 const ADMIN_USERNAME = 'Mollu'; 
 
 const MAX_MARKERS = 2;
@@ -1285,11 +1285,20 @@ async function toggleRoleFromModal() {
     renderAdmin();
 }
 
-// 🛡️ Одобрение заявки
+// 🛡️ Одобрение заявки (выдает доступ к меткам)
 window.approveReq = async function(id) {
     const { data: req } = await supabaseClient.from('marker_requests').select('*').eq('id', id).single();
     if (!req) return;
     
+    // Проверяем, есть ли юзер в базе
+    const { data: userExists } = await supabaseClient.from('profiles').select('id').eq('username', req.author).maybeSingle();
+    if (!userExists) {
+        showToast('Ошибка: Автор заявки не найден в базе!', true);
+        await supabaseClient.from('marker_requests').update({ status: 'rejected' }).eq('id', id);
+        renderAdmin();
+        return;
+    }
+
     await supabaseClient.from('profiles').update({ is_approved: true }).eq('username', req.author);
     await supabaseClient.from('marker_requests').update({ status: 'approved' }).eq('id', id);
     
@@ -1367,6 +1376,13 @@ function bindEvents() {
         if (!username || !city) { showToast('Заполните все поля', true); return; }
         if (!rules) { showToast('Подтвердите правила', true); return; }
         
+        // 🛡️ ПРОВЕРКА: Есть ли такой юзер в базе?
+        const { data: userExists } = await supabaseClient.from('profiles').select('id').eq('username', currentUser).maybeSingle();
+        if (!userExists) {
+            showToast('Ошибка: Ваш аккаунт не найден в базе!', true);
+            return;
+        }
+
         this.textContent = 'Отправка...';
         this.disabled = true;
 
