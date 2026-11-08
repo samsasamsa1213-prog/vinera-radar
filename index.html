@@ -43,7 +43,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #onboarding-screen p{color:var(--text-muted);font-size:15px;line-height:1.6;max-width:320px;margin:0 0 30px}
 .onboarding-btn{width:100%;max-width:300px;padding:16px;background:linear-gradient(135deg,#14e0c2 0%,#0ea5a0 100%);color:#02120f;border-radius:16px;font-weight:800;font-size:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px}
 .onboarding-btn.secondary{background:transparent;color:var(--text);border:1px solid rgba(20,224,194,.2)}
-#map-container{position:absolute;inset:0;z-index:1;padding-bottom:var(--nav-h);background:var(--bg)}
+#map-container{position:absolute;inset:0;z-index:1;bottom:var(--nav-h);background:var(--bg)}
 #map{width:100%;height:100%;background:#0a1512}
 .dark-tiles{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(1.05) saturate(.35)}
 .leaflet-control-attribution,.leaflet-control-zoom{display:none!important}
@@ -99,9 +99,14 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .clickable-author{cursor:pointer;color:var(--accent);text-decoration:underline;font-weight:700}
 .popup-confirm{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 8px;background:rgba(20,224,194,.15);color:var(--accent);border:1px solid var(--accent);border-radius:6px;font-weight:700;font-size:10px}
 .popup-confirm svg{width:12px;height:12px;stroke:var(--accent)}
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:rgba(4,10,8,.95);backdrop-filter:blur(30px);border-top:1px solid var(--border);z-index:9999;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:transparent;color:var(--text-muted);font-size:11px;font-weight:600;flex:1;height:100%}
+.nav-btn svg{width:24px;height:24px;transition:transform .3s,filter .3s}
+.nav-btn.active{color:var(--accent)}
+.nav-btn.active svg{transform:translateY(-3px);filter:drop-shadow(0 0 8px var(--accent-glow))}
 </style>
 <style>
-#feed-screen,#profile-screen{position:absolute;inset:0;bottom:var(--nav-h);background:var(--bg);z-index:1500;display:none;flex-direction:column;padding:24px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+#feed-screen,#profile-screen{position:absolute;inset:0;bottom:var(--nav-h);background:var(--bg);z-index:1500;display:none;flex-direction:column;padding:24px 20px;padding-bottom:calc(var(--nav-h) + 30px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 #feed-screen.active,#profile-screen.active{display:flex}
 .feed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-top:calc(10px + env(safe-area-inset-top))}
 .feed-header h2{margin:0;font-size:24px;font-weight:700;font-family:'Unbounded',sans-serif;background:linear-gradient(135deg,#14e0c2,#5eead4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -409,7 +414,7 @@ const dangerTypes = ['Взрыв','Сирена','Ракета','БПЛА','Ис
 const RF_BOUNDS = { minLat: 41.0, maxLat: 82.0, minLng: 19.0, maxLng: 180.0 };
 
 function isInRussia(lat, lng) {
-    // Крым, ДНР, ЛНР, Запорожская и Херсонская области (разрешенные зоны)
+    // Крым, ДНР, ЛНР, Запорожская и Херсонская области
     const allowedRegions = [
         { minLat: 44.0, maxLat: 46.5, minLng: 32.0, maxLng: 36.6 }, // Крым
         { minLat: 47.0, maxLat: 49.5, minLng: 36.0, maxLng: 40.5 }, // ДНР/ЛНР
@@ -602,18 +607,16 @@ async function resolveAddress(m) {
     } catch (e) {}
 }
 
-// 🛡️ ЗАЩИТА: Проверяем допуск, бан и границы РФ
+// 🛡️ ЗАЩИТА: Границы РФ, допуск, бан и лимиты
 async function handleMapClick(e) {
     if (!isPlacingMarker || !currentMarkerType) return;
     if (!currentCity) { showToast('Сначала выберите город!', true); return; }
 
-    // 1. Проверка границ РФ
     if (!isInRussia(e.latlng.lat, e.latlng.lng)) {
         showToast('Ставить метки можно только на территории РФ!', true);
         return;
     }
     
-    // 2. Проверка одобрения и бана из базы
     let isApproved = false;
     let userBanUntil = null;
     try {
@@ -651,7 +654,7 @@ async function handleMapClick(e) {
     allMarkersCache.unshift(data);
     drawMarkers();
     updateCityStatus();
-    checkAlerts(); // Вызовет анимацию плашки, если надо
+    checkAlerts();
     
     (async function () {
         const geo = await reverseGeocode(e.latlng.lat, e.latlng.lng, 12);
@@ -774,17 +777,13 @@ function checkAlerts() {
     const cityExp    = cityThreats.filter(function (m) { return m.type === 'Взрыв'; }).length;
     
     let alertsHtml = '';
-    // 🚀 Анимация плашек при появлении
-    if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>Ракетная опасность</span></div></div>';
+    if (cityRocket >= 1) alertsHtml += '<div class="alert-card rocket-city"><div class="alert-dot"></div><div class="alert-text"><span>В вашем городе ракетная опасность</span></div></div>';
     if (citySiren >= 1) alertsHtml += '<div class="alert-card siren-city"><div class="alert-dot"></div><div class="alert-text"><span>В городе воют сирены</span></div></div>';
-    
-    // Новые плашки для БПЛА
     if (cityBpla >= 5) {
         alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Тревога по БПЛА! Срочно в укрытие!</span></div></div>';
     } else if (cityBpla >= 1) {
         alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>В городе беспилотная опасность</span></div></div>';
     }
-
     if (cityExp >= 2 && cityBpla >= 2) alertsHtml += '<div class="alert-card critical"><div class="alert-dot"></div><div class="alert-text"><span>Критическая опасность</span></div></div>';
     
     const currentMarker = markersData.find(function (m) {
@@ -806,7 +805,6 @@ async function checkSession() {
     if (!supabaseClient) return;
     const { data, error } = await supabaseClient.auth.getSession();
     
-    // 🛡️ АВТОХОД
     if (!data || !data.session) { showAuthScreen(); return; }
     
     let profile = null;
@@ -836,7 +834,6 @@ async function checkSession() {
     currentBanned = !!profile.is_banned;
     banUntil = profile.ban_until || null;
     
-    // 🛡️ ЖЕСТКАЯ ФИКСАЦИЯ РОЛЕЙ
     if (currentUser === ADMIN_USERNAME) {
         currentRole = 'admin';
         currentBanned = false;
@@ -846,11 +843,9 @@ async function checkSession() {
         currentRole = 'user'; 
     }
     
-    // Проверка временного бана (показываем карту, но блокируем действия)
     if (banUntil && new Date(banUntil) > new Date()) {
         currentBanned = true;
     } else if (banUntil && new Date(banUntil) <= new Date()) {
-        // Бан истек
         await supabaseClient.from('profiles').update({ ban_until: null, is_banned: false, warnings: 0 }).eq('id', profile.id);
         currentBanned = false;
         banUntil = null;
@@ -858,14 +853,11 @@ async function checkSession() {
 
     if (currentBanned) {
         if (!banUntil) {
-            // Полный перманентный бан
             await supabaseClient.auth.signOut();
             document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff;background:#040605;height:100vh;padding-top:50px;font-family:sans-serif;"><h2 style="color:#f43f5e;">Аккаунт заблокирован</h2><p style="margin-top:10px;color:#94a3b8;">По вопросам: <b>@VineraRadarr</b></p></div>';
             return;
         } else {
-            // Временный бан - показываем карту, но с плашкой
             showToast('Вы заблокированы на 7 дней. Причина: фейк метки', true);
-            // Отключаем возможность ставить метки (визуально)
             setTimeout(function() {
                 const markerBtns = document.getElementById('show-markers-btn');
                 if (markerBtns) markerBtns.style.display = 'none';
@@ -911,7 +903,6 @@ async function renderProfile() {
     document.getElementById('profile-name').textContent = currentUser || 'user';
     document.getElementById('profile-avatar-letter').textContent = (currentUser || 'U').charAt(0).toUpperCase();
     
-    // 🛡️ Счетчик меток (за все время)
     let totalMyMarkers = 0;
     try {
         const { count } = await supabaseClient.from('vinera_markers').select('*', { count:'exact', head:true }).eq('author', currentUser);
@@ -1389,7 +1380,7 @@ async function warnUserFromModal() {
     let isBanned = false;
     
     if (newWarns >= 3) {
-        banUntilDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // +7 дней
+        banUntilDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
         isBanned = true;
         showToast('Выдан 3-й выговор! Бан на 7 дней.');
     } else {
