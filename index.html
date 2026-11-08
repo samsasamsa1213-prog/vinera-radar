@@ -771,7 +771,7 @@ async function checkSession() {
     currentBanned = !!profile.is_banned;
     
     // 🛡️ ЖЕСТКАЯ ФИКСАЦИЯ РОЛЕЙ
-    if (currentUser === ADMIN_USERNAME) {
+    if (currentUser === mollu) {
         currentRole = 'admin';
         currentBanned = false;
     } else if (profile.role === 'moderator') {
