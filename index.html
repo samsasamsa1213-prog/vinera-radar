@@ -52,7 +52,7 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 #geo-btn{width:50px;height:50px;min-width:50px;border-radius:18px;background:var(--panel);backdrop-filter:blur(20px);border:1px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center}
 #geo-btn svg{width:22px;height:22px}
 
-/* НОВОГОДНЯЯ ШАПКА (Анимация) */
+/* НОВОГОДНЯЯ ШАПКА */
 .santa-hat {
     position: absolute;
     top: -18px;
@@ -69,6 +69,22 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 @keyframes hatBounce {
     0%, 100% { transform: rotate(15deg) translateY(0); }
     50% { transform: rotate(25deg) translateY(-5px); }
+}
+
+/* СНЕГОВИК */
+.snowman {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='16' r='6' fill='%23fff'/%3E%3Ccircle cx='12' cy='8' r='4' fill='%23fff'/%3E%3Ccircle cx='10.5' cy='7.5' r='0.8' fill='%23000'/%3E%3Ccircle cx='13.5' cy='7.5' r='0.8' fill='%23000'/%3E%3Cpath d='M11 9h2' stroke='%23f59e0b' stroke-width='1'/%3E%3Cpath d='M9 14h6' stroke='%23f43f5e' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 500;
+    animation: snowmanBounce 3s infinite ease-in-out;
+}
+@keyframes snowmanBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 </style>
 <style>
@@ -279,6 +295,8 @@ button:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
     </div>
     <div class="profile-menu">
         <div class="menu-item" id="profile-request-btn"><span>Оставить заявку на метку</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div class="menu-item" id="profile-sound-btn"><span>Включить звук сирены</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+        <div class="menu-item" id="profile-share-geo-btn"><span>Поделиться геолокацией</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
         <div class="menu-item" id="profile-search-city-btn"><span>Выбрать регион / город</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
         <div class="menu-item" id="profile-share-btn"><span>Поделиться радаром</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
         <a href="https://t.me/VineraRadarr" target="_blank" rel="noopener" class="menu-item"><span>Связь с владельцем</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></a>
@@ -429,6 +447,12 @@ let bootstrapped = false;
 let loadMarkersBusy = false;
 let adminSearchTerm = '';
 
+// 🔔 ПЕРЕМЕННЫЕ ДЛЯ ЗВУКА
+let soundEnabled = false;
+let audioCtx = null;
+let lastSirenPlayedAt = 0;
+let sirenQueue = [];
+
 const METADATA = {
 'БПЛА':{color:'#14e0c2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>'},
 'Ракета':{color:'#f43f5e',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c2 3 3 6 3 9v6l-3 3-3-3v-6c0-3 1-6 3-9z"/><path d="M9 14l-3 4M15 14l3 4M12 20v2"/></svg>'},
@@ -508,6 +532,69 @@ function checkTelegramAccess() {
     return true;
 }
 
+// ==========================================
+// 🔊 СИСТЕМА ЗВУКОВОГО ОПОВЕЩЕНИЯ
+// ==========================================
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+function playSirenSound() {
+    if (!soundEnabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+    osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+    osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 1.0);
+    osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 1.5);
+    osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 2.0);
+    
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 2.0);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 2.0);
+}
+
+function speakAlert() {
+    if (!soundEnabled || !window.speechSynthesis) return;
+    const text = 'Внимание! В вашем городе воздушная сирена. Просим пройти в укрытие.';
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'ru-RU';
+    utter.rate = 1.0;
+    utter.volume = 1.0;
+    window.speechSynthesis.speak(utter);
+}
+
+function triggerCityAlarm() {
+    if (!soundEnabled) return;
+    const now = Date.now();
+    // Если прошло меньше 30 минут с последнего оповещения, молчим
+    if (now - lastSirenPlayedAt < 30 * 60 * 1000) return;
+    
+    lastSirenPlayedAt = now;
+    playSirenSound();
+    
+    // Голос говорим через 2.5 секунды после сирены (когда сирена закончится)
+    setTimeout(function() {
+        speakAlert();
+    }, 2500);
+}
+
+// ==========================================
+// 📱 TURNSTILE
+// ==========================================
 function initTurnstile() {
     if (!window.turnstile) { setTimeout(initTurnstile, 300); return; }
     const container = document.getElementById('turnstile-container');
@@ -658,7 +745,6 @@ async function handleMapClick(e) {
         dbTelegramId = data ? data.telegram_id : null;
     } catch(err) {}
 
-    // Проверка на наличие TG ID (защита от фантомов)
     if (!dbTelegramId && currentUser !== ADMIN_USERNAME) {
         showToast('Ошибка: У вашего аккаунта нет Telegram ID!', true);
         return;
@@ -843,6 +929,11 @@ function checkAlerts() {
         if (regionBpla.length >= 1 && cityBpla === 0) alertsHtml += '<div class="alert-card info"><div class="alert-dot"></div><div class="alert-text"><span>БПЛА по области</span><span class="alert-more">± 50 км</span></div></div>';
     }
     container.innerHTML = alertsHtml;
+
+    // 🔊 ЗАПУСК СИРЕНЫ, ЕСЛИ В ГОРОДЕ ЕСТЬ СИРЕНА/РАКЕТА
+    if (citySiren >= 1 || cityRocket >= 1) {
+        triggerCityAlarm();
+    }
 }
 
 async function checkSession() {
@@ -862,7 +953,6 @@ async function checkSession() {
         const email = data.session.user.email || '';
         let loginFromEmail = email.includes('@vinera.app') ? email.split('@')[0] : 'user_' + Math.floor(Math.random()*10000);
 
-        // 🛡️ ЗАЩИТА: Если нет TG ID и это не админ, не пускаем
         if (!tgUser && loginFromEmail !== ADMIN_USERNAME) {
             showToast('Вход только через Telegram!', true);
             await supabaseClient.auth.signOut();
@@ -982,14 +1072,10 @@ async function renderProfile() {
     const adminBtn = document.getElementById('admin-toggle-btn');
     if (adminBtn) adminBtn.style.display = (currentRole === 'admin' || currentRole === 'moderator') ? 'flex' : 'none';
 
-    // 🛡️ Скрываем кнопку подачи заявки, если уже одобрен
     const reqBtn = document.getElementById('profile-request-btn');
     if (reqBtn) {
-        if (isApproved) {
-            reqBtn.style.display = 'none';
-        } else {
-            reqBtn.style.display = 'flex';
-        }
+        if (isApproved) reqBtn.style.display = 'none';
+        else reqBtn.style.display = 'flex';
     }
 }
 
@@ -1200,6 +1286,16 @@ window.shareRadar = function () {
     }
 };
 
+window.shareGeo = function () {
+    if (!myGeo) { showToast('Ваше гео не определено', true); return; }
+    const text = 'Моя геолокация: https://yandex.ru/maps/?pt=' + myGeo.lon + ',' + myGeo.lat + '&z=18&l=map';
+    if (navigator.share) {
+        navigator.share({ title: 'Моя геолокация', text: text }).catch(function () {});
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function () { showToast('Ссылка на гео скопирована!'); });
+    }
+};
+
 window.toggleMarkersSheet = function () {
     const sheet = document.getElementById('markers-sheet');
     const overlay = document.getElementById('markers-sheet-overlay');
@@ -1256,17 +1352,15 @@ function toggleAdminPanel() {
     }
 }
 
-// НОВАЯ ЛОГИКА АДМИНКИ С МЕНЮ
 function switchAdminTab(tab) {
     adminTab = tab;
-    
-    // Обновляем активную кнопку в меню
     document.querySelectorAll('.admin-menu-btn').forEach(function(btn) {
         btn.classList.toggle('active', btn.getAttribute('data-admin-tab') === tab);
     });
 
-    // Показываем/скрываем поиск и кнопку очистки
-    document.getElementById('clear-all-btn').style.display = tab === 'markers' ? 'block' : 'none';
+    // Кнопка "Удалить все" только для админа
+    const isAdmin = (currentUser === ADMIN_USERNAME);
+    document.getElementById('clear-all-btn').style.display = (tab === 'markers' && isAdmin) ? 'block' : 'none';
     document.getElementById('admin-search-wrapper').style.display = tab === 'users' ? 'block' : 'none';
     
     adminSearchTerm = '';
@@ -1276,6 +1370,7 @@ function switchAdminTab(tab) {
 }
 
 async function clearAllMarkers() {
+    if (currentUser !== ADMIN_USERNAME) { showToast('Нет прав!', true); return; }
     if (!window.confirm('Удалить ВСЕ метки с карты?')) return;
     const btn = document.getElementById('clear-all-btn');
     btn.textContent = 'Очистка...';
@@ -1297,6 +1392,11 @@ async function renderAdmin() {
     if (!content) return;
     content.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px;">Загрузка...</div>';
     
+    const isAdmin = (currentUser === ADMIN_USERNAME);
+    const isMod = isAdmin || currentRole === 'moderator';
+
+    if (!isMod) { content.innerHTML = 'Нет прав'; return; }
+
     // Вкладка МОДЕРАТОРЫ
     if (adminTab === 'mods') {
         const { data: mods, error } = await supabaseClient.from('profiles').select('*').eq('role', 'moderator').order('username');
@@ -1363,6 +1463,15 @@ async function renderAdmin() {
             return;
         }
 
+        // 🛡️ СОРТИРОВКА: Банные в конец, потом по количеству меток
+        filteredUsers.sort(function(a, b) {
+            if (a.is_banned && !b.is_banned) return 1;
+            if (!a.is_banned && b.is_banned) return -1;
+            const countA = (allMarkers || []).filter(function(m) { return m.author === a.username; }).length;
+            const countB = (allMarkers || []).filter(function(m) { return m.author === b.username; }).length;
+            return countB - countA;
+        });
+
         content.innerHTML = '';
         filteredUsers.forEach(function (u) {
             const realMarkers = (allMarkers || []).filter(function (m) { return m.author === u.username; }).length;
@@ -1411,12 +1520,26 @@ function openUserProfileModal(u) {
     const roleBtn = document.getElementById('modal-user-role-btn');
     const warnBtn = document.getElementById('modal-user-warn-btn');
     
-    banBtn.style.display = 'block';
-    roleBtn.style.display = 'block';
-    warnBtn.style.display = 'block';
-    
-    banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
-    roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
+    const isAdmin = (currentUser === ADMIN_USERNAME);
+    const isMod = isAdmin || currentRole === 'moderator';
+
+    if (isMod) {
+        // Модераторы видят кнопку бана, админ — тоже
+        banBtn.style.display = 'block';
+        banBtn.textContent = u.is_banned ? 'Разбанить' : 'Забанить';
+    } else {
+        banBtn.style.display = 'none';
+    }
+
+    if (isAdmin) {
+        // Только админ видит роль и выговор
+        roleBtn.style.display = 'block';
+        warnBtn.style.display = 'block';
+        roleBtn.textContent = (u.role === 'moderator') ? 'Снять модератора' : 'Сделать модератором';
+    } else {
+        roleBtn.style.display = 'none';
+        warnBtn.style.display = 'none';
+    }
 
     document.getElementById('user-profile-modal').classList.add('active');
 }
@@ -1429,6 +1552,8 @@ function closeUserProfileModal() {
 
 async function toggleBanFromModal() {
     if (!selectedUserId || !selectedUserData) return;
+    const isAdmin = (currentUser === ADMIN_USERNAME);
+    if (!isAdmin) { showToast('Нет прав!', true); return; }
     const newBan = !selectedUserData.is_banned;
     const { error } = await supabaseClient.from('profiles').update({ is_banned: newBan, ban_until: null }).eq('id', selectedUserId);
     if (error) { showToast('Ошибка: ' + error.message, true); return; }
@@ -1439,13 +1564,7 @@ async function toggleBanFromModal() {
 
 async function toggleRoleFromModal() {
     if (!selectedUserId || !selectedUserData) return;
-    
-    // 🛡️ Защита: менять роль может только Mollu
-    if (currentUser !== ADMIN_USERNAME) {
-        showToast('У вас нет прав для смены роли!', true);
-        return;
-    }
-
+    if (currentUser !== ADMIN_USERNAME) { showToast('Только админ может менять роли!', true); return; }
     const newRole = selectedUserData.role === 'moderator' ? 'user' : 'moderator';
     const { error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', selectedUserId);
     if (error) { showToast('Ошибка: ' + error.message, true); return; }
@@ -1454,9 +1573,9 @@ async function toggleRoleFromModal() {
     renderAdmin();
 }
 
-// 🛡️ Выдача выговора (3 выговора = бан на 7 дней)
 async function warnUserFromModal() {
     if (!selectedUserId || !selectedUserData) return;
+    if (currentUser !== ADMIN_USERNAME) { showToast('Только админ может выдавать выговоры!', true); return; }
     const currentWarns = selectedUserData.warnings || 0;
     const newWarns = currentWarns + 1;
     
@@ -1482,7 +1601,6 @@ async function warnUserFromModal() {
     renderAdmin();
 }
 
-// 🛡️ Одобрение заявки
 window.approveReq = async function(id) {
     const { data: req } = await supabaseClient.from('marker_requests').select('*').eq('id', id).single();
     if (!req) return;
@@ -1542,10 +1660,24 @@ function bindEvents() {
     document.getElementById('profile-search-city-btn').onclick = window.openSearchModal;
     document.getElementById('profile-share-btn').onclick = window.shareRadar;
     document.getElementById('profile-request-btn').onclick = function() { document.getElementById('request-modal').classList.add('active'); };
+    document.getElementById('profile-share-geo-btn').onclick = window.shareGeo;
     document.getElementById('logout-btn').onclick = logout;
     document.getElementById('admin-toggle-btn').onclick = toggleAdminPanel;
     
-    // Обработчики для меню админки
+    // Кнопка включения звука
+    document.getElementById('profile-sound-btn').onclick = function() {
+        if (!soundEnabled) {
+            soundEnabled = true;
+            initAudio();
+            showToast('Звук включен!');
+            this.innerHTML = '<span>Выключить звук</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>';
+        } else {
+            soundEnabled = false;
+            showToast('Звук выключен');
+            this.innerHTML = '<span>Включить звук сирены</span><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+        }
+    };
+    
     document.querySelectorAll('.admin-menu-btn').forEach(function(btn) {
         btn.onclick = function() { switchAdminTab(this.getAttribute('data-admin-tab')); };
     });
@@ -1566,7 +1698,6 @@ function bindEvents() {
         renderAdmin();
     });
 
-    // Обработчики модалки заявок
     document.getElementById('req-cancel-btn').onclick = function() { document.getElementById('request-modal').classList.remove('active'); };
     document.getElementById('req-submit-btn').onclick = async function() {
         const username = document.getElementById('req-username').value.trim();
